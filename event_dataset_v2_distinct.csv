@@ -1,0 +1,1001 @@
+headcount,eventtype,eventcategory,budget,venuecategory,budgetallocation,venue
+191,techtalkspanels,talkspanels,278000,auditorium,"venue:27,speakers:17,food:23,av:12,marketing:13",SLIIT
+400,techcareernetworking,careernetworking,1490000,openspace,"venue:32,speakers:22,food:18,av:14,marketing:14",Galadari
+99,designcareernetworking,careernetworking,191000,studio,"venue:31,speakers:22,food:18,av:18,marketing:17",AOD
+326,codetalkspanels,talkspanels,279000,auditorium,"venue:30,speakers:18,food:20,av:13,marketing:17",NSBM
+541,techtalkspanels,talkspanels,608000,auditorium,"venue:29,speakers:17,food:19,av:15,marketing:12",NSBM
+365,designcareernetworking,careernetworking,2263000,exhibitionhall,"venue:29,speakers:19,food:21,av:16,marketing:13",Shangri-La
+364,codetalkspanels,talkspanels,305000,auditorium,"venue:28,speakers:18,food:20,av:15,marketing:15",NSBM
+463,techcompetitionshackathons,competitionshackathons,484000,auditorium,"venue:17,speakers:11,prizes:30,food:20,av:13,marketing:8",NSBM
+446,techworkshopstraining,workshopstraining,458000,auditorium,"venue:25,speakers:32,equipment:12,food:9,av:12,marketing:2",NSBM
+42,codetalkspanels,talkspanels,54000,coworkingspace,"venue:30,speakers:23,food:20,av:13,marketing:17",Gamers HQ
+117,techcompetitionshackathons,competitionshackathons,335000,openspace,"venue:21,speakers:9,prizes:32,food:19,av:14,marketing:2",Colombo Innovation Tower
+213,designconferencesexpos,conferencesexpos,686000,openspace,"venue:36,speakers:23,food:7,av:17,marketing:10,logistics:2",Galadari
+1783,codemeetupscommunity,meetupscommunity,1077000,openspace,"venue:32,food:25,av:8,marketing:13,logistics:23",Galle Face
+60,codecareernetworking,careernetworking,205000,openspace,"venue:33,speakers:20,food:23,av:18,marketing:13",Colombo Innovation Tower
+109,techmeetupscommunity,meetupscommunity,16000,auditorium,"venue:30,food:23,av:9,marketing:8,logistics:26",Virtusa
+247,techcompetitionshackathons,competitionshackathons,383000,auditorium,"venue:20,speakers:8,prizes:32,food:23,av:17,marketing:8",SLIIT
+1391,designmeetupscommunity,meetupscommunity,4076000,exhibitionhall,"venue:27,food:24,av:9,marketing:10,logistics:26",BMICH
+65,techmeetupscommunity,meetupscommunity,153000,studio,"venue:32,food:24,av:12,marketing:9,logistics:25",AOD
+798,techmeetupscommunity,meetupscommunity,4671000,exhibitionhall,"venue:27,food:22,av:12,marketing:12,logistics:26",Shangri-La
+281,techtalkspanels,talkspanels,368000,auditorium,"venue:29,speakers:19,food:19,av:12,marketing:18",NSBM
+133,designconferencesexpos,conferencesexpos,202000,auditorium,"venue:35,speakers:24,food:10,av:16,marketing:12,logistics:7",SLIIT
+185,aicompetitionshackathons,competitionshackathons,201000,auditorium,"venue:17,speakers:8,prizes:29,food:20,av:18,marketing:6",SLIIT
+82,aiconferencesexpos,conferencesexpos,37000,auditorium,"venue:33,speakers:25,food:11,av:13,marketing:13,logistics:3",UCSC
+54,techmeetupscommunity,meetupscommunity,151000,openspace,"venue:33,food:27,av:9,marketing:9,logistics:22",Colombo Innovation Tower
+353,codecompetitionshackathons,competitionshackathons,482000,auditorium,"venue:23,speakers:13,prizes:30,food:21,av:18,marketing:5",NSBM
+302,techcareernetworking,careernetworking,760000,openspace,"venue:32,speakers:21,food:22,av:13,marketing:15",Galadari
+96,aiconferencesexpos,conferencesexpos,190000,studio,"venue:33,speakers:25,food:13,av:15,marketing:12,logistics:3",AOD
+1109,designmeetupscommunity,meetupscommunity,743000,openspace,"venue:31,food:27,av:9,marketing:9,logistics:24",Galle Face
+240,designcareernetworking,careernetworking,78000,auditorium,"venue:32,speakers:21,food:22,av:12,marketing:16",Virtusa
+47,techconferencesexpos,conferencesexpos,132000,studio,"venue:33,speakers:27,food:12,av:15,marketing:12,logistics:8",AOD
+69,codecompetitionshackathons,competitionshackathons,129000,studio,"venue:21,speakers:8,prizes:30,food:19,av:16,marketing:2",AOD
+97,techcareernetworking,careernetworking,189000,coworkingspace,"venue:32,speakers:18,food:20,av:12,marketing:14",Gamers HQ
+525,codecompetitionshackathons,competitionshackathons,555000,auditorium,"venue:18,speakers:13,prizes:27,food:20,av:15,marketing:3",NSBM
+67,aiconferencesexpos,conferencesexpos,39000,auditorium,"venue:36,speakers:28,food:12,av:12,marketing:9,logistics:7",UCSC
+373,techconferencesexpos,conferencesexpos,1086000,openspace,"venue:32,speakers:28,food:13,av:12,marketing:9,logistics:7",Galadari
+67,techtalkspanels,talkspanels,170000,studio,"venue:32,speakers:23,food:20,av:18,marketing:15",AOD
+100,designcompetitionshackathons,competitionshackathons,17000,auditorium,"venue:23,speakers:12,prizes:28,food:20,av:16,marketing:8",Virtusa
+100,techworkshopstraining,workshopstraining,160000,studio,"venue:27,speakers:32,equipment:17,food:10,av:15,marketing:4",AOD
+496,aimeetupscommunity,meetupscommunity,2550000,exhibitionhall,"venue:33,food:23,av:10,marketing:7,logistics:27",Shangri-La
+232,techtalkspanels,talkspanels,786000,openspace,"venue:29,speakers:19,food:21,av:18,marketing:12",Galadari
+314,codetalkspanels,talkspanels,376000,auditorium,"venue:33,speakers:18,food:17,av:18,marketing:14",SLIIT
+70,designcareernetworking,careernetworking,221000,openspace,"venue:28,speakers:21,food:23,av:17,marketing:15",Colombo Innovation Tower
+171,aiconferencesexpos,conferencesexpos,26000,auditorium,"venue:33,speakers:23,food:13,av:15,marketing:11,logistics:8",Virtusa
+191,techcareernetworking,careernetworking,384000,coworkingspace,"venue:31,speakers:22,food:21,av:17,marketing:15",Hatch
+718,codemeetupscommunity,meetupscommunity,1170000,exhibitionhall,"venue:32,food:25,av:9,marketing:9,logistics:26",BMICH
+151,designcompetitionshackathons,competitionshackathons,48000,auditorium,"venue:18,speakers:11,prizes:29,food:23,av:17,marketing:3",UCSC
+223,techtalkspanels,talkspanels,257000,auditorium,"venue:32,speakers:22,food:23,av:17,marketing:12",NSBM
+167,designworkshopstraining,workshopstraining,236000,coworkingspace,"venue:23,speakers:28,equipment:14,food:10,av:14,marketing:3",Trace Expert City
+494,designmeetupscommunity,meetupscommunity,1685000,openspace,"venue:31,food:26,av:12,marketing:8,logistics:24",Galadari
+197,techtalkspanels,talkspanels,128000,auditorium,"venue:28,speakers:19,food:18,av:17,marketing:15",UCSC
+176,designworkshopstraining,workshopstraining,336000,coworkingspace,"venue:28,speakers:33,equipment:16,food:13,av:17,marketing:2",Trace Expert City
+100,techmeetupscommunity,meetupscommunity,395000,openspace,"venue:33,food:24,av:9,marketing:10,logistics:25",Colombo Innovation Tower
+1061,codeconferencesexpos,conferencesexpos,1056000,openspace,"venue:33,speakers:25,food:10,av:18,marketing:8,logistics:4",Galle Face
+110,codecareernetworking,careernetworking,242000,coworkingspace,"venue:33,speakers:17,food:18,av:15,marketing:16",Trace Expert City
+96,aiworkshopstraining,workshopstraining,190000,coworkingspace,"venue:26,speakers:30,equipment:15,food:7,av:14,marketing:4",Gamers HQ
+150,aicompetitionshackathons,competitionshackathons,428000,coworkingspace,"venue:23,speakers:12,prizes:31,food:22,av:15,marketing:6",Hatch
+305,aitalkspanels,talkspanels,1458000,exhibitionhall,"venue:31,speakers:19,food:22,av:18,marketing:13",Shangri-La
+106,designtalkspanels,talkspanels,141000,coworkingspace,"venue:31,speakers:18,food:19,av:13,marketing:13",Trace Expert City
+315,techcareernetworking,careernetworking,1044000,openspace,"venue:28,speakers:20,food:23,av:12,marketing:17",Galadari
+669,techmeetupscommunity,meetupscommunity,3196000,exhibitionhall,"venue:33,food:22,av:11,marketing:10,logistics:25",Shangri-La
+239,designconferencesexpos,conferencesexpos,365000,auditorium,"venue:37,speakers:26,food:8,av:14,marketing:13,logistics:6",SLIIT
+360,techmeetupscommunity,meetupscommunity,2479000,exhibitionhall,"venue:29,food:25,av:8,marketing:13,logistics:23",Shangri-La
+117,aiconferencesexpos,conferencesexpos,452000,openspace,"venue:32,speakers:27,food:7,av:15,marketing:7,logistics:4",Colombo Innovation Tower
+789,codeworkshopstraining,workshopstraining,2250000,exhibitionhall,"venue:25,speakers:28,equipment:17,food:10,av:14,marketing:7",BMICH
+81,codetalkspanels,talkspanels,45000,auditorium,"venue:29,speakers:17,food:18,av:12,marketing:17",UCSC
+626,codemeetupscommunity,meetupscommunity,3339000,exhibitionhall,"venue:28,food:23,av:12,marketing:13,logistics:25",Shangri-La
+1106,codemeetupscommunity,meetupscommunity,4899000,openspace,"venue:32,food:25,av:7,marketing:13,logistics:27",Nelum Pokuna
+388,aimeetupscommunity,meetupscommunity,2213000,exhibitionhall,"venue:29,food:26,av:9,marketing:11,logistics:26",Shangri-La
+330,designcareernetworking,careernetworking,1012000,openspace,"venue:32,speakers:23,food:18,av:13,marketing:14",Galadari
+71,aiconferencesexpos,conferencesexpos,121000,coworkingspace,"venue:37,speakers:27,food:8,av:15,marketing:7,logistics:5",Gamers HQ
+305,aiworkshopstraining,workshopstraining,1160000,openspace,"venue:27,speakers:33,equipment:18,food:8,av:14,marketing:8",Galadari
+102,aiconferencesexpos,conferencesexpos,226000,studio,"venue:38,speakers:24,food:8,av:15,marketing:11,logistics:5",AOD
+327,codeconferencesexpos,conferencesexpos,897000,openspace,"venue:36,speakers:27,food:13,av:15,marketing:13,logistics:4",Galadari
+1086,techmeetupscommunity,meetupscommunity,4255000,openspace,"venue:33,food:28,av:12,marketing:12,logistics:26",Nelum Pokuna
+94,techmeetupscommunity,meetupscommunity,165000,studio,"venue:27,food:26,av:10,marketing:9,logistics:26",AOD
+154,techtalkspanels,talkspanels,513000,coworkingspace,"venue:29,speakers:21,food:17,av:12,marketing:15",Hatch
+537,designtalkspanels,talkspanels,1341000,exhibitionhall,"venue:30,speakers:19,food:19,av:16,marketing:16",BMICH
+139,codeworkshopstraining,workshopstraining,432000,openspace,"venue:26,speakers:29,equipment:12,food:10,av:15,marketing:7",Colombo Innovation Tower
+147,aitalkspanels,talkspanels,289000,coworkingspace,"venue:29,speakers:18,food:21,av:17,marketing:12",Trace Expert City
+50,designworkshopstraining,workshopstraining,158000,openspace,"venue:25,speakers:32,equipment:18,food:13,av:15,marketing:8",Colombo Innovation Tower
+248,aicompetitionshackathons,competitionshackathons,62000,auditorium,"venue:23,speakers:8,prizes:33,food:18,av:16,marketing:3",Virtusa
+130,aitalkspanels,talkspanels,253000,coworkingspace,"venue:31,speakers:21,food:22,av:12,marketing:18",Trace Expert City
+281,codeworkshopstraining,workshopstraining,349000,coworkingspace,"venue:22,speakers:33,equipment:13,food:7,av:16,marketing:6",Trace Expert City
+108,aiworkshopstraining,workshopstraining,190000,studio,"venue:25,speakers:32,equipment:16,food:13,av:12,marketing:4",AOD
+110,designcompetitionshackathons,competitionshackathons,363000,coworkingspace,"venue:17,speakers:7,prizes:30,food:22,av:15,marketing:7",Hatch
+65,codeworkshopstraining,workshopstraining,209000,coworkingspace,"venue:27,speakers:31,equipment:12,food:7,av:16,marketing:6",Hatch
+264,codetalkspanels,talkspanels,918000,openspace,"venue:31,speakers:17,food:18,av:14,marketing:17",Galadari
+81,codecompetitionshackathons,competitionshackathons,95000,coworkingspace,"venue:20,speakers:12,prizes:31,food:18,av:18,marketing:3",Gamers HQ
+37,techworkshopstraining,workshopstraining,52000,coworkingspace,"venue:28,speakers:27,equipment:16,food:12,av:15,marketing:8",Gamers HQ
+394,aicompetitionshackathons,competitionshackathons,2735000,exhibitionhall,"venue:19,speakers:10,prizes:30,food:17,av:16,marketing:6",Shangri-La
+534,techconferencesexpos,conferencesexpos,455000,auditorium,"venue:37,speakers:23,food:10,av:14,marketing:8,logistics:4",NSBM
+462,aiconferencesexpos,conferencesexpos,378000,auditorium,"venue:34,speakers:25,food:12,av:13,marketing:8,logistics:4",NSBM
+168,techcareernetworking,careernetworking,131000,auditorium,"venue:33,speakers:18,food:22,av:18,marketing:16",UCSC
+115,designworkshopstraining,workshopstraining,315000,openspace,"venue:23,speakers:29,equipment:12,food:11,av:17,marketing:3",Colombo Innovation Tower
+473,aicompetitionshackathons,competitionshackathons,1843000,openspace,"venue:18,speakers:12,prizes:31,food:22,av:16,marketing:4",Galadari
+527,codecompetitionshackathons,competitionshackathons,631000,auditorium,"venue:17,speakers:13,prizes:30,food:17,av:14,marketing:3",NSBM
+186,codeworkshopstraining,workshopstraining,106000,auditorium,"venue:27,speakers:31,equipment:18,food:13,av:18,marketing:7",UCSC
+133,codeconferencesexpos,conferencesexpos,123000,auditorium,"venue:35,speakers:26,food:10,av:12,marketing:7,logistics:2",SLIIT
+547,designworkshopstraining,workshopstraining,2836000,exhibitionhall,"venue:23,speakers:33,equipment:16,food:10,av:14,marketing:8",Shangri-La
+196,codetalkspanels,talkspanels,610000,coworkingspace,"venue:29,speakers:17,food:21,av:14,marketing:18",Hatch
+537,techconferencesexpos,conferencesexpos,3675000,exhibitionhall,"venue:34,speakers:27,food:13,av:15,marketing:9,logistics:5",Shangri-La
+870,aimeetupscommunity,meetupscommunity,927000,openspace,"venue:29,food:27,av:12,marketing:10,logistics:25",Galle Face
+34,aiworkshopstraining,workshopstraining,62000,coworkingspace,"venue:26,speakers:28,equipment:16,food:9,av:18,marketing:6",Gamers HQ
+412,aimeetupscommunity,meetupscommunity,413000,auditorium,"venue:33,food:24,av:12,marketing:11,logistics:26",NSBM
+430,techconferencesexpos,conferencesexpos,3002000,exhibitionhall,"venue:36,speakers:27,food:10,av:16,marketing:10,logistics:5",Shangri-La
+218,designtalkspanels,talkspanels,288000,coworkingspace,"venue:32,speakers:22,food:23,av:15,marketing:12",Trace Expert City
+404,codecareernetworking,careernetworking,1201000,openspace,"venue:29,speakers:23,food:21,av:18,marketing:12",Galadari
+957,aicareernetworking,careernetworking,2401000,exhibitionhall,"venue:30,speakers:20,food:23,av:18,marketing:14",BMICH
+85,codemeetupscommunity,meetupscommunity,252000,openspace,"venue:31,food:27,av:9,marketing:11,logistics:27",Colombo Innovation Tower
+601,techcompetitionshackathons,competitionshackathons,2549000,openspace,"venue:20,speakers:11,prizes:31,food:19,av:17,marketing:2",Nelum Pokuna
+180,codeworkshopstraining,workshopstraining,55000,auditorium,"venue:23,speakers:30,equipment:13,food:12,av:13,marketing:2",Virtusa
+483,designworkshopstraining,workshopstraining,649000,auditorium,"venue:23,speakers:29,equipment:12,food:10,av:14,marketing:3",NSBM
+50,techconferencesexpos,conferencesexpos,17000,auditorium,"venue:37,speakers:24,food:11,av:15,marketing:8,logistics:8",UCSC
+248,codemeetupscommunity,meetupscommunity,324000,auditorium,"venue:33,food:26,av:7,marketing:10,logistics:25",NSBM
+58,designtalkspanels,talkspanels,167000,openspace,"venue:28,speakers:19,food:17,av:12,marketing:16",Colombo Innovation Tower
+529,aicompetitionshackathons,competitionshackathons,474000,auditorium,"venue:17,speakers:13,prizes:27,food:18,av:18,marketing:7",NSBM
+957,techmeetupscommunity,meetupscommunity,3079000,openspace,"venue:29,food:24,av:11,marketing:7,logistics:26",Nelum Pokuna
+325,codeworkshopstraining,workshopstraining,2056000,exhibitionhall,"venue:24,speakers:27,equipment:16,food:9,av:18,marketing:7",Shangri-La
+698,techcareernetworking,careernetworking,3435000,openspace,"venue:29,speakers:22,food:22,av:18,marketing:17",Nelum Pokuna
+380,techmeetupscommunity,meetupscommunity,570000,auditorium,"venue:29,food:26,av:10,marketing:8,logistics:27",SLIIT
+55,designmeetupscommunity,meetupscommunity,96000,coworkingspace,"venue:33,food:28,av:12,marketing:7,logistics:28",Gamers HQ
+95,aiconferencesexpos,conferencesexpos,236000,coworkingspace,"venue:35,speakers:25,food:10,av:14,marketing:8,logistics:6",Hatch
+111,aitalkspanels,talkspanels,82000,auditorium,"venue:33,speakers:17,food:22,av:18,marketing:15",UCSC
+65,codeworkshopstraining,workshopstraining,144000,coworkingspace,"venue:26,speakers:28,equipment:12,food:13,av:18,marketing:4",Hatch
+997,techworkshopstraining,workshopstraining,4865000,openspace,"venue:24,speakers:30,equipment:17,food:12,av:15,marketing:8",Nelum Pokuna
+880,techworkshopstraining,workshopstraining,1987000,exhibitionhall,"venue:24,speakers:27,equipment:13,food:8,av:14,marketing:4",BMICH
+308,designworkshopstraining,workshopstraining,430000,auditorium,"venue:26,speakers:28,equipment:12,food:11,av:12,marketing:4",SLIIT
+151,codeconferencesexpos,conferencesexpos,465000,coworkingspace,"venue:36,speakers:27,food:12,av:16,marketing:10,logistics:6",Hatch
+193,aicompetitionshackathons,competitionshackathons,120000,auditorium,"venue:19,speakers:8,prizes:27,food:20,av:18,marketing:5",UCSC
+1423,aiworkshopstraining,workshopstraining,1497000,openspace,"venue:23,speakers:29,equipment:15,food:12,av:17,marketing:7",Galle Face
+1358,techtalkspanels,talkspanels,2719000,exhibitionhall,"venue:32,speakers:20,food:23,av:14,marketing:17",BMICH
+153,aicompetitionshackathons,competitionshackathons,118000,auditorium,"venue:19,speakers:7,prizes:33,food:20,av:18,marketing:4",UCSC
+219,aicompetitionshackathons,competitionshackathons,589000,openspace,"venue:18,speakers:8,prizes:33,food:19,av:12,marketing:3",Galadari
+99,codecareernetworking,careernetworking,170000,coworkingspace,"venue:32,speakers:17,food:22,av:17,marketing:17",Gamers HQ
+122,aitalkspanels,talkspanels,260000,coworkingspace,"venue:31,speakers:21,food:21,av:18,marketing:18",Trace Expert City
+50,techcompetitionshackathons,competitionshackathons,16000,auditorium,"venue:20,speakers:13,prizes:27,food:17,av:12,marketing:4",UCSC
+606,designworkshopstraining,workshopstraining,4010000,exhibitionhall,"venue:23,speakers:28,equipment:12,food:7,av:12,marketing:6",Shangri-La
+80,aiworkshopstraining,workshopstraining,121000,coworkingspace,"venue:28,speakers:33,equipment:14,food:12,av:14,marketing:5",Gamers HQ
+213,codeworkshopstraining,workshopstraining,72000,auditorium,"venue:22,speakers:27,equipment:14,food:9,av:14,marketing:3",Virtusa
+113,codemeetupscommunity,meetupscommunity,172000,studio,"venue:32,food:23,av:12,marketing:11,logistics:28",AOD
+380,techtalkspanels,talkspanels,433000,auditorium,"venue:32,speakers:23,food:23,av:17,marketing:16",NSBM
+917,designworkshopstraining,workshopstraining,2734000,exhibitionhall,"venue:28,speakers:32,equipment:17,food:10,av:15,marketing:4",BMICH
+54,codeconferencesexpos,conferencesexpos,179000,openspace,"venue:33,speakers:28,food:10,av:17,marketing:11,logistics:4",Colombo Innovation Tower
+277,codecompetitionshackathons,competitionshackathons,742000,openspace,"venue:20,speakers:11,prizes:28,food:20,av:15,marketing:3",Galadari
+60,techcareernetworking,careernetworking,123000,studio,"venue:29,speakers:19,food:17,av:13,marketing:14",AOD
+72,techcareernetworking,careernetworking,86000,coworkingspace,"venue:28,speakers:17,food:18,av:18,marketing:16",Gamers HQ
+84,techcareernetworking,careernetworking,245000,studio,"venue:29,speakers:20,food:18,av:18,marketing:17",AOD
+173,techcompetitionshackathons,competitionshackathons,56000,auditorium,"venue:20,speakers:9,prizes:29,food:19,av:12,marketing:7",Virtusa
+262,techworkshopstraining,workshopstraining,325000,coworkingspace,"venue:26,speakers:30,equipment:16,food:8,av:17,marketing:3",Trace Expert City
+127,techcareernetworking,careernetworking,397000,openspace,"venue:29,speakers:23,food:20,av:18,marketing:17",Colombo Innovation Tower
+129,aiworkshopstraining,workshopstraining,21000,auditorium,"venue:23,speakers:30,equipment:13,food:8,av:12,marketing:2",Virtusa
+56,techmeetupscommunity,meetupscommunity,22000,auditorium,"venue:33,food:24,av:8,marketing:12,logistics:28",UCSC
+1324,designconferencesexpos,conferencesexpos,1419000,openspace,"venue:36,speakers:24,food:12,av:17,marketing:9,logistics:8",Galle Face
+144,designconferencesexpos,conferencesexpos,196000,auditorium,"venue:34,speakers:26,food:11,av:14,marketing:10,logistics:7",SLIIT
+88,codecareernetworking,careernetworking,247000,coworkingspace,"venue:30,speakers:19,food:21,av:18,marketing:15",Hatch
+1110,techcareernetworking,careernetworking,2353000,exhibitionhall,"venue:33,speakers:21,food:17,av:12,marketing:13",BMICH
+728,codecareernetworking,careernetworking,859000,openspace,"venue:29,speakers:20,food:21,av:14,marketing:18",Galle Face
+101,techconferencesexpos,conferencesexpos,116000,auditorium,"venue:34,speakers:27,food:7,av:17,marketing:13,logistics:7",SLIIT
+130,aicareernetworking,careernetworking,451000,coworkingspace,"venue:33,speakers:20,food:19,av:12,marketing:17",Hatch
+146,designconferencesexpos,conferencesexpos,502000,openspace,"venue:37,speakers:23,food:12,av:16,marketing:8,logistics:3",Colombo Innovation Tower
+1919,techcareernetworking,careernetworking,1244000,openspace,"venue:33,speakers:19,food:18,av:17,marketing:14",Galle Face
+163,codecompetitionshackathons,competitionshackathons,213000,auditorium,"venue:17,speakers:10,prizes:29,food:19,av:12,marketing:2",SLIIT
+283,designmeetupscommunity,meetupscommunity,612000,coworkingspace,"venue:29,food:26,av:12,marketing:13,logistics:26",Trace Expert City
+118,techworkshopstraining,workshopstraining,18000,auditorium,"venue:25,speakers:29,equipment:12,food:13,av:17,marketing:7",Virtusa
+167,codemeetupscommunity,meetupscommunity,128000,auditorium,"venue:31,food:26,av:13,marketing:10,logistics:26",UCSC
+902,designcompetitionshackathons,competitionshackathons,2259000,exhibitionhall,"venue:19,speakers:13,prizes:30,food:21,av:15,marketing:4",BMICH
+201,codeworkshopstraining,workshopstraining,365000,coworkingspace,"venue:23,speakers:31,equipment:12,food:12,av:14,marketing:3",Trace Expert City
+1062,designworkshopstraining,workshopstraining,4837000,openspace,"venue:23,speakers:30,equipment:16,food:7,av:16,marketing:8",Nelum Pokuna
+42,techcompetitionshackathons,competitionshackathons,58000,coworkingspace,"venue:21,speakers:11,prizes:33,food:22,av:12,marketing:6",Gamers HQ
+1103,codecareernetworking,careernetworking,4643000,openspace,"venue:28,speakers:21,food:22,av:15,marketing:18",Nelum Pokuna
+1742,techconferencesexpos,conferencesexpos,1454000,openspace,"venue:33,speakers:24,food:7,av:18,marketing:7,logistics:3",Galle Face
+101,designmeetupscommunity,meetupscommunity,345000,coworkingspace,"venue:29,food:26,av:11,marketing:9,logistics:23",Hatch
+118,designtalkspanels,talkspanels,5000,auditorium,"venue:33,speakers:20,food:23,av:14,marketing:13",Virtusa
+100,codecompetitionshackathons,competitionshackathons,290000,openspace,"venue:18,speakers:11,prizes:31,food:23,av:15,marketing:7",Colombo Innovation Tower
+159,codemeetupscommunity,meetupscommunity,320000,coworkingspace,"venue:33,food:27,av:12,marketing:10,logistics:23",Trace Expert City
+113,codeworkshopstraining,workshopstraining,74000,auditorium,"venue:28,speakers:32,equipment:14,food:9,av:12,marketing:3",UCSC
+222,designworkshopstraining,workshopstraining,218000,auditorium,"venue:23,speakers:27,equipment:18,food:13,av:13,marketing:3",SLIIT
+1263,aiconferencesexpos,conferencesexpos,2451000,exhibitionhall,"venue:33,speakers:28,food:13,av:15,marketing:8,logistics:6",BMICH
+40,designcompetitionshackathons,competitionshackathons,64000,coworkingspace,"venue:21,speakers:9,prizes:33,food:19,av:13,marketing:4",Gamers HQ
+73,aitalkspanels,talkspanels,201000,coworkingspace,"venue:32,speakers:23,food:18,av:12,marketing:15",Hatch
+996,codecompetitionshackathons,competitionshackathons,1911000,exhibitionhall,"venue:21,speakers:10,prizes:30,food:23,av:17,marketing:2",BMICH
+366,techconferencesexpos,conferencesexpos,1208000,openspace,"venue:34,speakers:25,food:7,av:13,marketing:7,logistics:6",Galadari
+1023,techworkshopstraining,workshopstraining,3956000,openspace,"venue:26,speakers:32,equipment:15,food:10,av:18,marketing:3",Nelum Pokuna
+428,aimeetupscommunity,meetupscommunity,395000,auditorium,"venue:30,food:26,av:9,marketing:10,logistics:23",NSBM
+690,aimeetupscommunity,meetupscommunity,598000,openspace,"venue:28,food:25,av:8,marketing:13,logistics:27",Galle Face
+137,designmeetupscommunity,meetupscommunity,384000,openspace,"venue:32,food:26,av:9,marketing:7,logistics:27",Colombo Innovation Tower
+1104,aitalkspanels,talkspanels,2400000,exhibitionhall,"venue:31,speakers:18,food:21,av:14,marketing:13",BMICH
+76,techcareernetworking,careernetworking,115000,studio,"venue:29,speakers:17,food:23,av:16,marketing:15",AOD
+1956,codetalkspanels,talkspanels,1888000,openspace,"venue:32,speakers:20,food:17,av:16,marketing:12",Galle Face
+616,designcompetitionshackathons,competitionshackathons,3908000,exhibitionhall,"venue:23,speakers:13,prizes:30,food:18,av:13,marketing:2",Shangri-La
+237,aitalkspanels,talkspanels,98000,auditorium,"venue:30,speakers:22,food:17,av:16,marketing:16",Virtusa
+199,designmeetupscommunity,meetupscommunity,58000,auditorium,"venue:30,food:27,av:13,marketing:9,logistics:24",Virtusa
+175,aiworkshopstraining,workshopstraining,513000,coworkingspace,"venue:23,speakers:32,equipment:12,food:8,av:12,marketing:5",Hatch
+185,aimeetupscommunity,meetupscommunity,285000,auditorium,"venue:31,food:23,av:8,marketing:9,logistics:27",SLIIT
+260,designtalkspanels,talkspanels,1024000,openspace,"venue:30,speakers:19,food:23,av:17,marketing:18",Galadari
+846,techconferencesexpos,conferencesexpos,2897000,openspace,"venue:34,speakers:24,food:8,av:15,marketing:7,logistics:4",Nelum Pokuna
+229,designmeetupscommunity,meetupscommunity,309000,auditorium,"venue:32,food:27,av:7,marketing:13,logistics:23",SLIIT
+152,techmeetupscommunity,meetupscommunity,527000,coworkingspace,"venue:27,food:28,av:11,marketing:8,logistics:26",Hatch
+243,designworkshopstraining,workshopstraining,292000,auditorium,"venue:23,speakers:27,equipment:12,food:9,av:14,marketing:7",SLIIT
+517,aitalkspanels,talkspanels,3307000,exhibitionhall,"venue:30,speakers:20,food:20,av:16,marketing:12",Shangri-La
+63,codemeetupscommunity,meetupscommunity,112000,studio,"venue:31,food:26,av:12,marketing:12,logistics:22",AOD
+111,codetalkspanels,talkspanels,307000,studio,"venue:27,speakers:21,food:18,av:13,marketing:12",AOD
+83,aimeetupscommunity,meetupscommunity,96000,coworkingspace,"venue:28,food:26,av:7,marketing:13,logistics:22",Gamers HQ
+151,aiconferencesexpos,conferencesexpos,465000,coworkingspace,"venue:38,speakers:23,food:10,av:13,marketing:13,logistics:7",Hatch
+677,codeconferencesexpos,conferencesexpos,376000,openspace,"venue:35,speakers:23,food:9,av:15,marketing:8,logistics:3",Galle Face
+46,designworkshopstraining,workshopstraining,132000,studio,"venue:25,speakers:33,equipment:14,food:7,av:17,marketing:5",AOD
+98,techconferencesexpos,conferencesexpos,387000,openspace,"venue:32,speakers:23,food:8,av:14,marketing:12,logistics:7",Colombo Innovation Tower
+200,aitalkspanels,talkspanels,95000,auditorium,"venue:33,speakers:23,food:18,av:12,marketing:17",UCSC
+184,aiworkshopstraining,workshopstraining,247000,auditorium,"venue:27,speakers:27,equipment:16,food:8,av:18,marketing:3",SLIIT
+55,aitalkspanels,talkspanels,24000,auditorium,"venue:28,speakers:23,food:22,av:16,marketing:16",UCSC
+1098,codecareernetworking,careernetworking,4769000,openspace,"venue:27,speakers:21,food:17,av:16,marketing:18",Nelum Pokuna
+310,aitalkspanels,talkspanels,478000,auditorium,"venue:32,speakers:22,food:23,av:18,marketing:18",SLIIT
+429,techcompetitionshackathons,competitionshackathons,1331000,openspace,"venue:19,speakers:11,prizes:33,food:22,av:15,marketing:6",Galadari
+508,designcompetitionshackathons,competitionshackathons,569000,openspace,"venue:22,speakers:10,prizes:27,food:22,av:15,marketing:6",Galle Face
+377,techtalkspanels,talkspanels,1398000,openspace,"venue:33,speakers:22,food:20,av:18,marketing:13",Galadari
+977,techtalkspanels,talkspanels,3729000,openspace,"venue:29,speakers:22,food:17,av:12,marketing:13",Nelum Pokuna
+93,aiworkshopstraining,workshopstraining,315000,coworkingspace,"venue:22,speakers:31,equipment:14,food:12,av:13,marketing:8",Hatch
+764,techworkshopstraining,workshopstraining,784000,openspace,"venue:24,speakers:31,equipment:17,food:9,av:17,marketing:2",Galle Face
+303,codeworkshopstraining,workshopstraining,1206000,openspace,"venue:27,speakers:30,equipment:18,food:12,av:14,marketing:4",Galadari
+323,aitalkspanels,talkspanels,1229000,openspace,"venue:30,speakers:18,food:17,av:18,marketing:12",Galadari
+725,techmeetupscommunity,meetupscommunity,4864000,exhibitionhall,"venue:30,food:24,av:12,marketing:12,logistics:25",Shangri-La
+103,codecompetitionshackathons,competitionshackathons,267000,coworkingspace,"venue:21,speakers:11,prizes:33,food:17,av:17,marketing:3",Hatch
+150,codemeetupscommunity,meetupscommunity,18000,auditorium,"venue:32,food:27,av:10,marketing:10,logistics:26",Virtusa
+145,codecompetitionshackathons,competitionshackathons,501000,openspace,"venue:20,speakers:13,prizes:33,food:17,av:13,marketing:4",Colombo Innovation Tower
+30,aiconferencesexpos,conferencesexpos,55000,coworkingspace,"venue:35,speakers:25,food:12,av:16,marketing:10,logistics:3",Gamers HQ
+503,codecareernetworking,careernetworking,1401000,exhibitionhall,"venue:33,speakers:21,food:19,av:17,marketing:18",BMICH
+69,designworkshopstraining,workshopstraining,178000,studio,"venue:24,speakers:28,equipment:16,food:11,av:13,marketing:7",AOD
+74,aiworkshopstraining,workshopstraining,140000,studio,"venue:25,speakers:27,equipment:18,food:8,av:15,marketing:3",AOD
+557,codecareernetworking,careernetworking,1010000,exhibitionhall,"venue:33,speakers:23,food:23,av:15,marketing:16",BMICH
+230,codetalkspanels,talkspanels,85000,auditorium,"venue:31,speakers:21,food:22,av:12,marketing:15",Virtusa
+694,designmeetupscommunity,meetupscommunity,3954000,exhibitionhall,"venue:31,food:24,av:12,marketing:7,logistics:23",Shangri-La
+268,designconferencesexpos,conferencesexpos,219000,auditorium,"venue:38,speakers:24,food:8,av:15,marketing:7,logistics:4",NSBM
+159,codetalkspanels,talkspanels,107000,auditorium,"venue:32,speakers:21,food:17,av:13,marketing:17",UCSC
+446,designmeetupscommunity,meetupscommunity,1337000,openspace,"venue:31,food:26,av:11,marketing:8,logistics:25",Galadari
+136,designmeetupscommunity,meetupscommunity,265000,coworkingspace,"venue:33,food:27,av:13,marketing:10,logistics:26",Trace Expert City
+247,aitalkspanels,talkspanels,798000,openspace,"venue:32,speakers:17,food:22,av:17,marketing:14",Galadari
+483,codecareernetworking,careernetworking,637000,auditorium,"venue:33,speakers:22,food:19,av:17,marketing:16",NSBM
+386,codecareernetworking,careernetworking,1488000,openspace,"venue:30,speakers:18,food:22,av:17,marketing:15",Galadari
+355,designcompetitionshackathons,competitionshackathons,927000,openspace,"venue:22,speakers:11,prizes:30,food:17,av:14,marketing:6",Galadari
+339,codecompetitionshackathons,competitionshackathons,333000,auditorium,"venue:22,speakers:8,prizes:31,food:20,av:15,marketing:3",SLIIT
+485,techcompetitionshackathons,competitionshackathons,1426000,openspace,"venue:20,speakers:7,prizes:30,food:23,av:17,marketing:2",Galadari
+159,aiconferencesexpos,conferencesexpos,527000,coworkingspace,"venue:35,speakers:28,food:7,av:16,marketing:13,logistics:6",Hatch
+142,codetalkspanels,talkspanels,547000,openspace,"venue:27,speakers:20,food:18,av:15,marketing:14",Colombo Innovation Tower
+149,designcompetitionshackathons,competitionshackathons,52000,auditorium,"venue:21,speakers:7,prizes:29,food:20,av:14,marketing:5",UCSC
+180,designcompetitionshackathons,competitionshackathons,74000,auditorium,"venue:21,speakers:12,prizes:30,food:20,av:12,marketing:4",UCSC
+399,designtalkspanels,talkspanels,2430000,exhibitionhall,"venue:30,speakers:18,food:21,av:12,marketing:15",Shangri-La
+135,designmeetupscommunity,meetupscommunity,443000,coworkingspace,"venue:29,food:24,av:13,marketing:10,logistics:28",Hatch
+95,techmeetupscommunity,meetupscommunity,267000,studio,"venue:30,food:24,av:13,marketing:10,logistics:22",AOD
+178,aicompetitionshackathons,competitionshackathons,621000,coworkingspace,"venue:19,speakers:8,prizes:29,food:21,av:14,marketing:4",Hatch
+77,designworkshopstraining,workshopstraining,193000,studio,"venue:27,speakers:31,equipment:12,food:13,av:17,marketing:7",AOD
+106,techcareernetworking,careernetworking,305000,openspace,"venue:27,speakers:21,food:20,av:14,marketing:18",Colombo Innovation Tower
+531,designcompetitionshackathons,competitionshackathons,1444000,exhibitionhall,"venue:18,speakers:13,prizes:33,food:21,av:12,marketing:2",BMICH
+77,designtalkspanels,talkspanels,30000,auditorium,"venue:30,speakers:19,food:20,av:13,marketing:15",UCSC
+158,aitalkspanels,talkspanels,528000,coworkingspace,"venue:29,speakers:22,food:20,av:16,marketing:13",Hatch
+166,techcompetitionshackathons,competitionshackathons,126000,auditorium,"venue:17,speakers:12,prizes:28,food:19,av:14,marketing:8",UCSC
+892,aiconferencesexpos,conferencesexpos,1504000,exhibitionhall,"venue:38,speakers:28,food:12,av:15,marketing:8,logistics:7",BMICH
+1068,techmeetupscommunity,meetupscommunity,4515000,openspace,"venue:29,food:26,av:10,marketing:7,logistics:25",Nelum Pokuna
+598,designmeetupscommunity,meetupscommunity,803000,auditorium,"venue:27,food:26,av:10,marketing:10,logistics:27",NSBM
+114,designcompetitionshackathons,competitionshackathons,213000,studio,"venue:17,speakers:9,prizes:27,food:20,av:16,marketing:5",AOD
+163,codemeetupscommunity,meetupscommunity,16000,auditorium,"venue:33,food:24,av:11,marketing:8,logistics:24",Virtusa
+1188,designmeetupscommunity,meetupscommunity,5934000,openspace,"venue:30,food:22,av:8,marketing:7,logistics:27",Nelum Pokuna
+100,aitalkspanels,talkspanels,215000,studio,"venue:28,speakers:19,food:17,av:18,marketing:18",AOD
+146,aimeetupscommunity,meetupscommunity,451000,coworkingspace,"venue:27,food:24,av:12,marketing:12,logistics:24",Hatch
+60,aitalkspanels,talkspanels,70000,coworkingspace,"venue:27,speakers:17,food:18,av:13,marketing:18",Gamers HQ
+193,techcareernetworking,careernetworking,45000,auditorium,"venue:31,speakers:20,food:18,av:16,marketing:16",Virtusa
+312,codecareernetworking,careernetworking,867000,openspace,"venue:29,speakers:17,food:20,av:17,marketing:14",Galadari
+239,techconferencesexpos,conferencesexpos,491000,coworkingspace,"venue:36,speakers:27,food:12,av:14,marketing:7,logistics:5",Trace Expert City
+1156,techtalkspanels,talkspanels,1887000,exhibitionhall,"venue:30,speakers:23,food:20,av:16,marketing:16",BMICH
+234,designmeetupscommunity,meetupscommunity,291000,auditorium,"venue:33,food:26,av:10,marketing:8,logistics:28",NSBM
+83,designtalkspanels,talkspanels,169000,studio,"venue:29,speakers:19,food:17,av:12,marketing:18",AOD
+628,aitalkspanels,talkspanels,3142000,exhibitionhall,"venue:28,speakers:20,food:19,av:12,marketing:16",Shangri-La
+741,codeworkshopstraining,workshopstraining,1475000,exhibitionhall,"venue:24,speakers:31,equipment:12,food:12,av:12,marketing:7",BMICH
+126,techconferencesexpos,conferencesexpos,225000,coworkingspace,"venue:32,speakers:26,food:13,av:15,marketing:12,logistics:4",Trace Expert City
+441,aimeetupscommunity,meetupscommunity,452000,auditorium,"venue:28,food:24,av:9,marketing:12,logistics:27",NSBM
+139,aicompetitionshackathons,competitionshackathons,342000,coworkingspace,"venue:17,speakers:9,prizes:32,food:20,av:15,marketing:3",Hatch
+96,designcareernetworking,careernetworking,126000,coworkingspace,"venue:27,speakers:17,food:18,av:15,marketing:14",Gamers HQ
+481,techworkshopstraining,workshopstraining,1797000,openspace,"venue:27,speakers:29,equipment:17,food:11,av:16,marketing:7",Galadari
+83,designcareernetworking,careernetworking,89000,coworkingspace,"venue:31,speakers:22,food:23,av:17,marketing:16",Gamers HQ
+1951,techworkshopstraining,workshopstraining,2272000,openspace,"venue:24,speakers:30,equipment:15,food:12,av:14,marketing:8",Galle Face
+649,techtalkspanels,talkspanels,1838000,exhibitionhall,"venue:28,speakers:18,food:23,av:14,marketing:15",BMICH
+323,aitalkspanels,talkspanels,2166000,exhibitionhall,"venue:29,speakers:22,food:19,av:14,marketing:14",Shangri-La
+123,aitalkspanels,talkspanels,86000,auditorium,"venue:32,speakers:17,food:17,av:17,marketing:12",UCSC
+1463,techworkshopstraining,workshopstraining,4230000,exhibitionhall,"venue:24,speakers:33,equipment:12,food:7,av:18,marketing:8",BMICH
+134,aitalkspanels,talkspanels,41000,auditorium,"venue:29,speakers:23,food:19,av:13,marketing:12",UCSC
+56,techworkshopstraining,workshopstraining,92000,studio,"venue:25,speakers:33,equipment:13,food:10,av:18,marketing:7",AOD
+218,designconferencesexpos,conferencesexpos,824000,openspace,"venue:32,speakers:23,food:12,av:17,marketing:8,logistics:6",Galadari
+108,aiworkshopstraining,workshopstraining,268000,studio,"venue:25,speakers:28,equipment:14,food:7,av:17,marketing:2",AOD
+223,designcareernetworking,careernetworking,458000,coworkingspace,"venue:32,speakers:19,food:17,av:17,marketing:16",Trace Expert City
+68,techworkshopstraining,workshopstraining,130000,coworkingspace,"venue:27,speakers:29,equipment:17,food:12,av:13,marketing:5",Gamers HQ
+1468,designmeetupscommunity,meetupscommunity,1261000,openspace,"venue:27,food:24,av:11,marketing:10,logistics:28",Galle Face
+222,designworkshopstraining,workshopstraining,689000,openspace,"venue:25,speakers:28,equipment:13,food:8,av:17,marketing:2",Galadari
+958,techmeetupscommunity,meetupscommunity,3149000,openspace,"venue:32,food:22,av:12,marketing:10,logistics:25",Nelum Pokuna
+63,techtalkspanels,talkspanels,83000,coworkingspace,"venue:27,speakers:23,food:17,av:13,marketing:17",Gamers HQ
+158,codetalkspanels,talkspanels,292000,coworkingspace,"venue:27,speakers:21,food:21,av:17,marketing:17",Trace Expert City
+437,techcareernetworking,careernetworking,2892000,exhibitionhall,"venue:32,speakers:17,food:17,av:17,marketing:15",Shangri-La
+358,codemeetupscommunity,meetupscommunity,2121000,exhibitionhall,"venue:32,food:26,av:9,marketing:13,logistics:22",Shangri-La
+167,codetalkspanels,talkspanels,173000,auditorium,"venue:29,speakers:17,food:21,av:15,marketing:17",SLIIT
+159,aitalkspanels,talkspanels,50000,auditorium,"venue:33,speakers:20,food:19,av:12,marketing:15",UCSC
+1040,designcareernetworking,careernetworking,2855000,exhibitionhall,"venue:31,speakers:23,food:22,av:12,marketing:18",BMICH
+983,codemeetupscommunity,meetupscommunity,4860000,openspace,"venue:27,food:22,av:9,marketing:11,logistics:28",Nelum Pokuna
+207,aitalkspanels,talkspanels,14000,auditorium,"venue:29,speakers:17,food:18,av:18,marketing:14",Virtusa
+120,aiworkshopstraining,workshopstraining,395000,openspace,"venue:27,speakers:31,equipment:16,food:9,av:14,marketing:7",Colombo Innovation Tower
+56,techcompetitionshackathons,competitionshackathons,34000,auditorium,"venue:21,speakers:9,prizes:27,food:22,av:17,marketing:7",UCSC
+58,designworkshopstraining,workshopstraining,192000,openspace,"venue:27,speakers:32,equipment:18,food:9,av:14,marketing:5",Colombo Innovation Tower
+620,techworkshopstraining,workshopstraining,667000,openspace,"venue:25,speakers:33,equipment:17,food:12,av:18,marketing:4",Galle Face
+153,techworkshopstraining,workshopstraining,335000,coworkingspace,"venue:22,speakers:29,equipment:15,food:13,av:18,marketing:8",Hatch
+231,techtalkspanels,talkspanels,224000,auditorium,"venue:29,speakers:18,food:17,av:16,marketing:14",NSBM
+136,techmeetupscommunity,meetupscommunity,157000,auditorium,"venue:33,food:26,av:8,marketing:9,logistics:27",SLIIT
+618,techcompetitionshackathons,competitionshackathons,2709000,openspace,"venue:19,speakers:12,prizes:33,food:19,av:18,marketing:2",Nelum Pokuna
+263,aitalkspanels,talkspanels,334000,auditorium,"venue:28,speakers:17,food:18,av:17,marketing:15",SLIIT
+48,designcareernetworking,careernetworking,134000,studio,"venue:27,speakers:21,food:20,av:15,marketing:15",AOD
+116,aiconferencesexpos,conferencesexpos,37000,auditorium,"venue:32,speakers:22,food:9,av:17,marketing:7,logistics:8",UCSC
+233,codetalkspanels,talkspanels,84000,auditorium,"venue:32,speakers:17,food:17,av:12,marketing:18",Virtusa
+1590,techcompetitionshackathons,competitionshackathons,1731000,openspace,"venue:19,speakers:9,prizes:31,food:20,av:18,marketing:8",Galle Face
+924,techconferencesexpos,conferencesexpos,4431000,openspace,"venue:36,speakers:28,food:12,av:16,marketing:12,logistics:5",Nelum Pokuna
+163,techcareernetworking,careernetworking,92000,auditorium,"venue:31,speakers:21,food:23,av:15,marketing:15",UCSC
+1184,designconferencesexpos,conferencesexpos,4014000,openspace,"venue:32,speakers:25,food:8,av:17,marketing:10,logistics:8",Nelum Pokuna
+481,designworkshopstraining,workshopstraining,414000,auditorium,"venue:27,speakers:30,equipment:18,food:8,av:16,marketing:8",NSBM
+1356,codeconferencesexpos,conferencesexpos,2578000,exhibitionhall,"venue:33,speakers:24,food:12,av:15,marketing:11,logistics:2",BMICH
+151,techworkshopstraining,workshopstraining,120000,auditorium,"venue:23,speakers:28,equipment:16,food:11,av:16,marketing:7",UCSC
+455,aicareernetworking,careernetworking,2982000,exhibitionhall,"venue:28,speakers:17,food:21,av:12,marketing:18",Shangri-La
+1263,codecompetitionshackathons,competitionshackathons,3238000,exhibitionhall,"venue:21,speakers:9,prizes:30,food:17,av:13,marketing:2",BMICH
+203,aicareernetworking,careernetworking,256000,coworkingspace,"venue:29,speakers:20,food:22,av:12,marketing:13",Trace Expert City
+287,codemeetupscommunity,meetupscommunity,384000,auditorium,"venue:33,food:25,av:13,marketing:10,logistics:23",NSBM
+116,codetalkspanels,talkspanels,364000,coworkingspace,"venue:29,speakers:17,food:21,av:14,marketing:17",Hatch
+422,designcompetitionshackathons,competitionshackathons,2730000,exhibitionhall,"venue:21,speakers:9,prizes:33,food:17,av:17,marketing:2",Shangri-La
+115,designcareernetworking,careernetworking,216000,studio,"venue:29,speakers:18,food:17,av:18,marketing:17",AOD
+166,techconferencesexpos,conferencesexpos,46000,auditorium,"venue:35,speakers:23,food:8,av:15,marketing:13,logistics:7",Virtusa
+96,aicareernetworking,careernetworking,132000,coworkingspace,"venue:30,speakers:17,food:20,av:13,marketing:12",Gamers HQ
+78,designworkshopstraining,workshopstraining,170000,coworkingspace,"venue:23,speakers:30,equipment:16,food:9,av:13,marketing:6",Hatch
+164,codetalkspanels,talkspanels,166000,auditorium,"venue:31,speakers:21,food:17,av:12,marketing:13",SLIIT
+34,techconferencesexpos,conferencesexpos,64000,coworkingspace,"venue:33,speakers:23,food:12,av:17,marketing:13,logistics:2",Gamers HQ
+58,codecompetitionshackathons,competitionshackathons,156000,studio,"venue:17,speakers:11,prizes:31,food:19,av:13,marketing:7",AOD
+424,techcareernetworking,careernetworking,2609000,exhibitionhall,"venue:33,speakers:23,food:23,av:15,marketing:16",Shangri-La
+221,designworkshopstraining,workshopstraining,870000,openspace,"venue:23,speakers:30,equipment:12,food:9,av:13,marketing:3",Galadari
+1847,techconferencesexpos,conferencesexpos,2092000,openspace,"venue:34,speakers:28,food:8,av:12,marketing:7,logistics:8",Galle Face
+272,techcompetitionshackathons,competitionshackathons,269000,auditorium,"venue:19,speakers:7,prizes:32,food:17,av:12,marketing:5",SLIIT
+138,aiconferencesexpos,conferencesexpos,37000,auditorium,"venue:35,speakers:24,food:9,av:15,marketing:13,logistics:4",Virtusa
+443,techtalkspanels,talkspanels,1190000,openspace,"venue:31,speakers:21,food:23,av:15,marketing:13",Galadari
+205,designtalkspanels,talkspanels,272000,auditorium,"venue:30,speakers:23,food:17,av:16,marketing:12",SLIIT
+122,aicompetitionshackathons,competitionshackathons,346000,openspace,"venue:20,speakers:11,prizes:28,food:23,av:14,marketing:7",Colombo Innovation Tower
+994,designworkshopstraining,workshopstraining,654000,openspace,"venue:24,speakers:33,equipment:18,food:10,av:15,marketing:3",Galle Face
+138,codecompetitionshackathons,competitionshackathons,105000,auditorium,"venue:18,speakers:12,prizes:32,food:18,av:12,marketing:7",UCSC
+62,codecompetitionshackathons,competitionshackathons,34000,auditorium,"venue:21,speakers:7,prizes:30,food:20,av:17,marketing:4",UCSC
+90,aiconferencesexpos,conferencesexpos,58000,auditorium,"venue:33,speakers:28,food:7,av:15,marketing:11,logistics:3",UCSC
+163,techconferencesexpos,conferencesexpos,1000,auditorium,"venue:32,speakers:27,food:10,av:15,marketing:13,logistics:6",Virtusa
+216,codecareernetworking,careernetworking,694000,openspace,"venue:29,speakers:19,food:23,av:12,marketing:15",Galadari
+1583,designmeetupscommunity,meetupscommunity,1213000,openspace,"venue:27,food:27,av:9,marketing:12,logistics:28",Galle Face
+186,codeconferencesexpos,conferencesexpos,41000,auditorium,"venue:33,speakers:27,food:11,av:12,marketing:9,logistics:8",Virtusa
+305,designtalkspanels,talkspanels,401000,auditorium,"venue:29,speakers:23,food:19,av:17,marketing:16",NSBM
+146,codecareernetworking,careernetworking,501000,coworkingspace,"venue:29,speakers:17,food:18,av:18,marketing:16",Hatch
+669,aiworkshopstraining,workshopstraining,4392000,exhibitionhall,"venue:25,speakers:28,equipment:12,food:13,av:13,marketing:4",Shangri-La
+335,aiconferencesexpos,conferencesexpos,1610000,exhibitionhall,"venue:34,speakers:28,food:12,av:12,marketing:11,logistics:5",Shangri-La
+408,aitalkspanels,talkspanels,2225000,exhibitionhall,"venue:30,speakers:17,food:17,av:14,marketing:13",Shangri-La
+102,techcareernetworking,careernetworking,46000,auditorium,"venue:32,speakers:18,food:22,av:16,marketing:13",UCSC
+52,techcareernetworking,careernetworking,132000,studio,"venue:30,speakers:23,food:23,av:13,marketing:14",AOD
+395,codemeetupscommunity,meetupscommunity,375000,auditorium,"venue:28,food:28,av:12,marketing:9,logistics:23",NSBM
+517,codecompetitionshackathons,competitionshackathons,265000,openspace,"venue:17,speakers:13,prizes:31,food:17,av:15,marketing:6",Galle Face
+133,codeconferencesexpos,conferencesexpos,66000,auditorium,"venue:32,speakers:27,food:9,av:17,marketing:8,logistics:8",UCSC
+353,designworkshopstraining,workshopstraining,1998000,exhibitionhall,"venue:25,speakers:32,equipment:14,food:7,av:12,marketing:6",Shangri-La
+180,aiconferencesexpos,conferencesexpos,68000,auditorium,"venue:34,speakers:25,food:10,av:18,marketing:12,logistics:5",UCSC
+96,techworkshopstraining,workshopstraining,256000,studio,"venue:24,speakers:28,equipment:12,food:8,av:13,marketing:5",AOD
+59,aimeetupscommunity,meetupscommunity,124000,studio,"venue:27,food:25,av:9,marketing:11,logistics:26",AOD
+62,designconferencesexpos,conferencesexpos,20000,auditorium,"venue:33,speakers:24,food:8,av:13,marketing:8,logistics:2",UCSC
+282,codeconferencesexpos,conferencesexpos,420000,auditorium,"venue:34,speakers:27,food:11,av:18,marketing:8,logistics:5",SLIIT
+77,techtalkspanels,talkspanels,133000,coworkingspace,"venue:28,speakers:22,food:20,av:16,marketing:18",Gamers HQ
+59,designmeetupscommunity,meetupscommunity,101000,coworkingspace,"venue:29,food:23,av:13,marketing:13,logistics:27",Gamers HQ
+67,techmeetupscommunity,meetupscommunity,209000,coworkingspace,"venue:31,food:25,av:11,marketing:11,logistics:23",Hatch
+474,designcompetitionshackathons,competitionshackathons,463000,auditorium,"venue:23,speakers:13,prizes:27,food:23,av:17,marketing:3",NSBM
+992,aitalkspanels,talkspanels,4699000,openspace,"venue:32,speakers:20,food:17,av:16,marketing:13",Nelum Pokuna
+917,techmeetupscommunity,meetupscommunity,4192000,openspace,"venue:30,food:25,av:11,marketing:11,logistics:22",Nelum Pokuna
+119,aiworkshopstraining,workshopstraining,312000,studio,"venue:28,speakers:30,equipment:13,food:13,av:13,marketing:6",AOD
+171,aicareernetworking,careernetworking,27000,auditorium,"venue:27,speakers:19,food:18,av:16,marketing:13",Virtusa
+885,codeconferencesexpos,conferencesexpos,1766000,exhibitionhall,"venue:36,speakers:23,food:13,av:12,marketing:12,logistics:7",BMICH
+125,aimeetupscommunity,meetupscommunity,22000,auditorium,"venue:27,food:24,av:8,marketing:8,logistics:25",Virtusa
+566,codemeetupscommunity,meetupscommunity,3526000,exhibitionhall,"venue:32,food:23,av:8,marketing:12,logistics:27",Shangri-La
+56,codeworkshopstraining,workshopstraining,176000,coworkingspace,"venue:25,speakers:30,equipment:14,food:12,av:14,marketing:4",Hatch
+400,codecareernetworking,careernetworking,547000,auditorium,"venue:33,speakers:17,food:22,av:17,marketing:14",SLIIT
+789,designmeetupscommunity,meetupscommunity,4901000,exhibitionhall,"venue:28,food:28,av:9,marketing:9,logistics:27",Shangri-La
+584,aimeetupscommunity,meetupscommunity,744000,auditorium,"venue:27,food:26,av:11,marketing:9,logistics:26",NSBM
+709,techmeetupscommunity,meetupscommunity,2355000,openspace,"venue:30,food:22,av:13,marketing:9,logistics:26",Nelum Pokuna
+270,codecompetitionshackathons,competitionshackathons,434000,coworkingspace,"venue:19,speakers:13,prizes:29,food:21,av:13,marketing:6",Trace Expert City
+1911,aiconferencesexpos,conferencesexpos,1349000,openspace,"venue:37,speakers:22,food:10,av:12,marketing:10,logistics:5",Galle Face
+245,aimeetupscommunity,meetupscommunity,289000,auditorium,"venue:31,food:25,av:13,marketing:10,logistics:27",SLIIT
+594,designcareernetworking,careernetworking,2911000,exhibitionhall,"venue:31,speakers:22,food:22,av:17,marketing:13",Shangri-La
+966,techworkshopstraining,workshopstraining,1125000,openspace,"venue:22,speakers:28,equipment:17,food:13,av:14,marketing:8",Galle Face
+1485,codeconferencesexpos,conferencesexpos,919000,openspace,"venue:37,speakers:28,food:13,av:17,marketing:10,logistics:6",Galle Face
+266,designconferencesexpos,conferencesexpos,394000,auditorium,"venue:32,speakers:22,food:12,av:12,marketing:13,logistics:6",SLIIT
+700,aicareernetworking,careernetworking,1561000,exhibitionhall,"venue:33,speakers:18,food:19,av:17,marketing:17",BMICH
+69,aiconferencesexpos,conferencesexpos,184000,openspace,"venue:33,speakers:27,food:13,av:17,marketing:13,logistics:5",Colombo Innovation Tower
+123,aimeetupscommunity,meetupscommunity,118000,auditorium,"venue:33,food:25,av:8,marketing:8,logistics:25",SLIIT
+125,techworkshopstraining,workshopstraining,324000,openspace,"venue:23,speakers:27,equipment:16,food:10,av:12,marketing:4",Colombo Innovation Tower
+453,codeworkshopstraining,workshopstraining,1209000,openspace,"venue:22,speakers:32,equipment:17,food:10,av:14,marketing:3",Galadari
+1768,designworkshopstraining,workshopstraining,1741000,openspace,"venue:25,speakers:31,equipment:12,food:12,av:16,marketing:6",Galle Face
+877,codecareernetworking,careernetworking,2963000,openspace,"venue:28,speakers:17,food:18,av:14,marketing:13",Nelum Pokuna
+610,aitalkspanels,talkspanels,690000,openspace,"venue:30,speakers:22,food:19,av:16,marketing:15",Galle Face
+56,codecompetitionshackathons,competitionshackathons,206000,openspace,"venue:22,speakers:13,prizes:28,food:17,av:18,marketing:2",Colombo Innovation Tower
+648,codetalkspanels,talkspanels,3101000,openspace,"venue:30,speakers:19,food:21,av:18,marketing:18",Nelum Pokuna
+107,codeconferencesexpos,conferencesexpos,66000,auditorium,"venue:33,speakers:27,food:7,av:16,marketing:8,logistics:6",UCSC
+353,techcompetitionshackathons,competitionshackathons,1862000,exhibitionhall,"venue:21,speakers:11,prizes:31,food:20,av:17,marketing:8",Shangri-La
+86,aimeetupscommunity,meetupscommunity,138000,coworkingspace,"venue:33,food:24,av:7,marketing:13,logistics:25",Gamers HQ
+55,aiconferencesexpos,conferencesexpos,104000,studio,"venue:36,speakers:27,food:7,av:13,marketing:7,logistics:3",AOD
+96,techworkshopstraining,workshopstraining,107000,coworkingspace,"venue:27,speakers:32,equipment:15,food:12,av:17,marketing:7",Gamers HQ
+84,aiworkshopstraining,workshopstraining,105000,coworkingspace,"venue:25,speakers:29,equipment:14,food:9,av:18,marketing:2",Gamers HQ
+1025,codecompetitionshackathons,competitionshackathons,4449000,openspace,"venue:21,speakers:10,prizes:30,food:20,av:15,marketing:2",Nelum Pokuna
+86,techcareernetworking,careernetworking,96000,coworkingspace,"venue:33,speakers:17,food:22,av:14,marketing:13",Gamers HQ
+70,codeworkshopstraining,workshopstraining,52000,auditorium,"venue:28,speakers:33,equipment:17,food:9,av:18,marketing:2",UCSC
+129,techcareernetworking,careernetworking,18000,auditorium,"venue:32,speakers:23,food:19,av:18,marketing:14",Virtusa
+357,codeconferencesexpos,conferencesexpos,566000,auditorium,"venue:36,speakers:23,food:13,av:12,marketing:8,logistics:8",SLIIT
+122,techworkshopstraining,workshopstraining,248000,coworkingspace,"venue:28,speakers:33,equipment:13,food:13,av:18,marketing:7",Trace Expert City
+72,techworkshopstraining,workshopstraining,142000,coworkingspace,"venue:22,speakers:29,equipment:12,food:12,av:12,marketing:2",Gamers HQ
+180,techcareernetworking,careernetworking,191000,auditorium,"venue:33,speakers:21,food:20,av:13,marketing:14",SLIIT
+258,codemeetupscommunity,meetupscommunity,318000,coworkingspace,"venue:33,food:27,av:12,marketing:13,logistics:27",Trace Expert City
+102,codeconferencesexpos,conferencesexpos,292000,coworkingspace,"venue:33,speakers:24,food:7,av:15,marketing:12,logistics:8",Hatch
+192,designcompetitionshackathons,competitionshackathons,414000,coworkingspace,"venue:19,speakers:8,prizes:27,food:23,av:17,marketing:2",Trace Expert City
+845,aiworkshopstraining,workshopstraining,3934000,openspace,"venue:25,speakers:29,equipment:14,food:13,av:16,marketing:7",Nelum Pokuna
+71,designmeetupscommunity,meetupscommunity,133000,coworkingspace,"venue:28,food:27,av:12,marketing:8,logistics:23",Gamers HQ
+497,codemeetupscommunity,meetupscommunity,3025000,exhibitionhall,"venue:29,food:26,av:7,marketing:9,logistics:28",Shangri-La
+183,designcompetitionshackathons,competitionshackathons,299000,coworkingspace,"venue:20,speakers:7,prizes:32,food:19,av:12,marketing:3",Trace Expert City
+451,techmeetupscommunity,meetupscommunity,2868000,exhibitionhall,"venue:29,food:25,av:13,marketing:10,logistics:23",Shangri-La
+154,techtalkspanels,talkspanels,516000,coworkingspace,"venue:32,speakers:17,food:21,av:14,marketing:14",Hatch
+168,designtalkspanels,talkspanels,63000,auditorium,"venue:31,speakers:20,food:22,av:17,marketing:14",Virtusa
+82,techworkshopstraining,workshopstraining,295000,openspace,"venue:23,speakers:29,equipment:14,food:11,av:14,marketing:2",Colombo Innovation Tower
+212,designmeetupscommunity,meetupscommunity,26000,auditorium,"venue:31,food:25,av:11,marketing:9,logistics:23",Virtusa
+835,techcareernetworking,careernetworking,2645000,openspace,"venue:30,speakers:19,food:21,av:16,marketing:15",Nelum Pokuna
+1797,designcompetitionshackathons,competitionshackathons,1641000,openspace,"venue:19,speakers:10,prizes:32,food:19,av:15,marketing:7",Galle Face
+105,codeconferencesexpos,conferencesexpos,263000,studio,"venue:34,speakers:23,food:13,av:18,marketing:11,logistics:3",AOD
+1177,codetalkspanels,talkspanels,5327000,openspace,"venue:33,speakers:20,food:23,av:14,marketing:15",Nelum Pokuna
+113,codetalkspanels,talkspanels,431000,openspace,"venue:28,speakers:20,food:19,av:13,marketing:13",Colombo Innovation Tower
+542,aimeetupscommunity,meetupscommunity,2667000,exhibitionhall,"venue:30,food:27,av:8,marketing:13,logistics:25",Shangri-La
+169,aiworkshopstraining,workshopstraining,64000,auditorium,"venue:25,speakers:33,equipment:14,food:12,av:13,marketing:4",UCSC
+162,techmeetupscommunity,meetupscommunity,44000,auditorium,"venue:31,food:25,av:11,marketing:13,logistics:27",Virtusa
+69,aicareernetworking,careernetworking,176000,openspace,"venue:31,speakers:22,food:18,av:16,marketing:14",Colombo Innovation Tower
+257,codemeetupscommunity,meetupscommunity,281000,auditorium,"venue:28,food:27,av:13,marketing:13,logistics:26",SLIIT
+59,codeworkshopstraining,workshopstraining,22000,auditorium,"venue:24,speakers:30,equipment:17,food:11,av:18,marketing:4",UCSC
+284,techcompetitionshackathons,competitionshackathons,520000,coworkingspace,"venue:20,speakers:8,prizes:28,food:23,av:15,marketing:8",Trace Expert City
+168,designcompetitionshackathons,competitionshackathons,131000,auditorium,"venue:19,speakers:9,prizes:28,food:22,av:18,marketing:5",UCSC
+398,techconferencesexpos,conferencesexpos,1295000,openspace,"venue:36,speakers:22,food:12,av:16,marketing:7,logistics:5",Galadari
+378,aitalkspanels,talkspanels,380000,auditorium,"venue:30,speakers:22,food:22,av:18,marketing:14",NSBM
+86,designworkshopstraining,workshopstraining,40000,auditorium,"venue:23,speakers:33,equipment:12,food:10,av:14,marketing:2",UCSC
+90,aiconferencesexpos,conferencesexpos,130000,coworkingspace,"venue:36,speakers:24,food:12,av:16,marketing:13,logistics:4",Gamers HQ
+1991,aiworkshopstraining,workshopstraining,1013000,openspace,"venue:27,speakers:30,equipment:16,food:13,av:16,marketing:8",Galle Face
+31,codeworkshopstraining,workshopstraining,46000,coworkingspace,"venue:28,speakers:31,equipment:15,food:9,av:18,marketing:4",Gamers HQ
+72,aicareernetworking,careernetworking,211000,studio,"venue:30,speakers:18,food:19,av:16,marketing:13",AOD
+365,designmeetupscommunity,meetupscommunity,470000,auditorium,"venue:30,food:25,av:8,marketing:12,logistics:24",SLIIT
+706,aiconferencesexpos,conferencesexpos,2108000,exhibitionhall,"venue:38,speakers:25,food:7,av:13,marketing:10,logistics:3",BMICH
+220,designmeetupscommunity,meetupscommunity,551000,openspace,"venue:28,food:22,av:7,marketing:12,logistics:25",Galadari
+434,aicompetitionshackathons,competitionshackathons,1466000,openspace,"venue:17,speakers:7,prizes:30,food:23,av:16,marketing:8",Galadari
+314,codecompetitionshackathons,competitionshackathons,468000,auditorium,"venue:18,speakers:11,prizes:30,food:21,av:12,marketing:8",SLIIT
+48,designconferencesexpos,conferencesexpos,64000,coworkingspace,"venue:35,speakers:28,food:12,av:16,marketing:12,logistics:3",Gamers HQ
+264,aicareernetworking,careernetworking,425000,coworkingspace,"venue:33,speakers:19,food:17,av:13,marketing:17",Trace Expert City
+235,designconferencesexpos,conferencesexpos,110000,auditorium,"venue:35,speakers:27,food:7,av:13,marketing:7,logistics:3",Virtusa
+145,codetalkspanels,talkspanels,225000,coworkingspace,"venue:28,speakers:20,food:21,av:16,marketing:14",Trace Expert City
+461,codeworkshopstraining,workshopstraining,2757000,exhibitionhall,"venue:28,speakers:30,equipment:16,food:13,av:18,marketing:6",Shangri-La
+598,techworkshopstraining,workshopstraining,711000,auditorium,"venue:25,speakers:29,equipment:14,food:7,av:16,marketing:7",NSBM
+44,techtalkspanels,talkspanels,114000,studio,"venue:29,speakers:18,food:23,av:16,marketing:13",AOD
+1148,techcompetitionshackathons,competitionshackathons,4104000,openspace,"venue:17,speakers:8,prizes:28,food:20,av:13,marketing:4",Nelum Pokuna
+140,techmeetupscommunity,meetupscommunity,477000,openspace,"venue:32,food:28,av:8,marketing:7,logistics:27",Colombo Innovation Tower
+971,designcompetitionshackathons,competitionshackathons,1049000,openspace,"venue:18,speakers:11,prizes:30,food:23,av:18,marketing:7",Galle Face
+411,codeworkshopstraining,workshopstraining,1098000,exhibitionhall,"venue:25,speakers:33,equipment:15,food:7,av:16,marketing:2",BMICH
+190,aiworkshopstraining,workshopstraining,272000,coworkingspace,"venue:26,speakers:27,equipment:13,food:7,av:17,marketing:5",Trace Expert City
+233,aiconferencesexpos,conferencesexpos,473000,coworkingspace,"venue:34,speakers:22,food:9,av:12,marketing:7,logistics:6",Trace Expert City
+858,codeconferencesexpos,conferencesexpos,2847000,openspace,"venue:34,speakers:28,food:7,av:15,marketing:13,logistics:6",Nelum Pokuna
+42,codecompetitionshackathons,competitionshackathons,118000,studio,"venue:21,speakers:9,prizes:29,food:18,av:16,marketing:4",AOD
+241,techmeetupscommunity,meetupscommunity,420000,coworkingspace,"venue:31,food:25,av:7,marketing:10,logistics:26",Trace Expert City
+146,designmeetupscommunity,meetupscommunity,44000,auditorium,"venue:33,food:28,av:11,marketing:11,logistics:23",Virtusa
+585,aicompetitionshackathons,competitionshackathons,2033000,openspace,"venue:18,speakers:13,prizes:27,food:19,av:13,marketing:3",Nelum Pokuna
+89,designmeetupscommunity,meetupscommunity,227000,studio,"venue:27,food:25,av:10,marketing:10,logistics:28",AOD
+419,codeconferencesexpos,conferencesexpos,355000,auditorium,"venue:34,speakers:23,food:12,av:18,marketing:7,logistics:5",NSBM
+135,codeworkshopstraining,workshopstraining,359000,openspace,"venue:24,speakers:27,equipment:15,food:9,av:18,marketing:6",Colombo Innovation Tower
+1670,designworkshopstraining,workshopstraining,1011000,openspace,"venue:22,speakers:29,equipment:17,food:9,av:14,marketing:8",Galle Face
+371,aicompetitionshackathons,competitionshackathons,462000,auditorium,"venue:20,speakers:9,prizes:31,food:17,av:15,marketing:3",NSBM
+150,aicareernetworking,careernetworking,526000,openspace,"venue:32,speakers:18,food:20,av:12,marketing:15",Colombo Innovation Tower
+390,designtalkspanels,talkspanels,2483000,exhibitionhall,"venue:32,speakers:22,food:20,av:15,marketing:17",Shangri-La
+173,techtalkspanels,talkspanels,137000,auditorium,"venue:27,speakers:23,food:18,av:13,marketing:17",UCSC
+44,aiconferencesexpos,conferencesexpos,81000,coworkingspace,"venue:32,speakers:27,food:10,av:18,marketing:9,logistics:4",Gamers HQ
+244,codeworkshopstraining,workshopstraining,280000,auditorium,"venue:27,speakers:27,equipment:12,food:9,av:12,marketing:4",SLIIT
+423,designconferencesexpos,conferencesexpos,1188000,openspace,"venue:32,speakers:28,food:11,av:17,marketing:12,logistics:5",Galadari
+388,codecompetitionshackathons,competitionshackathons,2012000,exhibitionhall,"venue:18,speakers:12,prizes:28,food:23,av:17,marketing:2",Shangri-La
+152,designtalkspanels,talkspanels,58000,auditorium,"venue:28,speakers:20,food:18,av:12,marketing:14",Virtusa
+131,aicareernetworking,careernetworking,56000,auditorium,"venue:27,speakers:22,food:22,av:12,marketing:13",Virtusa
+380,designcompetitionshackathons,competitionshackathons,1218000,openspace,"venue:21,speakers:7,prizes:31,food:19,av:13,marketing:2",Galadari
+132,designworkshopstraining,workshopstraining,439000,coworkingspace,"venue:23,speakers:28,equipment:13,food:12,av:13,marketing:2",Hatch
+597,designtalkspanels,talkspanels,553000,auditorium,"venue:33,speakers:18,food:23,av:17,marketing:18",NSBM
+433,designconferencesexpos,conferencesexpos,1427000,openspace,"venue:36,speakers:24,food:8,av:17,marketing:10,logistics:7",Galadari
+113,aicareernetworking,careernetworking,287000,studio,"venue:33,speakers:21,food:17,av:17,marketing:14",AOD
+674,codetalkspanels,talkspanels,3162000,exhibitionhall,"venue:32,speakers:19,food:20,av:13,marketing:18",Shangri-La
+151,codetalkspanels,talkspanels,16000,auditorium,"venue:32,speakers:19,food:19,av:12,marketing:14",Virtusa
+50,aitalkspanels,talkspanels,36000,auditorium,"venue:29,speakers:23,food:20,av:16,marketing:18",UCSC
+69,codetalkspanels,talkspanels,254000,openspace,"venue:30,speakers:18,food:20,av:15,marketing:17",Colombo Innovation Tower
+1777,codecompetitionshackathons,competitionshackathons,913000,openspace,"venue:23,speakers:10,prizes:28,food:23,av:18,marketing:8",Galle Face
+210,techworkshopstraining,workshopstraining,97000,auditorium,"venue:26,speakers:31,equipment:13,food:13,av:15,marketing:4",Virtusa
+182,codetalkspanels,talkspanels,595000,coworkingspace,"venue:28,speakers:20,food:19,av:15,marketing:16",Hatch
+713,aiconferencesexpos,conferencesexpos,2292000,openspace,"venue:35,speakers:22,food:12,av:18,marketing:11,logistics:4",Nelum Pokuna
+56,designconferencesexpos,conferencesexpos,28000,auditorium,"venue:32,speakers:23,food:8,av:17,marketing:12,logistics:4",UCSC
+196,designconferencesexpos,conferencesexpos,77000,auditorium,"venue:35,speakers:22,food:7,av:15,marketing:12,logistics:8",Virtusa
+159,codecareernetworking,careernetworking,343000,coworkingspace,"venue:33,speakers:18,food:22,av:12,marketing:12",Trace Expert City
+344,techcompetitionshackathons,competitionshackathons,500000,auditorium,"venue:18,speakers:7,prizes:29,food:19,av:13,marketing:4",SLIIT
+600,techtalkspanels,talkspanels,2717000,openspace,"venue:31,speakers:23,food:17,av:12,marketing:16",Nelum Pokuna
+134,codemeetupscommunity,meetupscommunity,23000,auditorium,"venue:32,food:27,av:8,marketing:7,logistics:22",Virtusa
+257,aicompetitionshackathons,competitionshackathons,389000,auditorium,"venue:17,speakers:8,prizes:33,food:19,av:12,marketing:2",SLIIT
+128,designconferencesexpos,conferencesexpos,59000,auditorium,"venue:34,speakers:22,food:11,av:15,marketing:8,logistics:7",UCSC
+183,designconferencesexpos,conferencesexpos,339000,coworkingspace,"venue:34,speakers:25,food:12,av:18,marketing:13,logistics:6",Trace Expert City
+200,aiconferencesexpos,conferencesexpos,62000,auditorium,"venue:34,speakers:25,food:7,av:17,marketing:7,logistics:7",Virtusa
+441,techworkshopstraining,workshopstraining,1521000,openspace,"venue:23,speakers:29,equipment:15,food:12,av:17,marketing:6",Galadari
+77,designcareernetworking,careernetworking,90000,coworkingspace,"venue:29,speakers:23,food:20,av:13,marketing:13",Gamers HQ
+82,techtalkspanels,talkspanels,46000,auditorium,"venue:33,speakers:20,food:20,av:15,marketing:17",UCSC
+286,techconferencesexpos,conferencesexpos,331000,auditorium,"venue:34,speakers:25,food:9,av:12,marketing:12,logistics:4",SLIIT
+83,codecompetitionshackathons,competitionshackathons,99000,coworkingspace,"venue:17,speakers:8,prizes:33,food:21,av:12,marketing:6",Gamers HQ
+1912,designtalkspanels,talkspanels,1779000,openspace,"venue:29,speakers:23,food:21,av:17,marketing:13",Galle Face
+75,aimeetupscommunity,meetupscommunity,282000,openspace,"venue:33,food:25,av:12,marketing:9,logistics:22",Colombo Innovation Tower
+653,designmeetupscommunity,meetupscommunity,2830000,openspace,"venue:33,food:26,av:7,marketing:8,logistics:27",Nelum Pokuna
+59,designcareernetworking,careernetworking,172000,studio,"venue:29,speakers:23,food:19,av:14,marketing:12",AOD
+397,codemeetupscommunity,meetupscommunity,1310000,openspace,"venue:32,food:28,av:11,marketing:13,logistics:23",Galadari
+115,designworkshopstraining,workshopstraining,332000,openspace,"venue:25,speakers:31,equipment:15,food:13,av:12,marketing:5",Colombo Innovation Tower
+125,designtalkspanels,talkspanels,391000,coworkingspace,"venue:30,speakers:22,food:20,av:12,marketing:16",Hatch
+281,techmeetupscommunity,meetupscommunity,587000,coworkingspace,"venue:30,food:27,av:11,marketing:10,logistics:24",Trace Expert City
+143,aiworkshopstraining,workshopstraining,154000,auditorium,"venue:28,speakers:32,equipment:15,food:9,av:18,marketing:5",SLIIT
+241,codetalkspanels,talkspanels,295000,coworkingspace,"venue:29,speakers:17,food:17,av:15,marketing:14",Trace Expert City
+194,codeconferencesexpos,conferencesexpos,302000,coworkingspace,"venue:32,speakers:28,food:9,av:13,marketing:11,logistics:4",Trace Expert City
+86,techcompetitionshackathons,competitionshackathons,231000,coworkingspace,"venue:17,speakers:10,prizes:32,food:21,av:16,marketing:5",Hatch
+193,codeworkshopstraining,workshopstraining,199000,auditorium,"venue:28,speakers:28,equipment:18,food:12,av:17,marketing:3",SLIIT
+523,designcareernetworking,careernetworking,489000,auditorium,"venue:29,speakers:19,food:18,av:18,marketing:12",NSBM
+766,techworkshopstraining,workshopstraining,3922000,exhibitionhall,"venue:22,speakers:33,equipment:14,food:7,av:12,marketing:6",Shangri-La
+671,designcompetitionshackathons,competitionshackathons,3051000,openspace,"venue:22,speakers:8,prizes:33,food:22,av:15,marketing:4",Nelum Pokuna
+167,designcompetitionshackathons,competitionshackathons,57000,auditorium,"venue:21,speakers:11,prizes:32,food:19,av:17,marketing:6",UCSC
+1824,codeconferencesexpos,conferencesexpos,1166000,openspace,"venue:35,speakers:25,food:7,av:17,marketing:12,logistics:8",Galle Face
+231,codecareernetworking,careernetworking,295000,coworkingspace,"venue:32,speakers:23,food:18,av:17,marketing:12",Trace Expert City
+161,designworkshopstraining,workshopstraining,223000,coworkingspace,"venue:25,speakers:30,equipment:16,food:10,av:17,marketing:3",Trace Expert City
+480,codemeetupscommunity,meetupscommunity,2733000,exhibitionhall,"venue:33,food:25,av:11,marketing:10,logistics:25",Shangri-La
+672,aitalkspanels,talkspanels,3273000,exhibitionhall,"venue:30,speakers:18,food:18,av:16,marketing:18",Shangri-La
+518,techcompetitionshackathons,competitionshackathons,565000,openspace,"venue:23,speakers:13,prizes:30,food:18,av:16,marketing:8",Galle Face
+340,designcareernetworking,careernetworking,1315000,openspace,"venue:32,speakers:23,food:17,av:16,marketing:17",Galadari
+201,aiconferencesexpos,conferencesexpos,193000,auditorium,"venue:36,speakers:28,food:7,av:12,marketing:9,logistics:5",NSBM
+293,codecareernetworking,careernetworking,578000,coworkingspace,"venue:29,speakers:22,food:23,av:18,marketing:18",Trace Expert City
+255,codecompetitionshackathons,competitionshackathons,689000,openspace,"venue:17,speakers:12,prizes:33,food:23,av:18,marketing:4",Galadari
+77,techmeetupscommunity,meetupscommunity,79000,coworkingspace,"venue:29,food:22,av:10,marketing:7,logistics:27",Gamers HQ
+478,techcompetitionshackathons,competitionshackathons,1167000,exhibitionhall,"venue:18,speakers:8,prizes:32,food:23,av:14,marketing:6",BMICH
+460,codeworkshopstraining,workshopstraining,1645000,openspace,"venue:22,speakers:28,equipment:12,food:13,av:18,marketing:4",Galadari
+181,codeconferencesexpos,conferencesexpos,569000,coworkingspace,"venue:37,speakers:28,food:11,av:16,marketing:12,logistics:5",Hatch
+169,aiworkshopstraining,workshopstraining,446000,coworkingspace,"venue:27,speakers:31,equipment:14,food:8,av:15,marketing:4",Hatch
+1287,codeconferencesexpos,conferencesexpos,3023000,exhibitionhall,"venue:38,speakers:25,food:9,av:18,marketing:7,logistics:6",BMICH
+225,designmeetupscommunity,meetupscommunity,233000,auditorium,"venue:29,food:23,av:7,marketing:8,logistics:22",SLIIT
+1691,techcompetitionshackathons,competitionshackathons,1516000,openspace,"venue:22,speakers:12,prizes:31,food:17,av:17,marketing:5",Galle Face
+57,aicompetitionshackathons,competitionshackathons,33000,auditorium,"venue:20,speakers:12,prizes:33,food:17,av:12,marketing:7",UCSC
+116,designworkshopstraining,workshopstraining,18000,auditorium,"venue:26,speakers:32,equipment:13,food:10,av:17,marketing:7",Virtusa
+308,aiconferencesexpos,conferencesexpos,969000,openspace,"venue:38,speakers:24,food:8,av:14,marketing:7,logistics:3",Galadari
+334,techcompetitionshackathons,competitionshackathons,1322000,openspace,"venue:23,speakers:10,prizes:30,food:18,av:16,marketing:3",Galadari
+606,codeconferencesexpos,conferencesexpos,3618000,exhibitionhall,"venue:37,speakers:28,food:10,av:13,marketing:8,logistics:6",Shangri-La
+371,codeconferencesexpos,conferencesexpos,375000,auditorium,"venue:37,speakers:25,food:12,av:13,marketing:12,logistics:7",SLIIT
+1573,designtalkspanels,talkspanels,1480000,openspace,"venue:27,speakers:23,food:19,av:15,marketing:13",Galle Face
+162,designworkshopstraining,workshopstraining,99000,auditorium,"venue:27,speakers:30,equipment:13,food:7,av:14,marketing:4",UCSC
+243,aicompetitionshackathons,competitionshackathons,814000,openspace,"venue:20,speakers:7,prizes:27,food:18,av:15,marketing:5",Galadari
+342,designcareernetworking,careernetworking,1135000,openspace,"venue:29,speakers:19,food:20,av:18,marketing:13",Galadari
+72,techcareernetworking,careernetworking,250000,openspace,"venue:32,speakers:22,food:21,av:15,marketing:14",Colombo Innovation Tower
+123,designmeetupscommunity,meetupscommunity,0,auditorium,"venue:31,food:26,av:8,marketing:12,logistics:23",Virtusa
+1327,techmeetupscommunity,meetupscommunity,2884000,exhibitionhall,"venue:31,food:28,av:13,marketing:8,logistics:24",BMICH
+1303,techworkshopstraining,workshopstraining,1214000,openspace,"venue:28,speakers:27,equipment:13,food:12,av:16,marketing:2",Galle Face
+79,designtalkspanels,talkspanels,157000,studio,"venue:31,speakers:22,food:17,av:16,marketing:16",AOD
+329,techmeetupscommunity,meetupscommunity,1188000,openspace,"venue:31,food:24,av:12,marketing:13,logistics:22",Galadari
+68,designcareernetworking,careernetworking,80000,coworkingspace,"venue:30,speakers:18,food:21,av:12,marketing:13",Gamers HQ
+117,aitalkspanels,talkspanels,231000,studio,"venue:29,speakers:17,food:18,av:18,marketing:14",AOD
+110,aitalkspanels,talkspanels,299000,openspace,"venue:30,speakers:21,food:19,av:18,marketing:13",Colombo Innovation Tower
+1062,designmeetupscommunity,meetupscommunity,686000,openspace,"venue:28,food:23,av:10,marketing:13,logistics:27",Galle Face
+119,designcompetitionshackathons,competitionshackathons,348000,studio,"venue:21,speakers:9,prizes:30,food:17,av:15,marketing:8",AOD
+1807,aicareernetworking,careernetworking,1888000,openspace,"venue:32,speakers:23,food:20,av:15,marketing:18",Galle Face
+568,aimeetupscommunity,meetupscommunity,3345000,exhibitionhall,"venue:33,food:25,av:9,marketing:13,logistics:23",Shangri-La
+67,techmeetupscommunity,meetupscommunity,207000,coworkingspace,"venue:33,food:22,av:8,marketing:9,logistics:26",Hatch
+233,codeconferencesexpos,conferencesexpos,408000,coworkingspace,"venue:35,speakers:26,food:9,av:16,marketing:11,logistics:2",Trace Expert City
+71,designcareernetworking,careernetworking,129000,coworkingspace,"venue:30,speakers:20,food:22,av:16,marketing:15",Gamers HQ
+1061,codeconferencesexpos,conferencesexpos,3175000,exhibitionhall,"venue:37,speakers:28,food:10,av:13,marketing:13,logistics:4",BMICH
+972,techconferencesexpos,conferencesexpos,4340000,openspace,"venue:37,speakers:28,food:7,av:15,marketing:13,logistics:7",Nelum Pokuna
+954,designtalkspanels,talkspanels,4609000,openspace,"venue:27,speakers:19,food:21,av:16,marketing:18",Nelum Pokuna
+607,codecompetitionshackathons,competitionshackathons,2874000,openspace,"venue:20,speakers:13,prizes:32,food:23,av:15,marketing:4",Nelum Pokuna
+756,designworkshopstraining,workshopstraining,2869000,openspace,"venue:27,speakers:30,equipment:15,food:13,av:16,marketing:3",Nelum Pokuna
+49,codecompetitionshackathons,competitionshackathons,128000,studio,"venue:20,speakers:10,prizes:28,food:21,av:15,marketing:3",AOD
+102,techtalkspanels,talkspanels,64000,auditorium,"venue:28,speakers:21,food:21,av:17,marketing:14",UCSC
+693,aicompetitionshackathons,competitionshackathons,3117000,openspace,"venue:18,speakers:13,prizes:28,food:18,av:17,marketing:3",Nelum Pokuna
+96,designmeetupscommunity,meetupscommunity,361000,openspace,"venue:29,food:23,av:8,marketing:7,logistics:25",Colombo Innovation Tower
+196,techcompetitionshackathons,competitionshackathons,313000,auditorium,"venue:18,speakers:10,prizes:32,food:20,av:15,marketing:4",SLIIT
+1830,codeconferencesexpos,conferencesexpos,1375000,openspace,"venue:34,speakers:25,food:9,av:14,marketing:11,logistics:5",Galle Face
+66,aicompetitionshackathons,competitionshackathons,109000,coworkingspace,"venue:17,speakers:10,prizes:27,food:23,av:17,marketing:3",Gamers HQ
+182,aicareernetworking,careernetworking,329000,coworkingspace,"venue:30,speakers:21,food:17,av:17,marketing:12",Trace Expert City
+478,techtalkspanels,talkspanels,577000,auditorium,"venue:28,speakers:20,food:23,av:14,marketing:16",NSBM
+769,aicareernetworking,careernetworking,1892000,exhibitionhall,"venue:27,speakers:22,food:17,av:16,marketing:17",BMICH
+200,aicompetitionshackathons,competitionshackathons,388000,coworkingspace,"venue:20,speakers:8,prizes:28,food:19,av:16,marketing:2",Trace Expert City
+732,designmeetupscommunity,meetupscommunity,3776000,exhibitionhall,"venue:27,food:24,av:9,marketing:8,logistics:26",Shangri-La
+319,techcompetitionshackathons,competitionshackathons,460000,auditorium,"venue:19,speakers:7,prizes:27,food:19,av:16,marketing:2",SLIIT
+580,designconferencesexpos,conferencesexpos,3028000,exhibitionhall,"venue:36,speakers:26,food:12,av:15,marketing:10,logistics:8",Shangri-La
+1648,codetalkspanels,talkspanels,1382000,openspace,"venue:31,speakers:22,food:21,av:14,marketing:17",Galle Face
+193,codemeetupscommunity,meetupscommunity,104000,auditorium,"venue:27,food:25,av:13,marketing:7,logistics:23",UCSC
+307,techmeetupscommunity,meetupscommunity,904000,openspace,"venue:31,food:25,av:13,marketing:12,logistics:22",Galadari
+875,designconferencesexpos,conferencesexpos,1848000,exhibitionhall,"venue:34,speakers:23,food:7,av:16,marketing:8,logistics:8",BMICH
+110,designworkshopstraining,workshopstraining,182000,coworkingspace,"venue:23,speakers:27,equipment:14,food:13,av:18,marketing:7",Trace Expert City
+239,aiworkshopstraining,workshopstraining,21000,auditorium,"venue:22,speakers:31,equipment:15,food:7,av:13,marketing:4",Virtusa
+200,designcompetitionshackathons,competitionshackathons,120000,auditorium,"venue:17,speakers:13,prizes:32,food:21,av:13,marketing:2",UCSC
+302,codemeetupscommunity,meetupscommunity,1035000,openspace,"venue:27,food:24,av:11,marketing:13,logistics:26",Galadari
+60,designtalkspanels,talkspanels,69000,coworkingspace,"venue:30,speakers:20,food:20,av:16,marketing:13",Gamers HQ
+257,techtalkspanels,talkspanels,408000,coworkingspace,"venue:31,speakers:17,food:19,av:13,marketing:16",Trace Expert City
+1252,codetalkspanels,talkspanels,1370000,openspace,"venue:28,speakers:19,food:21,av:13,marketing:17",Galle Face
+1154,aitalkspanels,talkspanels,5166000,openspace,"venue:32,speakers:22,food:21,av:15,marketing:15",Nelum Pokuna
+185,designcareernetworking,careernetworking,27000,auditorium,"venue:29,speakers:17,food:21,av:15,marketing:17",Virtusa
+207,designcompetitionshackathons,competitionshackathons,396000,coworkingspace,"venue:18,speakers:9,prizes:30,food:20,av:12,marketing:7",Trace Expert City
+219,aitalkspanels,talkspanels,199000,auditorium,"venue:28,speakers:20,food:22,av:14,marketing:13",SLIIT
+52,codecareernetworking,careernetworking,130000,openspace,"venue:28,speakers:18,food:20,av:14,marketing:13",Colombo Innovation Tower
+465,techworkshopstraining,workshopstraining,1373000,openspace,"venue:25,speakers:27,equipment:17,food:12,av:18,marketing:2",Galadari
+181,designcareernetworking,careernetworking,74000,auditorium,"venue:29,speakers:22,food:19,av:15,marketing:18",UCSC
+135,techtalkspanels,talkspanels,403000,openspace,"venue:33,speakers:17,food:19,av:17,marketing:18",Colombo Innovation Tower
+781,codecareernetworking,careernetworking,4656000,exhibitionhall,"venue:29,speakers:18,food:19,av:16,marketing:16",Shangri-La
+130,aicompetitionshackathons,competitionshackathons,471000,openspace,"venue:17,speakers:7,prizes:29,food:22,av:14,marketing:6",Colombo Innovation Tower
+293,designconferencesexpos,conferencesexpos,281000,auditorium,"venue:32,speakers:27,food:12,av:18,marketing:12,logistics:2",NSBM
+81,techtalkspanels,talkspanels,260000,coworkingspace,"venue:29,speakers:21,food:21,av:17,marketing:18",Hatch
+935,codetalkspanels,talkspanels,872000,openspace,"venue:32,speakers:21,food:19,av:12,marketing:14",Galle Face
+136,codetalkspanels,talkspanels,344000,coworkingspace,"venue:27,speakers:18,food:19,av:16,marketing:15",Hatch
+39,codecareernetworking,careernetworking,73000,coworkingspace,"venue:30,speakers:18,food:18,av:13,marketing:14",Gamers HQ
+1376,aiworkshopstraining,workshopstraining,2631000,exhibitionhall,"venue:24,speakers:32,equipment:12,food:8,av:17,marketing:3",BMICH
+671,designmeetupscommunity,meetupscommunity,2089000,openspace,"venue:31,food:26,av:10,marketing:9,logistics:25",Nelum Pokuna
+413,codeworkshopstraining,workshopstraining,767000,exhibitionhall,"venue:28,speakers:33,equipment:15,food:8,av:12,marketing:3",BMICH
+79,designworkshopstraining,workshopstraining,122000,studio,"venue:27,speakers:27,equipment:18,food:10,av:14,marketing:3",AOD
+948,codeworkshopstraining,workshopstraining,928000,openspace,"venue:22,speakers:31,equipment:12,food:7,av:15,marketing:3",Galle Face
+63,techcareernetworking,careernetworking,73000,coworkingspace,"venue:32,speakers:20,food:22,av:15,marketing:17",Gamers HQ
+159,designtalkspanels,talkspanels,61000,auditorium,"venue:29,speakers:17,food:17,av:12,marketing:17",UCSC
+65,aiconferencesexpos,conferencesexpos,66000,coworkingspace,"venue:34,speakers:27,food:12,av:16,marketing:12,logistics:2",Gamers HQ
+121,techworkshopstraining,workshopstraining,51000,auditorium,"venue:26,speakers:28,equipment:13,food:9,av:14,marketing:8",Virtusa
+146,aitalkspanels,talkspanels,188000,auditorium,"venue:33,speakers:21,food:21,av:17,marketing:18",SLIIT
+177,designcompetitionshackathons,competitionshackathons,0,auditorium,"venue:20,speakers:10,prizes:29,food:17,av:18,marketing:6",Virtusa
+287,aiconferencesexpos,conferencesexpos,507000,coworkingspace,"venue:38,speakers:23,food:13,av:13,marketing:7,logistics:3",Trace Expert City
+82,techworkshopstraining,workshopstraining,47000,auditorium,"venue:28,speakers:27,equipment:14,food:9,av:13,marketing:2",UCSC
+72,aimeetupscommunity,meetupscommunity,223000,openspace,"venue:30,food:27,av:11,marketing:11,logistics:25",Colombo Innovation Tower
+1395,designcareernetworking,careernetworking,3796000,exhibitionhall,"venue:33,speakers:21,food:22,av:17,marketing:17",BMICH
+292,designconferencesexpos,conferencesexpos,511000,coworkingspace,"venue:37,speakers:23,food:11,av:15,marketing:10,logistics:7",Trace Expert City
+230,codetalkspanels,talkspanels,853000,openspace,"venue:32,speakers:22,food:20,av:14,marketing:13",Galadari
+114,codeconferencesexpos,conferencesexpos,280000,studio,"venue:38,speakers:23,food:11,av:18,marketing:7,logistics:6",AOD
+635,techworkshopstraining,workshopstraining,3454000,exhibitionhall,"venue:26,speakers:28,equipment:13,food:10,av:13,marketing:6",Shangri-La
+1365,aitalkspanels,talkspanels,1123000,openspace,"venue:27,speakers:22,food:21,av:16,marketing:15",Galle Face
+258,codeworkshopstraining,workshopstraining,543000,coworkingspace,"venue:25,speakers:27,equipment:15,food:7,av:13,marketing:4",Trace Expert City
+225,aicompetitionshackathons,competitionshackathons,768000,openspace,"venue:23,speakers:7,prizes:30,food:21,av:16,marketing:2",Galadari
+519,techworkshopstraining,workshopstraining,2582000,exhibitionhall,"venue:23,speakers:30,equipment:14,food:8,av:13,marketing:7",Shangri-La
+62,codemeetupscommunity,meetupscommunity,178000,coworkingspace,"venue:31,food:22,av:10,marketing:12,logistics:24",Hatch
+167,codemeetupscommunity,meetupscommunity,386000,coworkingspace,"venue:30,food:28,av:8,marketing:8,logistics:22",Hatch
+842,aiconferencesexpos,conferencesexpos,2418000,exhibitionhall,"venue:32,speakers:23,food:9,av:14,marketing:10,logistics:3",BMICH
+101,techcareernetworking,careernetworking,33000,auditorium,"venue:31,speakers:20,food:21,av:12,marketing:12",Virtusa
+168,aicareernetworking,careernetworking,19000,auditorium,"venue:32,speakers:21,food:19,av:13,marketing:18",Virtusa
+693,designtalkspanels,talkspanels,3951000,exhibitionhall,"venue:31,speakers:21,food:21,av:15,marketing:16",Shangri-La
+104,aimeetupscommunity,meetupscommunity,342000,coworkingspace,"venue:32,food:27,av:9,marketing:9,logistics:27",Hatch
+90,designcareernetworking,careernetworking,251000,studio,"venue:32,speakers:22,food:21,av:16,marketing:13",AOD
+74,techmeetupscommunity,meetupscommunity,165000,studio,"venue:28,food:23,av:7,marketing:13,logistics:28",AOD
+71,techconferencesexpos,conferencesexpos,280000,openspace,"venue:32,speakers:23,food:8,av:13,marketing:9,logistics:7",Colombo Innovation Tower
+547,codeconferencesexpos,conferencesexpos,569000,auditorium,"venue:35,speakers:28,food:13,av:18,marketing:8,logistics:3",NSBM
+124,aimeetupscommunity,meetupscommunity,44000,auditorium,"venue:31,food:28,av:9,marketing:7,logistics:27",Virtusa
+98,techconferencesexpos,conferencesexpos,371000,openspace,"venue:38,speakers:28,food:8,av:13,marketing:9,logistics:4",Colombo Innovation Tower
+81,aicompetitionshackathons,competitionshackathons,163000,studio,"venue:21,speakers:12,prizes:27,food:22,av:16,marketing:8",AOD
+376,designcompetitionshackathons,competitionshackathons,572000,auditorium,"venue:17,speakers:7,prizes:30,food:21,av:15,marketing:6",SLIIT
+1104,codeconferencesexpos,conferencesexpos,899000,openspace,"venue:36,speakers:22,food:8,av:16,marketing:11,logistics:2",Galle Face
+65,aimeetupscommunity,meetupscommunity,26000,auditorium,"venue:27,food:22,av:11,marketing:10,logistics:26",UCSC
+1040,techconferencesexpos,conferencesexpos,871000,openspace,"venue:38,speakers:28,food:13,av:17,marketing:13,logistics:7",Galle Face
+149,codeworkshopstraining,workshopstraining,386000,openspace,"venue:26,speakers:29,equipment:15,food:9,av:17,marketing:5",Colombo Innovation Tower
+93,techmeetupscommunity,meetupscommunity,344000,openspace,"venue:31,food:26,av:13,marketing:11,logistics:22",Colombo Innovation Tower
+95,designtalkspanels,talkspanels,301000,openspace,"venue:27,speakers:17,food:20,av:13,marketing:16",Colombo Innovation Tower
+1996,aiconferencesexpos,conferencesexpos,1621000,openspace,"venue:36,speakers:23,food:10,av:14,marketing:11,logistics:2",Galle Face
+40,techcompetitionshackathons,competitionshackathons,110000,studio,"venue:21,speakers:9,prizes:27,food:21,av:13,marketing:4",AOD
+214,designcareernetworking,careernetworking,243000,auditorium,"venue:33,speakers:20,food:18,av:17,marketing:18",SLIIT
+117,aitalkspanels,talkspanels,121000,auditorium,"venue:28,speakers:18,food:19,av:14,marketing:16",SLIIT
+1511,codeworkshopstraining,workshopstraining,1450000,openspace,"venue:24,speakers:29,equipment:16,food:12,av:18,marketing:6",Galle Face
+532,designcareernetworking,careernetworking,2938000,exhibitionhall,"venue:31,speakers:19,food:17,av:17,marketing:15",Shangri-La
+564,codecompetitionshackathons,competitionshackathons,3697000,exhibitionhall,"venue:17,speakers:9,prizes:31,food:23,av:13,marketing:7",Shangri-La
+817,codetalkspanels,talkspanels,1814000,exhibitionhall,"venue:32,speakers:22,food:23,av:18,marketing:14",BMICH
+187,designcompetitionshackathons,competitionshackathons,243000,auditorium,"venue:21,speakers:11,prizes:27,food:20,av:17,marketing:7",SLIIT
+791,techcareernetworking,careernetworking,5494000,exhibitionhall,"venue:28,speakers:19,food:21,av:15,marketing:12",Shangri-La
+635,codecareernetworking,careernetworking,1852000,exhibitionhall,"venue:31,speakers:23,food:23,av:18,marketing:18",BMICH
+164,aitalkspanels,talkspanels,70000,auditorium,"venue:29,speakers:18,food:23,av:18,marketing:13",UCSC
+184,aiconferencesexpos,conferencesexpos,434000,coworkingspace,"venue:36,speakers:23,food:9,av:13,marketing:12,logistics:3",Hatch
+472,codeconferencesexpos,conferencesexpos,3292000,exhibitionhall,"venue:37,speakers:28,food:10,av:18,marketing:12,logistics:3",Shangri-La
+121,codecareernetworking,careernetworking,207000,coworkingspace,"venue:29,speakers:21,food:19,av:18,marketing:13",Trace Expert City
+84,aitalkspanels,talkspanels,124000,coworkingspace,"venue:29,speakers:20,food:23,av:12,marketing:16",Gamers HQ
+192,designtalkspanels,talkspanels,241000,auditorium,"venue:32,speakers:19,food:21,av:13,marketing:13",SLIIT
+642,designcompetitionshackathons,competitionshackathons,457000,openspace,"venue:18,speakers:12,prizes:32,food:17,av:12,marketing:2",Galle Face
+83,techcompetitionshackathons,competitionshackathons,313000,openspace,"venue:22,speakers:7,prizes:28,food:23,av:15,marketing:2",Colombo Innovation Tower
+142,techcompetitionshackathons,competitionshackathons,201000,auditorium,"venue:18,speakers:8,prizes:27,food:21,av:17,marketing:8",SLIIT
+225,techworkshopstraining,workshopstraining,8000,auditorium,"venue:24,speakers:32,equipment:15,food:12,av:17,marketing:4",Virtusa
+529,aitalkspanels,talkspanels,459000,auditorium,"venue:28,speakers:20,food:18,av:16,marketing:17",NSBM
+435,techtalkspanels,talkspanels,1643000,openspace,"venue:27,speakers:23,food:22,av:14,marketing:17",Galadari
+95,aitalkspanels,talkspanels,290000,coworkingspace,"venue:30,speakers:21,food:20,av:13,marketing:14",Hatch
+1148,techtalkspanels,talkspanels,1224000,openspace,"venue:30,speakers:22,food:17,av:17,marketing:13",Galle Face
+126,techworkshopstraining,workshopstraining,42000,auditorium,"venue:27,speakers:29,equipment:18,food:7,av:13,marketing:3",Virtusa
+150,codecareernetworking,careernetworking,169000,auditorium,"venue:32,speakers:17,food:20,av:15,marketing:13",SLIIT
+170,codeworkshopstraining,workshopstraining,210000,auditorium,"venue:27,speakers:29,equipment:15,food:7,av:13,marketing:2",SLIIT
+501,aiconferencesexpos,conferencesexpos,516000,auditorium,"venue:35,speakers:23,food:9,av:16,marketing:9,logistics:2",NSBM
+149,aimeetupscommunity,meetupscommunity,0,auditorium,"venue:32,food:26,av:9,marketing:12,logistics:25",Virtusa
+66,techtalkspanels,talkspanels,255000,openspace,"venue:28,speakers:18,food:22,av:14,marketing:18",Colombo Innovation Tower
+218,techmeetupscommunity,meetupscommunity,96000,auditorium,"venue:33,food:22,av:11,marketing:9,logistics:24",Virtusa
+661,aicompetitionshackathons,competitionshackathons,1953000,exhibitionhall,"venue:19,speakers:8,prizes:30,food:23,av:12,marketing:3",BMICH
+107,codeconferencesexpos,conferencesexpos,57000,auditorium,"venue:33,speakers:24,food:7,av:15,marketing:13,logistics:4",UCSC
+245,aitalkspanels,talkspanels,403000,coworkingspace,"venue:28,speakers:21,food:23,av:13,marketing:12",Trace Expert City
+36,techcompetitionshackathons,competitionshackathons,52000,coworkingspace,"venue:23,speakers:11,prizes:32,food:22,av:12,marketing:5",Gamers HQ
+1528,designmeetupscommunity,meetupscommunity,798000,openspace,"venue:29,food:26,av:11,marketing:10,logistics:22",Galle Face
+145,techcompetitionshackathons,competitionshackathons,186000,auditorium,"venue:19,speakers:10,prizes:29,food:20,av:18,marketing:3",SLIIT
+282,codetalkspanels,talkspanels,568000,coworkingspace,"venue:33,speakers:22,food:18,av:13,marketing:13",Trace Expert City
+1133,aiworkshopstraining,workshopstraining,811000,openspace,"venue:22,speakers:29,equipment:14,food:8,av:12,marketing:8",Galle Face
+239,codecompetitionshackathons,competitionshackathons,49000,auditorium,"venue:17,speakers:9,prizes:31,food:23,av:17,marketing:6",Virtusa
+312,designtalkspanels,talkspanels,363000,auditorium,"venue:32,speakers:21,food:23,av:12,marketing:16",NSBM
+247,techtalkspanels,talkspanels,412000,coworkingspace,"venue:33,speakers:19,food:18,av:13,marketing:16",Trace Expert City
+203,aiworkshopstraining,workshopstraining,517000,openspace,"venue:24,speakers:33,equipment:14,food:9,av:12,marketing:2",Galadari
+74,techcompetitionshackathons,competitionshackathons,213000,openspace,"venue:18,speakers:9,prizes:32,food:22,av:16,marketing:6",Colombo Innovation Tower
+45,techmeetupscommunity,meetupscommunity,84000,studio,"venue:33,food:26,av:7,marketing:9,logistics:27",AOD
+1439,codecompetitionshackathons,competitionshackathons,2494000,exhibitionhall,"venue:23,speakers:7,prizes:32,food:23,av:12,marketing:3",BMICH
+48,techcareernetworking,careernetworking,70000,coworkingspace,"venue:27,speakers:19,food:21,av:17,marketing:18",Gamers HQ
+112,techcompetitionshackathons,competitionshackathons,380000,openspace,"venue:17,speakers:8,prizes:32,food:18,av:16,marketing:4",Colombo Innovation Tower
+1403,techcareernetworking,careernetworking,1033000,openspace,"venue:32,speakers:17,food:20,av:15,marketing:12",Galle Face
+51,aicompetitionshackathons,competitionshackathons,147000,studio,"venue:21,speakers:10,prizes:33,food:19,av:14,marketing:7",AOD
+293,codeworkshopstraining,workshopstraining,738000,openspace,"venue:25,speakers:28,equipment:17,food:7,av:16,marketing:5",Galadari
+1686,designconferencesexpos,conferencesexpos,1894000,openspace,"venue:32,speakers:25,food:10,av:12,marketing:7,logistics:7",Galle Face
+95,codeworkshopstraining,workshopstraining,53000,auditorium,"venue:23,speakers:27,equipment:12,food:10,av:13,marketing:5",UCSC
+129,designmeetupscommunity,meetupscommunity,346000,coworkingspace,"venue:33,food:25,av:8,marketing:10,logistics:23",Hatch
+199,techworkshopstraining,workshopstraining,428000,coworkingspace,"venue:25,speakers:32,equipment:13,food:12,av:18,marketing:4",Trace Expert City
+431,codecompetitionshackathons,competitionshackathons,551000,auditorium,"venue:19,speakers:8,prizes:29,food:22,av:15,marketing:3",NSBM
+540,designmeetupscommunity,meetupscommunity,2940000,exhibitionhall,"venue:29,food:28,av:13,marketing:9,logistics:22",Shangri-La
+505,aiconferencesexpos,conferencesexpos,398000,openspace,"venue:33,speakers:26,food:7,av:12,marketing:8,logistics:6",Galle Face
+83,aiworkshopstraining,workshopstraining,120000,coworkingspace,"venue:25,speakers:27,equipment:12,food:11,av:15,marketing:5",Gamers HQ
+1886,aiconferencesexpos,conferencesexpos,2024000,openspace,"venue:36,speakers:26,food:8,av:18,marketing:10,logistics:4",Galle Face
+74,techmeetupscommunity,meetupscommunity,48000,auditorium,"venue:27,food:28,av:12,marketing:10,logistics:26",UCSC
+388,aitalkspanels,talkspanels,1240000,openspace,"venue:28,speakers:17,food:21,av:13,marketing:12",Galadari
+126,designcompetitionshackathons,competitionshackathons,412000,openspace,"venue:22,speakers:7,prizes:28,food:22,av:17,marketing:6",Colombo Innovation Tower
+33,designcareernetworking,careernetworking,64000,coworkingspace,"venue:28,speakers:21,food:22,av:16,marketing:13",Gamers HQ
+163,aimeetupscommunity,meetupscommunity,488000,coworkingspace,"venue:30,food:23,av:8,marketing:9,logistics:23",Hatch
+131,aiworkshopstraining,workshopstraining,374000,openspace,"venue:27,speakers:29,equipment:12,food:10,av:17,marketing:3",Colombo Innovation Tower
+1347,techworkshopstraining,workshopstraining,3190000,exhibitionhall,"venue:24,speakers:27,equipment:18,food:7,av:14,marketing:4",BMICH
+105,codecareernetworking,careernetworking,182000,coworkingspace,"venue:30,speakers:22,food:23,av:14,marketing:12",Trace Expert City
+135,aimeetupscommunity,meetupscommunity,274000,coworkingspace,"venue:29,food:28,av:8,marketing:11,logistics:23",Trace Expert City
+1156,aicareernetworking,careernetworking,4843000,openspace,"venue:29,speakers:17,food:22,av:13,marketing:15",Nelum Pokuna
+180,designworkshopstraining,workshopstraining,4000,auditorium,"venue:25,speakers:27,equipment:18,food:9,av:13,marketing:4",Virtusa
+1466,aitalkspanels,talkspanels,2779000,exhibitionhall,"venue:27,speakers:22,food:22,av:13,marketing:13",BMICH
+67,aimeetupscommunity,meetupscommunity,22000,auditorium,"venue:27,food:28,av:11,marketing:11,logistics:23",UCSC
+243,techworkshopstraining,workshopstraining,321000,auditorium,"venue:23,speakers:33,equipment:18,food:7,av:14,marketing:8",SLIIT
+169,codeconferencesexpos,conferencesexpos,472000,coworkingspace,"venue:33,speakers:24,food:8,av:15,marketing:9,logistics:4",Hatch
+48,aitalkspanels,talkspanels,94000,coworkingspace,"venue:30,speakers:18,food:19,av:14,marketing:14",Gamers HQ
+367,designworkshopstraining,workshopstraining,550000,auditorium,"venue:27,speakers:27,equipment:17,food:13,av:17,marketing:4",SLIIT
+791,codemeetupscommunity,meetupscommunity,561000,openspace,"venue:28,food:24,av:8,marketing:9,logistics:27",Galle Face
+147,techconferencesexpos,conferencesexpos,554000,openspace,"venue:38,speakers:27,food:11,av:16,marketing:9,logistics:3",Colombo Innovation Tower
+788,designtalkspanels,talkspanels,5362000,exhibitionhall,"venue:32,speakers:17,food:23,av:16,marketing:14",Shangri-La
+660,aimeetupscommunity,meetupscommunity,4436000,exhibitionhall,"venue:28,food:23,av:7,marketing:11,logistics:23",Shangri-La
+1500,codecompetitionshackathons,competitionshackathons,914000,openspace,"venue:20,speakers:13,prizes:31,food:23,av:13,marketing:6",Galle Face
+60,codemeetupscommunity,meetupscommunity,97000,studio,"venue:29,food:27,av:11,marketing:10,logistics:28",AOD
+443,designconferencesexpos,conferencesexpos,1371000,openspace,"venue:37,speakers:25,food:13,av:12,marketing:13,logistics:3",Galadari
+193,techworkshopstraining,workshopstraining,51000,auditorium,"venue:24,speakers:31,equipment:13,food:13,av:14,marketing:5",Virtusa
+343,codeconferencesexpos,conferencesexpos,1022000,openspace,"venue:38,speakers:26,food:7,av:18,marketing:11,logistics:6",Galadari
+556,techmeetupscommunity,meetupscommunity,3160000,exhibitionhall,"venue:29,food:22,av:13,marketing:13,logistics:23",Shangri-La
+544,aiconferencesexpos,conferencesexpos,754000,auditorium,"venue:34,speakers:22,food:12,av:16,marketing:11,logistics:7",NSBM
+50,techcompetitionshackathons,competitionshackathons,125000,studio,"venue:22,speakers:10,prizes:32,food:22,av:17,marketing:8",AOD
+310,designcareernetworking,careernetworking,869000,openspace,"venue:29,speakers:17,food:20,av:12,marketing:15",Galadari
+105,codeconferencesexpos,conferencesexpos,351000,coworkingspace,"venue:37,speakers:23,food:12,av:17,marketing:12,logistics:5",Hatch
+180,aiworkshopstraining,workshopstraining,345000,coworkingspace,"venue:22,speakers:29,equipment:13,food:7,av:17,marketing:3",Trace Expert City
+142,designconferencesexpos,conferencesexpos,427000,coworkingspace,"venue:32,speakers:25,food:12,av:16,marketing:13,logistics:2",Hatch
+219,aicareernetworking,careernetworking,82000,auditorium,"venue:31,speakers:20,food:20,av:12,marketing:12",Virtusa
+583,aiworkshopstraining,workshopstraining,2415000,openspace,"venue:22,speakers:31,equipment:16,food:8,av:13,marketing:7",Nelum Pokuna
+1432,designcareernetworking,careernetworking,1243000,openspace,"venue:31,speakers:22,food:19,av:18,marketing:13",Galle Face
+54,aicareernetworking,careernetworking,23000,auditorium,"venue:32,speakers:20,food:23,av:18,marketing:14",UCSC
+249,techcompetitionshackathons,competitionshackathons,727000,openspace,"venue:23,speakers:11,prizes:30,food:21,av:12,marketing:7",Galadari
+1072,techcompetitionshackathons,competitionshackathons,4826000,openspace,"venue:20,speakers:7,prizes:28,food:20,av:16,marketing:7",Nelum Pokuna
+205,designworkshopstraining,workshopstraining,276000,auditorium,"venue:23,speakers:32,equipment:16,food:12,av:14,marketing:6",NSBM
+704,designtalkspanels,talkspanels,604000,openspace,"venue:27,speakers:19,food:18,av:16,marketing:13",Galle Face
+216,techcompetitionshackathons,competitionshackathons,5000,auditorium,"venue:19,speakers:9,prizes:28,food:17,av:16,marketing:8",Virtusa
+119,designconferencesexpos,conferencesexpos,214000,studio,"venue:38,speakers:28,food:7,av:13,marketing:10,logistics:8",AOD
+954,designcompetitionshackathons,competitionshackathons,706000,openspace,"venue:19,speakers:8,prizes:28,food:17,av:16,marketing:3",Galle Face
+69,designtalkspanels,talkspanels,27000,auditorium,"venue:28,speakers:17,food:22,av:17,marketing:15",UCSC
+1268,designcareernetworking,careernetworking,3324000,exhibitionhall,"venue:27,speakers:21,food:20,av:18,marketing:16",BMICH
+691,designmeetupscommunity,meetupscommunity,1246000,exhibitionhall,"venue:27,food:22,av:12,marketing:11,logistics:28",BMICH
+65,techcompetitionshackathons,competitionshackathons,243000,openspace,"venue:20,speakers:13,prizes:31,food:20,av:14,marketing:8",Colombo Innovation Tower
+49,aitalkspanels,talkspanels,147000,studio,"venue:29,speakers:20,food:18,av:18,marketing:12",AOD
+1006,techworkshopstraining,workshopstraining,2389000,exhibitionhall,"venue:27,speakers:27,equipment:14,food:11,av:18,marketing:4",BMICH
+132,aicareernetworking,careernetworking,54000,auditorium,"venue:31,speakers:21,food:17,av:14,marketing:15",UCSC
+202,aicompetitionshackathons,competitionshackathons,237000,auditorium,"venue:17,speakers:11,prizes:30,food:22,av:13,marketing:4",SLIIT
+199,codeconferencesexpos,conferencesexpos,511000,coworkingspace,"venue:32,speakers:23,food:12,av:15,marketing:12,logistics:6",Hatch
+317,designworkshopstraining,workshopstraining,2184000,exhibitionhall,"venue:23,speakers:27,equipment:14,food:8,av:13,marketing:7",Shangri-La
+453,designcareernetworking,careernetworking,488000,auditorium,"venue:30,speakers:18,food:22,av:15,marketing:12",NSBM
+132,designmeetupscommunity,meetupscommunity,487000,openspace,"venue:29,food:24,av:11,marketing:11,logistics:25",Colombo Innovation Tower
+576,aicompetitionshackathons,competitionshackathons,693000,auditorium,"venue:19,speakers:13,prizes:33,food:22,av:17,marketing:5",NSBM
+87,techcareernetworking,careernetworking,229000,coworkingspace,"venue:28,speakers:17,food:23,av:13,marketing:13",Hatch
+941,aicompetitionshackathons,competitionshackathons,3899000,openspace,"venue:19,speakers:13,prizes:32,food:22,av:14,marketing:6",Nelum Pokuna
+1109,codemeetupscommunity,meetupscommunity,3626000,openspace,"venue:33,food:24,av:8,marketing:11,logistics:28",Nelum Pokuna
+538,techworkshopstraining,workshopstraining,3062000,exhibitionhall,"venue:28,speakers:32,equipment:14,food:12,av:13,marketing:7",Shangri-La
+66,techconferencesexpos,conferencesexpos,107000,coworkingspace,"venue:36,speakers:25,food:7,av:16,marketing:10,logistics:5",Gamers HQ
+181,aicompetitionshackathons,competitionshackathons,1000,auditorium,"venue:22,speakers:7,prizes:33,food:23,av:12,marketing:4",Virtusa
+880,codecompetitionshackathons,competitionshackathons,2583000,exhibitionhall,"venue:21,speakers:8,prizes:28,food:18,av:18,marketing:7",BMICH
+224,techmeetupscommunity,meetupscommunity,261000,auditorium,"venue:27,food:22,av:8,marketing:9,logistics:28",NSBM
+350,codetalkspanels,talkspanels,1096000,openspace,"venue:33,speakers:23,food:18,av:17,marketing:16",Galadari
+381,techworkshopstraining,workshopstraining,397000,auditorium,"venue:24,speakers:28,equipment:16,food:13,av:14,marketing:7",SLIIT
+660,codecompetitionshackathons,competitionshackathons,4298000,exhibitionhall,"venue:18,speakers:12,prizes:32,food:22,av:15,marketing:3",Shangri-La
+670,aiworkshopstraining,workshopstraining,3247000,exhibitionhall,"venue:25,speakers:33,equipment:12,food:10,av:14,marketing:7",Shangri-La
+1085,codecareernetworking,careernetworking,5108000,openspace,"venue:33,speakers:18,food:21,av:13,marketing:12",Nelum Pokuna
+207,designconferencesexpos,conferencesexpos,440000,coworkingspace,"venue:33,speakers:25,food:8,av:16,marketing:12,logistics:8",Trace Expert City
+294,designworkshopstraining,workshopstraining,378000,auditorium,"venue:23,speakers:32,equipment:18,food:13,av:15,marketing:8",SLIIT
+64,codeworkshopstraining,workshopstraining,39000,auditorium,"venue:23,speakers:33,equipment:12,food:13,av:16,marketing:2",UCSC
+366,designmeetupscommunity,meetupscommunity,470000,auditorium,"venue:31,food:22,av:8,marketing:11,logistics:24",SLIIT
+1388,codecareernetworking,careernetworking,959000,openspace,"venue:29,speakers:19,food:23,av:17,marketing:15",Galle Face
+240,designtalkspanels,talkspanels,81000,auditorium,"venue:29,speakers:17,food:18,av:13,marketing:12",Virtusa
+284,aiworkshopstraining,workshopstraining,391000,coworkingspace,"venue:23,speakers:27,equipment:17,food:8,av:13,marketing:4",Trace Expert City
+178,designworkshopstraining,workshopstraining,416000,coworkingspace,"venue:27,speakers:31,equipment:18,food:12,av:12,marketing:3",Hatch
+166,aimeetupscommunity,meetupscommunity,276000,coworkingspace,"venue:30,food:27,av:13,marketing:9,logistics:22",Trace Expert City
+1097,designcompetitionshackathons,competitionshackathons,2390000,exhibitionhall,"venue:20,speakers:10,prizes:27,food:18,av:16,marketing:8",BMICH
+178,techworkshopstraining,workshopstraining,105000,auditorium,"venue:24,speakers:27,equipment:14,food:7,av:15,marketing:8",UCSC
+165,designcompetitionshackathons,competitionshackathons,314000,coworkingspace,"venue:21,speakers:11,prizes:32,food:17,av:17,marketing:6",Trace Expert City
+221,designcareernetworking,careernetworking,339000,auditorium,"venue:31,speakers:18,food:22,av:15,marketing:13",SLIIT
+60,aitalkspanels,talkspanels,135000,coworkingspace,"venue:33,speakers:22,food:22,av:14,marketing:13",Hatch
+191,techtalkspanels,talkspanels,657000,coworkingspace,"venue:27,speakers:20,food:22,av:16,marketing:14",Hatch
+117,aitalkspanels,talkspanels,28000,auditorium,"venue:33,speakers:20,food:21,av:16,marketing:13",Virtusa
+87,techconferencesexpos,conferencesexpos,252000,studio,"venue:38,speakers:24,food:11,av:15,marketing:10,logistics:4",AOD
+272,codetalkspanels,talkspanels,964000,openspace,"venue:33,speakers:19,food:18,av:16,marketing:15",Galadari
+57,aiconferencesexpos,conferencesexpos,114000,coworkingspace,"venue:37,speakers:27,food:11,av:15,marketing:7,logistics:4",Gamers HQ
+775,designtalkspanels,talkspanels,1751000,exhibitionhall,"venue:30,speakers:21,food:22,av:13,marketing:16",BMICH
+1902,aimeetupscommunity,meetupscommunity,1564000,openspace,"venue:31,food:25,av:11,marketing:8,logistics:25",Galle Face
+337,designmeetupscommunity,meetupscommunity,1017000,openspace,"venue:30,food:23,av:9,marketing:8,logistics:27",Galadari
+80,aiconferencesexpos,conferencesexpos,251000,openspace,"venue:32,speakers:27,food:13,av:16,marketing:12,logistics:3",Colombo Innovation Tower
+92,designtalkspanels,talkspanels,166000,coworkingspace,"venue:32,speakers:21,food:22,av:17,marketing:14",Gamers HQ
+932,codeconferencesexpos,conferencesexpos,1520000,exhibitionhall,"venue:33,speakers:22,food:10,av:17,marketing:10,logistics:6",BMICH
+687,aiworkshopstraining,workshopstraining,1890000,exhibitionhall,"venue:27,speakers:30,equipment:14,food:9,av:13,marketing:7",BMICH
+397,aitalkspanels,talkspanels,1044000,openspace,"venue:31,speakers:18,food:23,av:12,marketing:18",Galadari
+125,aicompetitionshackathons,competitionshackathons,332000,coworkingspace,"venue:21,speakers:9,prizes:28,food:18,av:14,marketing:8",Hatch
+170,codetalkspanels,talkspanels,414000,coworkingspace,"venue:27,speakers:23,food:22,av:13,marketing:14",Hatch
+1828,codecareernetworking,careernetworking,1125000,openspace,"venue:28,speakers:17,food:23,av:17,marketing:12",Galle Face
+83,codecompetitionshackathons,competitionshackathons,231000,studio,"venue:21,speakers:12,prizes:28,food:22,av:16,marketing:2",AOD
+238,techworkshopstraining,workshopstraining,444000,coworkingspace,"venue:28,speakers:28,equipment:17,food:8,av:16,marketing:6",Trace Expert City
+646,codeconferencesexpos,conferencesexpos,380000,openspace,"venue:33,speakers:27,food:7,av:15,marketing:7,logistics:4",Galle Face
+1320,aicompetitionshackathons,competitionshackathons,1512000,openspace,"venue:20,speakers:10,prizes:30,food:22,av:15,marketing:3",Galle Face
+1165,techconferencesexpos,conferencesexpos,4505000,openspace,"venue:35,speakers:22,food:11,av:15,marketing:10,logistics:6",Nelum Pokuna
+81,aitalkspanels,talkspanels,261000,openspace,"venue:29,speakers:18,food:23,av:13,marketing:15",Colombo Innovation Tower
+161,codecareernetworking,careernetworking,307000,coworkingspace,"venue:27,speakers:18,food:20,av:15,marketing:12",Trace Expert City
+178,techworkshopstraining,workshopstraining,21000,auditorium,"venue:26,speakers:30,equipment:14,food:11,av:12,marketing:2",Virtusa
+978,codemeetupscommunity,meetupscommunity,1924000,exhibitionhall,"venue:31,food:23,av:10,marketing:10,logistics:22",BMICH
+118,techworkshopstraining,workshopstraining,321000,openspace,"venue:22,speakers:29,equipment:14,food:10,av:17,marketing:3",Colombo Innovation Tower
+753,codetalkspanels,talkspanels,2150000,exhibitionhall,"venue:29,speakers:18,food:23,av:18,marketing:17",BMICH
+190,codecompetitionshackathons,competitionshackathons,584000,coworkingspace,"venue:19,speakers:11,prizes:33,food:23,av:17,marketing:4",Hatch
+717,codetalkspanels,talkspanels,3144000,openspace,"venue:29,speakers:18,food:22,av:12,marketing:15",Nelum Pokuna
+1151,techconferencesexpos,conferencesexpos,4405000,openspace,"venue:38,speakers:28,food:12,av:18,marketing:12,logistics:3",Nelum Pokuna
+151,codecareernetworking,careernetworking,506000,coworkingspace,"venue:30,speakers:23,food:21,av:17,marketing:18",Hatch
+73,aicareernetworking,careernetworking,105000,coworkingspace,"venue:31,speakers:20,food:21,av:17,marketing:14",Gamers HQ
+676,aiworkshopstraining,workshopstraining,507000,openspace,"venue:27,speakers:28,equipment:16,food:11,av:13,marketing:5",Galle Face
+643,techcompetitionshackathons,competitionshackathons,322000,openspace,"venue:19,speakers:13,prizes:31,food:21,av:12,marketing:2",Galle Face
+1401,codeworkshopstraining,workshopstraining,3563000,exhibitionhall,"venue:27,speakers:27,equipment:14,food:9,av:12,marketing:8",BMICH
+121,aicareernetworking,careernetworking,331000,openspace,"venue:27,speakers:18,food:18,av:18,marketing:12",Colombo Innovation Tower
+226,aicompetitionshackathons,competitionshackathons,812000,openspace,"venue:17,speakers:9,prizes:31,food:18,av:14,marketing:8",Galadari
+242,aiworkshopstraining,workshopstraining,506000,coworkingspace,"venue:28,speakers:29,equipment:15,food:12,av:15,marketing:2",Trace Expert City
+250,aicareernetworking,careernetworking,241000,auditorium,"venue:31,speakers:22,food:18,av:17,marketing:13",NSBM
+456,techcompetitionshackathons,competitionshackathons,1243000,openspace,"venue:22,speakers:9,prizes:30,food:18,av:16,marketing:7",Galadari
+1401,aiconferencesexpos,conferencesexpos,708000,openspace,"venue:34,speakers:26,food:9,av:15,marketing:13,logistics:8",Galle Face
+208,codetalkspanels,talkspanels,71000,auditorium,"venue:33,speakers:20,food:17,av:12,marketing:16",Virtusa
+214,aicompetitionshackathons,competitionshackathons,332000,auditorium,"venue:22,speakers:8,prizes:33,food:23,av:14,marketing:4",SLIIT
+72,aimeetupscommunity,meetupscommunity,141000,coworkingspace,"venue:29,food:26,av:10,marketing:8,logistics:22",Gamers HQ
+56,techcompetitionshackathons,competitionshackathons,92000,studio,"venue:22,speakers:9,prizes:32,food:18,av:12,marketing:8",AOD
+150,aitalkspanels,talkspanels,54000,auditorium,"venue:30,speakers:20,food:17,av:13,marketing:12",Virtusa
+192,designworkshopstraining,workshopstraining,254000,coworkingspace,"venue:26,speakers:28,equipment:14,food:12,av:16,marketing:2",Trace Expert City
+510,designmeetupscommunity,meetupscommunity,1118000,exhibitionhall,"venue:28,food:23,av:11,marketing:10,logistics:27",BMICH
+89,techmeetupscommunity,meetupscommunity,266000,openspace,"venue:29,food:28,av:12,marketing:9,logistics:24",Colombo Innovation Tower
+157,techcareernetworking,careernetworking,173000,auditorium,"venue:27,speakers:23,food:20,av:16,marketing:12",SLIIT
+145,aitalkspanels,talkspanels,58000,auditorium,"venue:27,speakers:21,food:19,av:17,marketing:14",UCSC
+378,designtalkspanels,talkspanels,1424000,openspace,"venue:33,speakers:21,food:21,av:14,marketing:18",Galadari
+263,techmeetupscommunity,meetupscommunity,440000,coworkingspace,"venue:28,food:22,av:13,marketing:9,logistics:22",Trace Expert City
+302,techconferencesexpos,conferencesexpos,460000,auditorium,"venue:36,speakers:26,food:12,av:17,marketing:12,logistics:6",SLIIT
+520,techworkshopstraining,workshopstraining,2560000,exhibitionhall,"venue:24,speakers:30,equipment:12,food:8,av:17,marketing:7",Shangri-La
+182,codemeetupscommunity,meetupscommunity,313000,coworkingspace,"venue:28,food:28,av:10,marketing:9,logistics:23",Trace Expert City
+102,designconferencesexpos,conferencesexpos,277000,coworkingspace,"venue:38,speakers:22,food:11,av:15,marketing:9,logistics:4",Hatch
+460,codetalkspanels,talkspanels,538000,auditorium,"venue:33,speakers:17,food:17,av:16,marketing:15",NSBM
+142,techtalkspanels,talkspanels,289000,coworkingspace,"venue:31,speakers:21,food:19,av:15,marketing:17",Trace Expert City
+714,techcompetitionshackathons,competitionshackathons,690000,openspace,"venue:17,speakers:11,prizes:32,food:17,av:13,marketing:4",Galle Face
+64,aiworkshopstraining,workshopstraining,98000,coworkingspace,"venue:23,speakers:33,equipment:17,food:13,av:15,marketing:6",Gamers HQ
+142,aiworkshopstraining,workshopstraining,196000,coworkingspace,"venue:23,speakers:29,equipment:15,food:9,av:13,marketing:6",Trace Expert City
+61,designtalkspanels,talkspanels,183000,openspace,"venue:28,speakers:17,food:20,av:17,marketing:17",Colombo Innovation Tower
+471,designcareernetworking,careernetworking,1482000,openspace,"venue:33,speakers:19,food:18,av:16,marketing:15",Galadari
+67,designcompetitionshackathons,competitionshackathons,112000,coworkingspace,"venue:19,speakers:7,prizes:33,food:21,av:16,marketing:7",Gamers HQ
+1873,codemeetupscommunity,meetupscommunity,1457000,openspace,"venue:32,food:28,av:12,marketing:7,logistics:23",Galle Face
+83,aiworkshopstraining,workshopstraining,130000,studio,"venue:22,speakers:31,equipment:13,food:11,av:17,marketing:8",AOD
+105,techconferencesexpos,conferencesexpos,278000,studio,"venue:36,speakers:24,food:7,av:15,marketing:7,logistics:2",AOD
+145,designtalkspanels,talkspanels,574000,openspace,"venue:30,speakers:17,food:20,av:12,marketing:12",Colombo Innovation Tower
+121,aiworkshopstraining,workshopstraining,193000,coworkingspace,"venue:28,speakers:27,equipment:17,food:12,av:17,marketing:4",Trace Expert City
+515,aimeetupscommunity,meetupscommunity,717000,auditorium,"venue:31,food:26,av:8,marketing:12,logistics:28",NSBM
+95,codeconferencesexpos,conferencesexpos,136000,coworkingspace,"venue:34,speakers:22,food:12,av:13,marketing:10,logistics:7",Gamers HQ
+616,codetalkspanels,talkspanels,2553000,openspace,"venue:33,speakers:21,food:22,av:17,marketing:14",Nelum Pokuna
+229,designcompetitionshackathons,competitionshackathons,357000,auditorium,"venue:19,speakers:7,prizes:28,food:22,av:13,marketing:5",SLIIT
+59,designcareernetworking,careernetworking,133000,coworkingspace,"venue:32,speakers:18,food:23,av:17,marketing:16",Hatch
+307,codetalkspanels,talkspanels,277000,auditorium,"venue:32,speakers:23,food:22,av:18,marketing:17",SLIIT
+52,techcareernetworking,careernetworking,59000,coworkingspace,"venue:33,speakers:19,food:18,av:17,marketing:13",Gamers HQ
+103,techmeetupscommunity,meetupscommunity,364000,openspace,"venue:32,food:23,av:13,marketing:7,logistics:28",Colombo Innovation Tower
+77,aicareernetworking,careernetworking,152000,coworkingspace,"venue:32,speakers:21,food:19,av:14,marketing:17",Gamers HQ
+179,designtalkspanels,talkspanels,530000,coworkingspace,"venue:27,speakers:19,food:17,av:18,marketing:12",Hatch
+188,codecareernetworking,careernetworking,471000,coworkingspace,"venue:31,speakers:23,food:22,av:13,marketing:14",Hatch
+83,designcareernetworking,careernetworking,104000,coworkingspace,"venue:33,speakers:22,food:20,av:15,marketing:17",Gamers HQ
+194,aiworkshopstraining,workshopstraining,326000,coworkingspace,"venue:27,speakers:30,equipment:13,food:7,av:18,marketing:4",Trace Expert City
+224,techmeetupscommunity,meetupscommunity,5000,auditorium,"venue:31,food:25,av:13,marketing:12,logistics:27",Virtusa
+682,designcompetitionshackathons,competitionshackathons,593000,openspace,"venue:20,speakers:12,prizes:32,food:23,av:15,marketing:4",Galle Face
+444,techtalkspanels,talkspanels,2733000,exhibitionhall,"venue:33,speakers:21,food:20,av:14,marketing:16",Shangri-La
+1401,codemeetupscommunity,meetupscommunity,713000,openspace,"venue:33,food:27,av:8,marketing:12,logistics:22",Galle Face
+902,designtalkspanels,talkspanels,2149000,exhibitionhall,"venue:32,speakers:19,food:22,av:18,marketing:14",BMICH
+545,designconferencesexpos,conferencesexpos,460000,auditorium,"venue:36,speakers:25,food:7,av:14,marketing:13,logistics:4",NSBM
+66,aicompetitionshackathons,competitionshackathons,71000,coworkingspace,"venue:21,speakers:11,prizes:29,food:21,av:14,marketing:2",Gamers HQ
+1686,aicompetitionshackathons,competitionshackathons,1168000,openspace,"venue:17,speakers:9,prizes:30,food:19,av:16,marketing:3",Galle Face
+75,codecompetitionshackathons,competitionshackathons,210000,studio,"venue:20,speakers:9,prizes:29,food:23,av:12,marketing:3",AOD
+360,aicompetitionshackathons,competitionshackathons,2020000,exhibitionhall,"venue:17,speakers:9,prizes:30,food:18,av:17,marketing:7",Shangri-La
+1441,codetalkspanels,talkspanels,4228000,exhibitionhall,"venue:31,speakers:22,food:20,av:16,marketing:15",BMICH
+111,aicompetitionshackathons,competitionshackathons,231000,coworkingspace,"venue:23,speakers:9,prizes:31,food:17,av:18,marketing:5",Trace Expert City
+490,codecompetitionshackathons,competitionshackathons,1469000,openspace,"venue:19,speakers:7,prizes:33,food:18,av:14,marketing:5",Galadari
+378,aiconferencesexpos,conferencesexpos,381000,auditorium,"venue:38,speakers:23,food:13,av:12,marketing:11,logistics:4",SLIIT
+327,techworkshopstraining,workshopstraining,304000,auditorium,"venue:28,speakers:28,equipment:15,food:7,av:13,marketing:3",SLIIT
+422,codeworkshopstraining,workshopstraining,1549000,openspace,"venue:23,speakers:32,equipment:13,food:7,av:15,marketing:7",Galadari
+69,designcompetitionshackathons,competitionshackathons,217000,coworkingspace,"venue:23,speakers:9,prizes:32,food:22,av:16,marketing:2",Hatch
+99,aiconferencesexpos,conferencesexpos,56000,auditorium,"venue:33,speakers:24,food:13,av:13,marketing:11,logistics:4",UCSC
+117,aiworkshopstraining,workshopstraining,52000,auditorium,"venue:28,speakers:27,equipment:15,food:9,av:16,marketing:6",Virtusa
+251,codetalkspanels,talkspanels,966000,openspace,"venue:31,speakers:20,food:22,av:15,marketing:13",Galadari
+129,codeconferencesexpos,conferencesexpos,482000,openspace,"venue:33,speakers:26,food:11,av:15,marketing:11,logistics:5",Colombo Innovation Tower
+77,designcareernetworking,careernetworking,226000,studio,"venue:28,speakers:17,food:19,av:12,marketing:12",AOD
+230,designcareernetworking,careernetworking,869000,openspace,"venue:31,speakers:19,food:19,av:12,marketing:15",Galadari
+165,techmeetupscommunity,meetupscommunity,238000,coworkingspace,"venue:31,food:27,av:11,marketing:11,logistics:24",Trace Expert City
+70,aicareernetworking,careernetworking,235000,openspace,"venue:29,speakers:17,food:19,av:13,marketing:16",Colombo Innovation Tower
+559,codeconferencesexpos,conferencesexpos,1065000,exhibitionhall,"venue:37,speakers:26,food:13,av:18,marketing:10,logistics:2",BMICH
+76,techmeetupscommunity,meetupscommunity,240000,openspace,"venue:27,food:27,av:13,marketing:9,logistics:26",Colombo Innovation Tower
+724,techcareernetworking,careernetworking,3345000,exhibitionhall,"venue:30,speakers:17,food:23,av:13,marketing:15",Shangri-La
+170,techworkshopstraining,workshopstraining,172000,auditorium,"venue:26,speakers:31,equipment:16,food:13,av:17,marketing:5",SLIIT
+507,aiworkshopstraining,workshopstraining,439000,openspace,"venue:23,speakers:30,equipment:14,food:7,av:16,marketing:4",Galle Face
+47,aiworkshopstraining,workshopstraining,77000,coworkingspace,"venue:22,speakers:33,equipment:12,food:9,av:12,marketing:5",Gamers HQ
+192,codeconferencesexpos,conferencesexpos,558000,coworkingspace,"venue:34,speakers:27,food:10,av:17,marketing:7,logistics:3",Hatch
+155,designtalkspanels,talkspanels,121000,auditorium,"venue:27,speakers:21,food:20,av:14,marketing:13",UCSC
+737,aicareernetworking,careernetworking,4208000,exhibitionhall,"venue:27,speakers:22,food:20,av:17,marketing:15",Shangri-La
+66,codeconferencesexpos,conferencesexpos,80000,coworkingspace,"venue:36,speakers:26,food:9,av:15,marketing:7,logistics:3",Gamers HQ
+400,designconferencesexpos,conferencesexpos,640000,exhibitionhall,"venue:36,speakers:24,food:9,av:14,marketing:13,logistics:4",BMICH
+494,aicareernetworking,careernetworking,2934000,exhibitionhall,"venue:31,speakers:19,food:17,av:17,marketing:16",Shangri-La
+280,designworkshopstraining,workshopstraining,948000,openspace,"venue:28,speakers:33,equipment:12,food:7,av:14,marketing:2",Galadari
+629,aiworkshopstraining,workshopstraining,1029000,exhibitionhall,"venue:27,speakers:31,equipment:16,food:9,av:18,marketing:4",BMICH
+53,aimeetupscommunity,meetupscommunity,86000,coworkingspace,"venue:31,food:28,av:7,marketing:7,logistics:25",Gamers HQ
+137,aitalkspanels,talkspanels,88000,auditorium,"venue:31,speakers:19,food:21,av:16,marketing:13",UCSC
+79,aiworkshopstraining,workshopstraining,109000,coworkingspace,"venue:23,speakers:33,equipment:13,food:9,av:17,marketing:7",Gamers HQ
+133,techconferencesexpos,conferencesexpos,103000,auditorium,"venue:38,speakers:28,food:8,av:18,marketing:10,logistics:8",UCSC
+1169,techcareernetworking,careernetworking,5206000,openspace,"venue:33,speakers:21,food:22,av:14,marketing:14",Nelum Pokuna
+464,designworkshopstraining,workshopstraining,2483000,exhibitionhall,"venue:26,speakers:33,equipment:18,food:11,av:12,marketing:5",Shangri-La
+91,codecompetitionshackathons,competitionshackathons,30000,auditorium,"venue:20,speakers:12,prizes:29,food:21,av:14,marketing:3",UCSC
+236,designconferencesexpos,conferencesexpos,74000,auditorium,"venue:38,speakers:27,food:8,av:13,marketing:11,logistics:6",Virtusa
+310,techtalkspanels,talkspanels,435000,auditorium,"venue:30,speakers:17,food:23,av:17,marketing:15",SLIIT
+54,codecompetitionshackathons,competitionshackathons,63000,coworkingspace,"venue:20,speakers:10,prizes:33,food:22,av:12,marketing:8",Gamers HQ
+1506,designcompetitionshackathons,competitionshackathons,1299000,openspace,"venue:19,speakers:11,prizes:31,food:21,av:16,marketing:6",Galle Face
+1858,techcompetitionshackathons,competitionshackathons,2198000,openspace,"venue:17,speakers:8,prizes:32,food:17,av:16,marketing:2",Galle Face
+533,techtalkspanels,talkspanels,1279000,exhibitionhall,"venue:30,speakers:23,food:23,av:14,marketing:13",BMICH
+214,designcompetitionshackathons,competitionshackathons,19000,auditorium,"venue:22,speakers:13,prizes:27,food:22,av:18,marketing:5",Virtusa
+63,codecareernetworking,careernetworking,231000,openspace,"venue:30,speakers:21,food:21,av:13,marketing:17",Colombo Innovation Tower
+270,aicareernetworking,careernetworking,264000,auditorium,"venue:29,speakers:17,food:21,av:15,marketing:14",SLIIT
+264,designmeetupscommunity,meetupscommunity,361000,auditorium,"venue:31,food:24,av:10,marketing:8,logistics:23",SLIIT
+129,codeworkshopstraining,workshopstraining,354000,openspace,"venue:23,speakers:32,equipment:16,food:10,av:17,marketing:4",Colombo Innovation Tower
+38,techmeetupscommunity,meetupscommunity,67000,coworkingspace,"venue:28,food:26,av:10,marketing:8,logistics:26",Gamers HQ
+264,techcareernetworking,careernetworking,324000,auditorium,"venue:28,speakers:17,food:22,av:15,marketing:15",NSBM
+767,techtalkspanels,talkspanels,2089000,exhibitionhall,"venue:28,speakers:22,food:19,av:12,marketing:13",BMICH
+882,codemeetupscommunity,meetupscommunity,683000,openspace,"venue:30,food:27,av:10,marketing:10,logistics:28",Galle Face
+1080,aitalkspanels,talkspanels,2283000,exhibitionhall,"venue:33,speakers:21,food:20,av:15,marketing:15",BMICH
+967,techconferencesexpos,conferencesexpos,4254000,openspace,"venue:38,speakers:25,food:11,av:15,marketing:13,logistics:3",Nelum Pokuna
+375,codeconferencesexpos,conferencesexpos,1495000,openspace,"venue:33,speakers:25,food:12,av:13,marketing:8,logistics:2",Galadari
+163,codetalkspanels,talkspanels,329000,coworkingspace,"venue:27,speakers:17,food:22,av:16,marketing:17",Hatch
+195,designcareernetworking,careernetworking,409000,coworkingspace,"venue:31,speakers:21,food:19,av:17,marketing:15",Trace Expert City
+83,techmeetupscommunity,meetupscommunity,227000,coworkingspace,"venue:31,food:25,av:9,marketing:9,logistics:23",Hatch
+53,designtalkspanels,talkspanels,33000,auditorium,"venue:29,speakers:21,food:20,av:12,marketing:16",UCSC
+163,aiworkshopstraining,workshopstraining,453000,coworkingspace,"venue:24,speakers:28,equipment:14,food:13,av:17,marketing:5",Hatch
+178,designconferencesexpos,conferencesexpos,124000,auditorium,"venue:33,speakers:25,food:9,av:12,marketing:10,logistics:6",UCSC
+182,designconferencesexpos,conferencesexpos,33000,auditorium,"venue:35,speakers:23,food:11,av:18,marketing:13,logistics:3",Virtusa
+637,designcompetitionshackathons,competitionshackathons,2726000,openspace,"venue:21,speakers:9,prizes:31,food:17,av:18,marketing:5",Nelum Pokuna
+91,techcompetitionshackathons,competitionshackathons,160000,studio,"venue:19,speakers:8,prizes:28,food:21,av:14,marketing:4",AOD
+1679,codecompetitionshackathons,competitionshackathons,1816000,openspace,"venue:21,speakers:8,prizes:30,food:23,av:15,marketing:2",Galle Face
+182,codemeetupscommunity,meetupscommunity,102000,auditorium,"venue:32,food:23,av:8,marketing:12,logistics:25",UCSC
+432,codeworkshopstraining,workshopstraining,1700000,openspace,"venue:27,speakers:30,equipment:16,food:10,av:14,marketing:3",Galadari
+77,codecompetitionshackathons,competitionshackathons,174000,coworkingspace,"venue:17,speakers:8,prizes:33,food:17,av:15,marketing:4",Hatch
+140,designtalkspanels,talkspanels,184000,coworkingspace,"venue:27,speakers:18,food:20,av:12,marketing:15",Trace Expert City
+220,codeconferencesexpos,conferencesexpos,87000,auditorium,"venue:32,speakers:27,food:13,av:16,marketing:9,logistics:5",Virtusa
+1084,designcompetitionshackathons,competitionshackathons,1174000,openspace,"venue:23,speakers:8,prizes:27,food:18,av:17,marketing:3",Galle Face
+113,designworkshopstraining,workshopstraining,340000,coworkingspace,"venue:25,speakers:32,equipment:13,food:10,av:12,marketing:3",Hatch
+341,codetalkspanels,talkspanels,862000,openspace,"venue:29,speakers:19,food:19,av:14,marketing:16",Galadari
+574,aicareernetworking,careernetworking,660000,auditorium,"venue:31,speakers:23,food:23,av:15,marketing:16",NSBM
+1052,codetalkspanels,talkspanels,1856000,exhibitionhall,"venue:27,speakers:22,food:19,av:16,marketing:14",BMICH
+534,codetalkspanels,talkspanels,663000,auditorium,"venue:31,speakers:18,food:21,av:15,marketing:13",NSBM
+88,codetalkspanels,talkspanels,92000,coworkingspace,"venue:30,speakers:18,food:19,av:13,marketing:16",Gamers HQ
+62,aicareernetworking,careernetworking,89000,coworkingspace,"venue:28,speakers:21,food:17,av:12,marketing:12",Gamers HQ
+83,codecareernetworking,careernetworking,32000,auditorium,"venue:33,speakers:18,food:20,av:12,marketing:18",Virtusa
+156,techcareernetworking,careernetworking,245000,coworkingspace,"venue:33,speakers:22,food:22,av:15,marketing:18",Trace Expert City
+500,techcareernetworking,careernetworking,412000,auditorium,"venue:33,speakers:23,food:19,av:17,marketing:12",NSBM
+603,aiworkshopstraining,workshopstraining,2210000,openspace,"venue:28,speakers:30,equipment:14,food:11,av:12,marketing:6",Nelum Pokuna
+1271,aiconferencesexpos,conferencesexpos,3361000,exhibitionhall,"venue:33,speakers:22,food:10,av:17,marketing:9,logistics:6",BMICH
+427,codeworkshopstraining,workshopstraining,2753000,exhibitionhall,"venue:23,speakers:28,equipment:17,food:8,av:16,marketing:5",Shangri-La
+646,aimeetupscommunity,meetupscommunity,2252000,openspace,"venue:31,food:25,av:11,marketing:7,logistics:28",Nelum Pokuna
+119,codemeetupscommunity,meetupscommunity,358000,openspace,"venue:27,food:25,av:11,marketing:7,logistics:25",Colombo Innovation Tower
+325,aiconferencesexpos,conferencesexpos,512000,auditorium,"venue:38,speakers:28,food:11,av:18,marketing:10,logistics:4",SLIIT
+125,designcompetitionshackathons,competitionshackathons,176000,auditorium,"venue:18,speakers:12,prizes:32,food:17,av:14,marketing:3",SLIIT
+61,aiconferencesexpos,conferencesexpos,219000,openspace,"venue:33,speakers:22,food:8,av:12,marketing:11,logistics:3",Colombo Innovation Tower
+168,techmeetupscommunity,meetupscommunity,516000,coworkingspace,"venue:31,food:22,av:12,marketing:12,logistics:22",Hatch
+113,designworkshopstraining,workshopstraining,179000,studio,"venue:25,speakers:33,equipment:15,food:10,av:18,marketing:4",AOD
+321,aiworkshopstraining,workshopstraining,839000,openspace,"venue:24,speakers:32,equipment:15,food:8,av:12,marketing:3",Galadari
+681,designconferencesexpos,conferencesexpos,1781000,exhibitionhall,"venue:33,speakers:26,food:9,av:17,marketing:12,logistics:7",BMICH
+43,aitalkspanels,talkspanels,123000,studio,"venue:27,speakers:23,food:20,av:15,marketing:17",AOD
+402,aicareernetworking,careernetworking,543000,auditorium,"venue:31,speakers:17,food:23,av:15,marketing:15",NSBM
+72,codecareernetworking,careernetworking,191000,studio,"venue:28,speakers:18,food:20,av:18,marketing:12",AOD
+312,aimeetupscommunity,meetupscommunity,284000,auditorium,"venue:29,food:28,av:11,marketing:11,logistics:25",SLIIT
+87,techtalkspanels,talkspanels,32000,auditorium,"venue:30,speakers:17,food:18,av:13,marketing:12",UCSC
+138,techmeetupscommunity,meetupscommunity,53000,auditorium,"venue:27,food:26,av:11,marketing:7,logistics:26",Virtusa
+109,codetalkspanels,talkspanels,390000,openspace,"venue:28,speakers:22,food:19,av:18,marketing:14",Colombo Innovation Tower
+548,codeconferencesexpos,conferencesexpos,2429000,openspace,"venue:34,speakers:22,food:12,av:13,marketing:9,logistics:7",Nelum Pokuna
+342,techconferencesexpos,conferencesexpos,464000,auditorium,"venue:36,speakers:24,food:12,av:17,marketing:10,logistics:4",SLIIT
+863,aicareernetworking,careernetworking,3761000,openspace,"venue:32,speakers:21,food:21,av:18,marketing:15",Nelum Pokuna
+76,aimeetupscommunity,meetupscommunity,29000,auditorium,"venue:33,food:25,av:7,marketing:10,logistics:22",UCSC
