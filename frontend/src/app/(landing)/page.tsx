@@ -10,7 +10,11 @@ import {
   BrainCircuit, 
   Users, 
   ArrowRight,
-  Check
+  Check,
+  RefreshCw,
+  Target,
+  CheckCircle2,
+  Rocket
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -29,12 +33,20 @@ const staggerContainer = {
   }
 };
 
+const marqueeItems = [
+  { text: "LKR Budget Tracking", icon: <DollarSign className="w-4 h-4" /> },
+  { text: "Seamless QR Check-in", icon: <QrCode className="w-4 h-4" /> },
+  { text: "Collaborative Team Workspace", icon: <Users className="w-4 h-4" /> },
+  { text: "AI-Powered Recommedation", icon: <BrainCircuit className="w-4 h-4" /> },
+  { text: "End-to-End Event Planning", icon: <LayoutList className="w-4 h-4" /> },
+  { text: "Live Progress Sync", icon: <RefreshCw className="w-4 h-4" /> }
+];
+
 export default function HomePage() {
   //CURSOR LOGIC 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  // Smooth spring animation so the glow drags slightly behind cursor
   const springX = useSpring(mouseX, { stiffness: 100, damping: 20 });
   const springY = useSpring(mouseY, { stiffness: 100, damping: 20 });
 
@@ -45,7 +57,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden bg-[#050505] text-white">
       
       {/*BACKGROUND EFFECTS*/}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -57,7 +69,7 @@ export default function HomePage() {
      {/* HERO SECTION*/}
       <section 
         onMouseMove={handleMouseMove} 
-        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden flex flex-col items-center text-center px-6 z-10 group"
+        className="relative h-[85vh] min-h-[700px] flex flex-col items-center justify-start pt-24 lg:pt-32 text-center px-6 z-10 group overflow-hidden"
       >
         
         {/* THE CURSOR GLOW */}
@@ -84,7 +96,7 @@ export default function HomePage() {
           
           <motion.h1 
             variants={fadeInUp} 
-            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white drop-shadow-2xl leading-snug"
+            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white drop-shadow-2xl leading-[1.1]"
           >
             PLAN SMARTER <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
@@ -93,7 +105,7 @@ export default function HomePage() {
           </motion.h1>
 
           <motion.p variants={fadeInUp} className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-loose">
-            Everything You Need To Create Flawless Events—Centralized, Automated, And Powered By AI.
+          Everything You Need To Create Flawless Events—Centralized, Automated, And Powered By AI.
           </motion.p>
 
           <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -139,7 +151,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* 3D Grid Floor Effect */}
-        <div className="absolute bottom-0 left-0 right-0 h-[400px] w-full z-0 overflow-hidden perspective-[1000px]">
+        <div className="absolute bottom-0 left-0 right-0 h-[300px] w-full z-0 overflow-hidden perspective-[1000px]">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:40px_40px] [transform:rotateX(60deg)] origin-top h-[200%] w-full animate-grid-flow"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent h-full"></div>
         </div>
@@ -149,17 +161,38 @@ export default function HomePage() {
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1, y: [0, 10, 0] }} 
           transition={{ delay: 1, duration: 2, repeat: Infinity }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
         >
-          <div className="w-[30px] h-[50px] border-2 border-white/20 rounded-full flex justify-center p-2 backdrop-blur-sm">
+          <div className="w-[20px] h-[35px] border-2 border-white/20 rounded-full flex justify-center p-1 backdrop-blur-sm">
             <motion.div 
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-1.5 h-1.5 bg-green-400 rounded-full shadow-[0_0_10px_#4ade80]"
+              className="w-1 h-1.5 bg-purple-500 rounded-full shadow-[0_0_10px_#a855f7]"
             />
           </div>
         </motion.div>
       </section>
+
+      {/* GLASSPHORPHISM MARQUEE */}
+      <div className="relative z-20 py-6 border-y border-white/5 bg-white/[0.03] backdrop-blur-lg overflow-hidden">
+        <motion.div 
+          animate={{ x: [0, -1500] }} 
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          className="flex whitespace-nowrap gap-20 items-center"
+        >
+          {[...marqueeItems, ...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, i) => (
+            <div key={i} className="flex items-center gap-4 group">
+              <span className="text-purple-400 opacity-70">
+                {item.icon}
+              </span>
+              <span className="text-sm md:text-base font-semibold tracking-widest text-white/60 uppercase">
+                {item.text}
+              </span>
+              <div className="w-1 h-1 rounded-full bg-white/20 ml-10" />
+            </div>
+          ))}
+        </motion.div>
+      </div>
 
       {/* FEATURES SECTION */}
       <section className="py-24 relative z-10 px-6">
@@ -193,9 +226,8 @@ export default function HomePage() {
             How It Works
           </motion.h2>
 
-          <div className="relative flex flex-col md:flex-row justify-between items-center gap-12 max-w-5xl mx-auto">
-            {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30"></div>
+          <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 max-w-7xl mx-auto">
+            <div className="hidden lg:block absolute top-12 left-[12.5%] right-[12.5%] h-[2px] bg-gradient-to-r from-purple-700 via-blue-500 to-purple-700 z-0"></div>
             
             {steps.map((step, idx) => (
               <motion.div 
@@ -206,11 +238,19 @@ export default function HomePage() {
                 transition={{ delay: idx * 0.2 }}
                 className="relative z-10 flex flex-col items-center text-center group"
               >
-                <div className="w-24 h-24 rounded-full bg-[#111] border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(147,51,234,0.15)] group-hover:shadow-[0_0_50px_rgba(147,51,234,0.4)] group-hover:border-purple-500/50 transition-all duration-500">
-                  <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-purple-400 to-blue-400">{step.number}</span>
+                {/* Icon Number */}
+                <div className="relative mb-8">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-[0_0_30px_rgba(147,51,234,0.3)] group-hover:scale-105 group-hover:shadow-[0_0_50px_rgba(147,51,234,0.5)] transition-all duration-300">
+                    {step.icon}
+                  </div>
+                  <div className="absolute top-0 right-0 translate-x-1/4 -translate-y-1/4 w-8 h-8 rounded-full bg-[#050505] border border-gray-500 flex items-center justify-center z-20">
+                    <span className="text-xs font-semibold text-gray-300">{step.number}</span>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-                <p className="text-sm text-gray-400">{step.desc}</p>
+
+                {/* Text Content */}
+                <h3 className="text-xl font-medium mb-4 text-white">{step.title}</h3>
+                <p className="text-sm text-gray-400 leading-relaxed max-w-[260px]">{step.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -282,7 +322,28 @@ const features = [
 ];
 
 const steps = [
-  { number: "1", title: "Create Event", desc: "Set up your event details" },
-  { number: "2", title: "Plan Tasks", desc: "Build your timeline" },
-  { number: "3", title: "Track Everything", desc: "Monitor progress in real-time" }
+  { 
+    number: "1", 
+    title: "Tell Us Your Vision", 
+    desc: "Share your event details and goals. Our AI understands your requirements and starts planning instantly.",
+    icon: <Sparkles className="w-10 h-10 text-white" />
+  },
+  { 
+    number: "2", 
+    title: "AI Creates Your Plan", 
+    desc: "Get a complete event plan with timelines, budgets, vendor suggestions, and task lists in minutes.",
+    icon: <Target className="w-10 h-10 text-white" />
+  },
+  { 
+    number: "3", 
+    title: "Collaborate & Refine", 
+    desc: "Work with your team, make adjustments, and let AI handle the coordination and scheduling.",
+    icon: <CheckCircle2 className="w-10 h-10 text-white" />
+  },
+  { 
+    number: "4", 
+    title: "Execute Flawlessly", 
+    desc: "Launch your event with confidence. Monitor everything in real-time and let automation handle the rest.",
+    icon: <Rocket className="w-10 h-10 text-white" />
+  }
 ];
