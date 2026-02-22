@@ -6,7 +6,7 @@ const contactForm= async (req, res) => {
     if (!name || !email  || !subject || !message){
         return res.status(400).json({
             success:false,
-            message: "Please fill all the required fields!";
+            message: "Please fill all the required fields!",
         })
     }
 
@@ -15,7 +15,7 @@ const contactForm= async (req, res) => {
     if (!emailRegex.test(email)){
         return res.status(400).json({
             success:false,
-            message: "Please provide a valid email address!";
+            message: "Please provide a valid email address!",
         })
 
     }
