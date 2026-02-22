@@ -1,4 +1,4 @@
-const registerUser = (req, res) => {
+const registerUser = async(req, res) => {
 
     // Extract user details from the request body
     const{firstName, lastName, email, organization, password} = req.body;
@@ -42,13 +42,17 @@ const registerUser = (req, res) => {
         success:true,
         message: "User Registered Successfully!"
     })
-
-    module.exports = { registerUser };
-
-
-
-
-
-
 }
+
+module.exports = {
+    registerUser
+}
+
+
+
+
+
+
+
+
 
