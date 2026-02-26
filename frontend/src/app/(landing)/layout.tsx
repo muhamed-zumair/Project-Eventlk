@@ -27,7 +27,7 @@ export default function MarketingLayout({
   return (
     <div className="relative flex flex-col min-h-screen w-full max-w-[100vw] overflow-x-hidden">
       
-      {/* NAVBAR*/}
+      {/* NAVBAR: Fixed width constraints with max-w-[100vw] */}
       <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b border-white/5 bg-black/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between w-full">
           
@@ -35,6 +35,7 @@ export default function MarketingLayout({
             <Image src="/logo.png" alt="EventLK Logo" width={120} height={40} className="h-8 w-auto object-contain" priority/>
           </Link>
 
+          {/* Desktop Navigation (Now hides below 1024px to prevent tablet stretching) */}
           <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-300">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
@@ -98,14 +99,14 @@ export default function MarketingLayout({
             <ul className="space-y-4 text-sm text-gray-400">
               <li className="hover:text-purple-400 cursor-pointer transition-colors">Features</li>
               <li className="hover:text-purple-400 cursor-pointer transition-colors"><Link href="/pricing">Pricing</Link></li>
-              <li className="hover:text-purple-400 cursor-pointer transition-colors">Security</li>
+              <li><Link href="/security" className="hover:text-purple-400 transition-colors block">Security</Link></li>
             </ul>
           </div>
           <div>
             <h5 className="font-bold mb-6 text-white">Legal</h5>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li className="hover:text-purple-400 cursor-pointer transition-colors">Privacy Policy</li>
-              <li className="hover:text-purple-400 cursor-pointer transition-colors">Terms of Service</li>
+              <li><Link href="/privacy" className="hover:text-purple-400 transition-colors block">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-purple-400 transition-colors block">Terms of Service</Link></li>
             </ul>
           </div>
           <div className="col-span-2 md:col-span-1 flex flex-col">
