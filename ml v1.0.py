@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # ==========================================
-# 1. SETUP & DATA LOADING (Commit 1)
+# 1. SETUP & DATA LOADING 
 # ==========================================
 
 def load_data():
@@ -17,7 +17,7 @@ def load_data():
         return None
 
 # ==========================================
-# 2. DATA CLEANING & PREP (Commit 2)
+# 2. DATA CLEANING & PREP 
 # ==========================================
 
 def clean_data(df):
@@ -36,7 +36,7 @@ def clean_data(df):
     return df
 
 # ==========================================
-# 3. FEATURE ENGINEERING (Commit 3)
+# 3. FEATURE ENGINEERING 
 # ==========================================
 
 def add_features(df):
@@ -49,7 +49,7 @@ def add_features(df):
     return df
 
 # ==========================================
-# 4. TARGET VARIABLE PARSING (Commit 4)
+# 4. TARGET VARIABLE PARSING 
 # ==========================================
 
 def parse_budget_allocation(df):
