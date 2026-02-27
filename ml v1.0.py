@@ -1,52 +1,90 @@
 import pandas as pd
+import numpy as np
 
 # ==========================================
-# 1. SETUP & DATA PROCESSING
+# 1. SETUP & DATA LOADING (Commit 1)
 # ==========================================
 
-def load_and_clean_data():
-    """Loads the event dataset and prints the first few rows."""
+def load_data():
+    """Loads the event dataset and returns a DataFrame."""
     file_path = "event_dataset_v2_distinct.csv"
-    
     try:
-        print(f"Attempting to load data from '{file_path}'...")
         df = pd.read_csv(file_path)
-        print(f" Data loaded successfully. Initial shape: {df.shape}")
-        
-        print("\nData loaded successfully! Here is a preview of the first 5 rows:")
-        print("-" * 50)
-        print(df.head())
-        print("-" * 50)
-        
+        print("✅ Step 1: Data loaded successfully.")
         return df
-        
     except FileNotFoundError:
-        print(f"Error: Could not find the file '{file_path}'.")
-        print("Please ensure the dataset is in the same directory as this script.")
+        print(f"❌ Error: Could not find '{file_path}'.")
         return None
 
-        # --- Data Cleaning ---
-        print("\nCleaning data...")
+# ==========================================
+# 2. DATA CLEANING & PREP (Commit 2)
+# ==========================================
 
-        # Define columns that must be numbers
-        numeric_cols = ['headcount', 'budget']
+def clean_data(df):
+    """Handles numeric conversion and missing values."""
+    if df is None: return None
+    
+    numeric_cols = ['headcount', 'budget']
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+    
+    # Drop missing values and invalid headcounts
+    df = df.dropna(subset=numeric_cols)
+    df = df[df['headcount'] > 0]
+    
+    print(f"✅ Step 2: Cleaning complete. {len(df)} rows remaining.")
+    return df
 
-        # Convert to numeric, forcing errors to NaN (Not a Number)
-        for col in numeric_cols:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-        
-        # Drop rows where budget or headcount became NaN
-        df = df.dropna(subset=numeric_cols)
+# ==========================================
+# 3. FEATURE ENGINEERING (Commit 3)
+# ==========================================
 
-        # Filter out impossible events (must have at least 1 person)
-        df = df[df['headcount'] > 0]
+def add_features(df):
+    """Calculates specific metrics like cost per head."""
+    if df is None: return None
+    
+    df['budget_per_head'] = df['budget'] / df['headcount']
+    
+    print("✅ Step 3: Features engineered (budget_per_head).")
+    return df
 
-        print(f" Data cleaned. Final shape: {df.shape}")
-        print("\nPreview of cleaned numeric columns:")
-        print(df[['headcount', 'budget']].head())
+# ==========================================
+# 4. TARGET VARIABLE PARSING (Commit 4)
+# ==========================================
 
-        return df
+def parse_budget_allocation(df):
+    """Parses the 'budgetallocation' string into separate numeric targets."""
+    if df is None: return None
+
+    def parse_string(s):
+        d = {}
+        if pd.isna(s): return d
+        # Logic: "Venue:40,Catering:30" -> {'alloc_venue': 40.0, 'alloc_catering': 30.0}
+        for item in s.split(','):
+            if ':' in item:
+                k, v = item.split(':')
+                d['alloc_' + k.strip().lower()] = float(v)
+        return d
+    
+    # Expand the dictionary into new columns
+    alloc_df = df['budgetallocation'].apply(parse_string).apply(pd.Series).fillna(0)
+    
+    print("✅ Step 4: Budget allocation targets parsed.")
+    print(f"Categories found: {list(alloc_df.columns)}")
+    
+    return df, alloc_df
+
+# ==========================================
+# EXECUTION FLOW
+# ==========================================
 
 if __name__ == "__main__":
-    # Execute the data loading and cleaning function
-    cleaned_df = load_and_clean_data()
+    # Progressive pipeline execution
+    raw_data = load_data()
+    cleaned_data = clean_data(raw_data)
+    featured_data = add_features(cleaned_data)
+    final_df, targets = parse_budget_allocation(featured_data)
+    
+    if final_df is not None:
+        print("\n--- Final Data Preview ---")
+        print(final_df[['headcount', 'budget', 'budget_per_head']].head())
