@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import OneHotEncoder
 
 # ==========================================
 # 1. SETUP & DATA LOADING 
@@ -75,6 +76,32 @@ def parse_budget_allocation(df):
     return df, alloc_df
 
 # ==========================================
+# 5. ENCODING & TRAIN PREP
+# ==========================================
+def prepare_training_data(df, alloc_df):
+    """Encodes categorical data and builds X and y matrices for ML."""
+    if df is None or alloc_df is None: return None, None, None, None
+
+    numeric_features = ['headcount', 'budget', 'budget_per_head']
+    encode_cols = ['eventtype', 'eventcategory', 'venuecategory']
+
+    # 1. Initialize and fit the OneHotEncoder
+    encoder = OneHotEncoder(sparse_output=False, drop='first', handle_unknown='ignore')
+    X_encoded = encoder.fit_transform(df[encode_cols])
+
+    # 2. Combine numeric and encoded categorical features into final X matrix
+    X = np.hstack([df[numeric_features].values, X_encoded])
+
+    # 3. Define the two targets (y)
+    y_venue = df['venue'].astype(str)
+    y_alloc = alloc_df
+
+    print("✅ Step 5: Training matrices prepared.")
+    print(f"Feature matrix (X) shape: {X.shape}")
+
+    return X, y_venue, y_alloc, encoder
+
+# ==========================================
 # EXECUTION FLOW
 # ==========================================
 
@@ -83,8 +110,9 @@ if __name__ == "__main__":
     raw_data = load_data()
     cleaned_data = clean_data(raw_data)
     featured_data = add_features(cleaned_data)
-    final_df, targets = parse_budget_allocation(featured_data)
     
-    if final_df is not None:
+    if featured_data is not None:
+        final_df, alloc_targets = parse_budget_allocation(featured_data)
+        X, y_venue, y_alloc, fitted_encoder = prepare_training_data(final_df, alloc_targets)
         print("\n--- Final Data Preview ---")
         print(final_df[['headcount', 'budget', 'budget_per_head']].head())
