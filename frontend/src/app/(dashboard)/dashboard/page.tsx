@@ -1,18 +1,16 @@
 "use client";
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
-  Sparkles, ArrowRight, X, AlignLeft, Mail, Phone, User
-} from 'lucide-react';
-import { 
-  Calendar, MapPin, Users, DollarSign, CheckCircle, 
-  Clock, AlertCircle, TrendingUp
+  Sparkles, Calendar, MapPin, Users, DollarSign, 
+  CheckCircle, Clock, AlertCircle, Pencil, X, Trash2, Plus,
+  FileText, Mail, Phone, User, Check
 } from "lucide-react";
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer 
 } from 'recharts';
 
-// --- MOCK DATA ---
+// --- MOCK DATA (Replace with API call) ---
 const chartData = [
   { day: 'Mon', registration: 450, actual: 40 },
   { day: 'Tue', registration: 52, actual: 48 },
@@ -23,159 +21,146 @@ const chartData = [
   { day: 'Sun', registration: 90, actual: 88 },
 ];
 
-// Custom Tooltip for the Chart to make it look premium
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl border border-gray-100">
-        <p className="font-bold text-gray-800 mb-2">{label}</p>
-        {payload.map((entry, index) => (
-          <div key={index} className="flex items-center gap-2 text-sm mt-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="text-gray-600 capitalize">{entry.name}:</span>
-            <span className="font-bold text-gray-900">{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
-
 export default function DashboardHome() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   return (
-    <div className="space-y-8 pb-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800 tracking-tight">Dashboard</h2>
-      </div>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
 
       {/* HERO SECTION - Annual Tech Summit */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-3xl p-8 text-white shadow-2xl shadow-indigo-200/50">
-        {/* Decorative background blur elements */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start gap-6 mb-8">
+      <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+        <div className="flex justify-between items-start mb-4">
           <div>
-            <div className="flex flex-wrap gap-2 mb-3">
-              <span className="px-3 py-1 bg-white/20 backdrop-blur-md border border-white/10 rounded-full text-xs font-semibold tracking-wide">
-                Currently Planning
-              </span>
-              <span className="px-3 py-1 bg-emerald-400/20 backdrop-blur-md border border-emerald-400/20 text-emerald-200 rounded-full text-xs font-semibold tracking-wide flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                In Progress
-              </span>
+            <div className="flex gap-2 mb-2">
+              <span className="px-3 py-1 bg-indigo-500/50 rounded-full text-xs font-medium">Currently Planning</span>
+              <span className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-xs font-medium">In Progress</span>
             </div>
-            <h1 className="text-4xl font-extrabold mb-3 tracking-tight">Annual Tech Summit 2025</h1>
-            <p className="text-indigo-100/80 text-sm max-w-2xl leading-relaxed">
+            <h1 className="text-3xl font-bold mb-2">Annual Tech Summit 2025</h1>
+            <p className="text-indigo-200 text-sm max-w-2xl">
               Annual technology summit featuring keynote speakers, workshops, and networking sessions for students and industry professionals.
             </p>
           </div>
-          
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl text-center min-w-[120px] shadow-lg shrink-0">
-            <span className="block text-4xl font-black mb-1">12</span>
-            <span className="text-xs font-medium text-indigo-100 uppercase tracking-wider">Days to go</span>
+          <div className="bg-indigo-700/50 p-4 rounded-xl text-center min-w-[100px]">
+            <span className="block text-3xl font-bold">12</span>
+            <span className="text-xs text-indigo-200">Days to go</span>
           </div>
         </div>
 
         {/* Stats Grid inside Hero */}
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[
-            { label: 'Event Date', val: 'Dec 25, 2024', icon: Calendar },
-            { label: 'Venue', val: 'Main Hall, Campus', icon: MapPin },
-            { label: 'Registrations', val: '168 / 200', icon: Users, progress: 84 },
-            { label: 'Budget Used', val: '$45.2k / $60k', icon: DollarSign, progress: 75 },
-          ].map((stat, idx) => (
-            <div key={idx} className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-2xl hover:bg-white/15 transition-colors">
-              <div className="flex items-center gap-2 text-indigo-100 mb-2 text-xs font-medium uppercase tracking-wider">
-                <stat.icon size={14} className="text-indigo-300" /> {stat.label}
-              </div>
-              <p className="font-bold text-lg">{stat.val}</p>
-              {stat.progress && (
-                <div className="w-full bg-indigo-950/40 h-1.5 rounded-full mt-3 overflow-hidden">
-                  <div className="bg-gradient-to-r from-indigo-300 to-white h-full rounded-full" style={{ width: `${stat.progress}%` }}></div>
-                </div>
-              )}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
+            <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs">
+              <Calendar size={14} /> Event Date
             </div>
-          ))}
+            <p className="font-semibold">December 25, 2024</p>
+          </div>
+          <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
+            <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs">
+              <MapPin size={14} /> Venue
+            </div>
+            <p className="font-semibold">Main Hall, University Campus</p>
+          </div>
+          <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
+            <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs">
+              <Users size={14} /> Registrations
+            </div>
+            <div className="flex justify-between items-end">
+              <p className="font-semibold">168 / 200</p>
+            </div>
+            <div className="w-full bg-indigo-900/50 h-1.5 rounded-full mt-2">
+              <div className="bg-white h-1.5 rounded-full" style={{ width: '84%' }}></div>
+            </div>
+          </div>
+          <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
+            <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs">
+              <DollarSign size={14} /> Budget Used
+            </div>
+            <p className="font-semibold">$45,200 / $60,000</p>
+            <div className="w-full bg-indigo-900/50 h-1.5 rounded-full mt-2">
+              <div className="bg-white h-1.5 rounded-full" style={{ width: '75%' }}></div>
+            </div>
+          </div>
         </div>
 
         {/* Progress Bar Row */}
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="bg-indigo-950/30 backdrop-blur-sm border border-white/5 p-4 rounded-2xl flex flex-col justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-indigo-800/40 p-4 rounded-xl flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                        <CheckCircle size={18} className="text-emerald-400"/>
-                        <span className="text-sm font-semibold text-white">Overall Progress</span>
+                        <CheckCircle size={16} className="text-indigo-200"/>
+                        <span className="text-sm font-medium text-white">Overall Progress</span>
                     </div>
-                    <span className="text-sm font-bold text-emerald-400">75%</span>
+                    <span className="text-sm font-bold text-white">75%</span>
                 </div>
-                <div className="w-full bg-indigo-950/50 h-2 rounded-full overflow-hidden shadow-inner">
-                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-300 h-full rounded-full" style={{ width: '75%' }}></div>
-                </div>
-            </div>
-             <div className="bg-indigo-950/30 backdrop-blur-sm border border-white/5 p-4 rounded-2xl flex items-center gap-4">
-                <div className="bg-white/10 p-2.5 rounded-xl text-indigo-200">
-                  <Clock size={20}/>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium text-indigo-200/80 uppercase tracking-wider">Tasks Completed</span>
-                  <span className="text-lg font-bold mt-0.5">16 <span className="text-indigo-300 text-sm font-medium">/ 24</span></span>
+                <div className="w-full bg-indigo-900/50 h-1.5 rounded-full">
+                    <div className="bg-green-400 h-1.5 rounded-full" style={{ width: '75%' }}></div>
                 </div>
             </div>
-             <div className="bg-indigo-950/30 backdrop-blur-sm border border-white/5 p-4 rounded-2xl flex items-center gap-4">
-                <div className="bg-rose-500/20 p-2.5 rounded-xl text-rose-300">
-                  <AlertCircle size={20}/>
+             <div className="bg-indigo-800/40 p-4 rounded-xl flex items-center gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="bg-indigo-500/30 p-1.5 rounded-full text-indigo-200"><Clock size={16}/></div>
+                     <div className="flex flex-col">
+                        <span className="text-xs text-indigo-200">Tasks Completed</span>
+                        <span className="text-sm font-bold mt-0.5">16 / 24</span>
+                     </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium text-indigo-200/80 uppercase tracking-wider">Pending Tasks</span>
-                  <span className="text-lg font-bold mt-0.5">8 <span className="text-rose-300 text-sm font-medium">High Priority</span></span>
+            </div>
+             <div className="bg-indigo-800/40 p-4 rounded-xl flex items-center gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="bg-indigo-500/30 p-1.5 rounded-full text-indigo-200"><AlertCircle size={16}/></div>
+                     <div className="flex flex-col">
+                        <span className="text-xs text-indigo-200">Pending Tasks</span>
+                        <span className="text-sm font-bold mt-0.5">8 High Priority</span>
+                     </div>
                 </div>
             </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="relative z-10 mt-8 flex flex-wrap items-center gap-4">
+        <div className="mt-6 flex items-center gap-4">
           <button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-white text-indigo-700 px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-50 hover:shadow-lg hover:shadow-white/20 transition-all active:scale-95 flex items-center gap-2"
+            onClick={() => setIsDetailsModalOpen(true)}
+            className="bg-white text-indigo-700 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm"
           >
-            View Full Details <ArrowRight size={16} />
+            View Full Details
           </button>
-          <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-white/20 transition-all active:scale-95">
-            Edit Event
+          <button 
+            onClick={() => setIsEditModalOpen(true)}
+            className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center"
+            title="Edit Event"
+          >
+            <Pencil size={20} />
           </button>
         </div>
       </div>
 
       {/* QUICK STATS ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-            { label: 'Total Attendees', val: '1,248', icon: Users, color: 'bg-blue-50 text-blue-600', change: '+12.5%', isPos: true },
-            { label: 'Budget Status', val: '$45,200', sub: 'of $60,000', icon: DollarSign, color: 'bg-emerald-50 text-emerald-600', progress: 75 },
-            { label: 'Pending Tasks', val: '8', sub: 'High Priority', icon: CheckCircle, color: 'bg-orange-50 text-orange-600' },
-            { label: 'Next Event In', val: '12 Days', sub: 'Annual Tech Summit', icon: Clock, color: 'bg-indigo-50 text-indigo-600' }
+            { label: 'Total Attendees', val: '1,248', icon: Users, color: 'bg-blue-100 text-blue-600', change: '+12.5%', isPos: true },
+            { label: 'Budget Status', val: '$45,200', sub: 'of $60,000', icon: DollarSign, color: 'bg-green-100 text-green-600', progress: 75 },
+            { label: 'Pending Tasks', val: '8', sub: 'High Priority', icon: CheckCircle, color: 'bg-orange-100 text-orange-600' },
+            { label: 'Days Until Next Event', val: '12', sub: 'Annual Tech Summit', icon: Clock, color: 'bg-indigo-100 text-indigo-600' }
         ].map((stat, i) => (
-            <div key={i} className="group bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 hover:-translate-y-1 cursor-default">
+            <div key={i} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                 <div className="flex justify-between items-start mb-4">
-                    <div className={`p-3 rounded-2xl ${stat.color} transition-transform duration-300 group-hover:scale-110`}>
-                        <stat.icon size={22} strokeWidth={2.5} />
+                    <div className={`p-3 rounded-lg ${stat.color}`}>
+                        <stat.icon size={20} />
                     </div>
                     {stat.change && (
-                        <span className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${stat.isPos ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                            {stat.isPos && <TrendingUp size={12} />}
+                        <span className={`text-xs font-medium ${stat.isPos ? 'text-green-600' : 'text-red-600'}`}>
                             {stat.change}
                         </span>
                     )}
                 </div>
-                <h3 className="text-gray-500 text-sm font-semibold mb-1">{stat.label}</h3>
-                <p className="text-3xl font-black text-gray-900 tracking-tight">{stat.val}</p>
-                {stat.sub && <p className="text-sm font-medium text-gray-400 mt-1">{stat.sub}</p>}
+                <h3 className="text-gray-500 text-sm font-medium mb-1">{stat.label}</h3>
+                <p className="text-2xl font-bold text-gray-900">{stat.val}</p>
+                {stat.sub && <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>}
                 {stat.progress && (
-                     <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
-                        <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${stat.progress}%` }}></div>
+                     <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3">
+                        <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${stat.progress}%` }}></div>
                      </div>
                 )}
             </div>
@@ -184,304 +169,457 @@ export default function DashboardHome() {
 
       {/* CHARTS & RECOMMENDATIONS ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Left: Chart */}
-        <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Real-time Attendance Trends</h3>
-                <p className="text-sm font-medium text-gray-500">Registration vs. Actual Attendance (Last 7 Days)</p>
-              </div>
-              <div className="hidden sm:flex items-center gap-4 text-sm font-medium">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-500"></div>Registration</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-400"></div>Actual</div>
-              </div>
-            </div>
+        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-800 mb-1">Real-time Attendance Trends</h3>
+            <p className="text-sm text-gray-400 mb-6">Registration vs. Actual Attendance (Last 7 Days)</p>
             
-            <div className="h-[320px] w-full">
+            <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorReg" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#34d399" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 13, fontWeight: 500}} dy={10} />
-                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 13, fontWeight: 500}} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Area type="monotone" dataKey="registration" name="Registrations" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorReg)" activeDot={{r: 6, strokeWidth: 0, fill: '#6366f1'}} />
-                        <Area type="monotone" dataKey="actual" name="Actual Attendance" stroke="#34d399" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" activeDot={{r: 6, strokeWidth: 0, fill: '#34d399'}} />
-                    </AreaChart>
+                    <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="registration" stroke="#818cf8" strokeWidth={2} dot={{r: 4, fill: '#818cf8'}} activeDot={{r: 6}} />
+                        <Line type="monotone" dataKey="actual" stroke="#34d399" strokeWidth={2} dot={{r: 4, fill: '#34d399'}} activeDot={{r: 6}} />
+                    </LineChart>
                 </ResponsiveContainer>
             </div>
         </div>
 
         {/* Right: AI Suggestions */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 rounded-3xl shadow-xl flex flex-col border border-indigo-900/50">
-            {/* Soft background glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div className="relative z-10 flex items-center gap-3 mb-8">
-                <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-300">
-                  <Sparkles size={24} />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight">AI Insights</h3>
+        <div className="bg-indigo-600 text-white p-6 rounded-xl shadow-sm flex flex-col">
+            <div className="flex items-center gap-2 mb-6">
+                <Sparkles size={20} />
+                <h3 className="font-bold">AI Suggestions</h3>
             </div>
             
-            <div className="relative z-10 space-y-4 flex-1">
-                <div className="group bg-white/5 p-5 rounded-2xl border border-white/5 hover:bg-white/10 hover:border-indigo-500/30 transition-all cursor-pointer">
-                    <div className="flex items-start gap-4">
-                         <div className="bg-indigo-500/20 p-2.5 rounded-xl text-indigo-300 group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                           <MapPin size={18}/>
-                         </div>
+            <div className="space-y-4 flex-1">
+                <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/10 hover:bg-white/20 transition cursor-pointer">
+                    <div className="flex items-start gap-3">
+                         <div className="bg-indigo-500/50 p-1.5 rounded-md"><MapPin size={14}/></div>
                          <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-indigo-300 mb-1.5">Venue Match</p>
-                            <p className="text-sm font-medium leading-relaxed text-indigo-50/90">Venue "Main Hall" aligns perfectly with your current 168 projected headcount.</p>
+                            <p className="text-xs text-indigo-200 mb-1">Venue Recommendation</p>
+                            <p className="text-sm font-medium leading-snug">Venue "Main Hall" aligns best with your current headcount.</p>
                          </div>
                     </div>
                 </div>
-                
-                <div className="group bg-white/5 p-5 rounded-2xl border border-white/5 hover:bg-white/10 hover:border-emerald-500/30 transition-all cursor-pointer">
-                    <div className="flex items-start gap-4">
-                         <div className="bg-emerald-500/20 p-2.5 rounded-xl text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                           <DollarSign size={18}/>
-                         </div>
+                <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/10 hover:bg-white/20 transition cursor-pointer">
+                    <div className="flex items-start gap-3">
+                         <div className="bg-indigo-500/50 p-1.5 rounded-md"><DollarSign size={14}/></div>
                          <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1.5">Budget Optimization</p>
-                            <p className="text-sm font-medium leading-relaxed text-indigo-50/90">You can save roughly <span className="text-emerald-300 font-bold">$2,400</span> by finalizing catering before Friday.</p>
+                            <p className="text-xs text-indigo-200 mb-1">Budget Optimization</p>
+                            <p className="text-sm font-medium leading-snug">You can save ~$2,400 by booking catering before Friday.</p>
                          </div>
                     </div>
                 </div>
             </div>
             
-            <button className="relative z-10 w-full mt-8 bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 py-3.5 rounded-xl text-sm font-bold hover:bg-indigo-500 hover:text-white transition-all active:scale-95 shadow-lg">
+            <button className="w-full bg-white text-indigo-600 py-3 rounded-lg text-sm font-bold mt-6 hover:bg-indigo-50 transition">
                 View All Recommendations
             </button>
         </div>
       </div>
 
-      {/* --- MODAL POPUP --- */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      {/* VIEW FULL DETAILS MODAL */}
+      {isDetailsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
             
             {/* Modal Header */}
-            <div className="bg-indigo-600 px-6 py-4 flex justify-between items-start text-white shrink-0">
-              <div>
-                <h2 className="text-xl font-bold mb-2">Annual Tech Summit 2025</h2>
-                <div className="flex gap-2">
-                  <span className="px-2.5 py-0.5 bg-white/20 rounded-full text-[11px] font-medium tracking-wide">
-                    Currently Planning
-                  </span>
-                  <span className="px-2.5 py-0.5 bg-emerald-500 text-white rounded-full text-[11px] font-medium tracking-wide">
-                    In Progress
-                  </span>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-white/80 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <X size={24} />
-              </button>
+            <div className="bg-[#4f46e5] p-6 text-white flex justify-between items-start shrink-0">
+               <div>
+                  <h2 className="text-2xl font-medium mb-2">Annual Tech Summit 2025</h2>
+                  <div className="flex gap-2">
+                    <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-medium">Currently Planning</span>
+                    <span className="px-3 py-1 bg-[#10b981] rounded-full text-xs font-medium">In Progress</span>
+                  </div>
+               </div>
+               <button onClick={() => setIsDetailsModalOpen(false)} className="text-white hover:bg-white/20 p-1.5 rounded-full transition">
+                  <X size={24} />
+               </button>
             </div>
 
-            {/* Modal Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-white">
-              
-              {/* Event Information */}
-              <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold flex items-center gap-2">
-                  Event Information
-                </h3>
-                <div className="grid gap-4 ml-1">
-                  <div className="flex gap-3">
-                    <Calendar size={18} className="text-indigo-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">Date & Time</p>
-                      <p className="text-sm text-gray-600 mt-0.5">December 25, 2024 • 9:00 AM - 5:00 PM</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <MapPin size={18} className="text-indigo-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">Venue</p>
-                      <p className="text-sm text-gray-600 mt-0.5">Main Hall, University Campus</p>
-                      <p className="text-sm text-gray-500">123 University Ave, Campus Building A, Room 101</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <AlignLeft size={18} className="text-indigo-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">Description</p>
-                      <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">
-                        Annual technology summit featuring keynote speakers, workshops, and networking sessions for students and industry professionals. This flagship event brings together the brightest minds in technology to share insights, network, and collaborate on innovative solutions.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Event Statistics */}
-              <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold">Event Statistics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-indigo-600 mb-2">
-                      <Users size={16} /> <span className="text-sm font-medium">Attendance</span>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900">168</p>
-                    <p className="text-xs text-gray-500 mt-1">of 200 expected</p>
-                  </div>
-                  <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-emerald-600 mb-2">
-                      <DollarSign size={16} /> <span className="text-sm font-medium">Budget Spent</span>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900">$45.2K</p>
-                    <p className="text-xs text-gray-500 mt-1">$14.8K remaining</p>
-                  </div>
-                  <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-purple-600 mb-2">
-                      <CheckCircle size={16} /> <span className="text-sm font-medium">Progress</span>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900">75%</p>
-                    <p className="text-xs text-gray-500 mt-1">Overall completion</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Event Organizer */}
-              <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold">Event Organizer</h3>
-                <div className="flex items-center gap-4 border border-gray-100 rounded-xl p-4 bg-gray-50/50">
-                  <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0">
-                    <User size={24} />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Sarah Mitchell</p>
-                    <p className="text-sm text-gray-500">Chairperson</p>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
-                      <p className="text-xs text-gray-600 flex items-center gap-1.5"><Mail size={14} className="text-gray-400"/> sarah.mitchell@eventlk.com</p>
-                      <p className="text-xs text-gray-600 flex items-center gap-1.5"><Phone size={14} className="text-gray-400"/> +1 (555) 123-4567</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Event Agenda */}
-              <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold">Event Agenda</h3>
-                <div className="border border-gray-100 rounded-xl divide-y divide-gray-100 bg-white">
-                  {[
-                    { time: '9:00 AM - 9:30 AM', title: 'Registration & Welcome Coffee' },
-                    { time: '9:30 AM - 10:00 AM', title: 'Opening Ceremony' },
-                    { time: '10:00 AM - 11:30 AM', title: 'Keynote: Future of AI' },
-                    { time: '11:30 AM - 12:30 PM', title: 'Workshop Session 1' },
-                    { time: '12:30 PM - 1:30 PM', title: 'Lunch Break' },
-                    { time: '1:30 PM - 3:00 PM', title: 'Panel Discussion' },
-                    { time: '3:00 PM - 4:30 PM', title: 'Workshop Session 2' },
-                    { time: '4:30 PM - 5:00 PM', title: 'Closing Remarks' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center p-4 hover:bg-gray-50 transition-colors">
-                      <div className="w-48 shrink-0 flex items-center gap-2 text-indigo-600">
-                        <Clock size={16} />
-                        <span className="text-sm font-medium">{item.time}</span>
-                      </div>
-                      <p className="text-sm text-gray-800 font-medium">{item.title}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Featured Speakers */}
-              <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold">Featured Speakers</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { name: 'Dr. Emily Chen', role: 'AI Research Lead, Tech Corp' },
-                    { name: 'Marcus Johnson', role: 'CTO, StartupX' },
-                    { name: 'Prof. Amelia Rodriguez', role: 'Computer Science Dept' },
-                    { name: 'David Kim', role: 'Product Manager, Innovation Labs' },
-                  ].map((speaker, i) => (
-                    <div key={i} className="flex items-center gap-3 border border-gray-100 rounded-xl p-4 hover:border-indigo-100 transition-colors">
-                      <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0">
-                        <User size={20} />
-                      </div>
+            {/* Modal Body */}
+            <div className="p-8 overflow-y-auto flex-1 space-y-8 custom-scrollbar bg-white">
+               
+               {/* Event Information */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Information</h3>
+                  <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-6 space-y-6">
+                    <div className="flex gap-4">
+                      <Calendar className="text-indigo-500 shrink-0 mt-0.5" size={20} />
                       <div>
-                        <p className="font-semibold text-gray-900 text-sm">{speaker.name}</p>
-                        <p className="text-xs text-gray-500">{speaker.role}</p>
+                        <h4 className="font-medium text-gray-900">Date & Time</h4>
+                        <p className="text-gray-600 text-sm mt-1">December 25, 2024 • 9:00 AM - 5:00 PM</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Sponsors */}
-              <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold">Sponsors</h3>
-                <div className="border border-gray-100 rounded-xl divide-y divide-gray-100 bg-white">
-                  {[
-                    { name: 'TechCorp', tier: 'Platinum Sponsor', amount: '$15,000', badgeClass: 'bg-purple-100 text-purple-700' },
-                    { name: 'Innovation Labs', tier: 'Gold Sponsor', amount: '$10,000', badgeClass: 'bg-amber-100 text-amber-700' },
-                    { name: 'StartupX', tier: 'Silver Sponsor', amount: '$5,000', badgeClass: 'bg-gray-100 text-gray-700' },
-                  ].map((sponsor, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex gap-4">
+                      <MapPin className="text-indigo-500 shrink-0 mt-0.5" size={20} />
                       <div>
-                        <p className="font-semibold text-gray-900 text-sm mb-1">{sponsor.name}</p>
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${sponsor.badgeClass}`}>
-                          {sponsor.tier}
-                        </span>
+                        <h4 className="font-medium text-gray-900">Venue</h4>
+                        <p className="text-gray-600 text-sm mt-1">Main Hall, University Campus</p>
+                        <p className="text-gray-500 text-sm mt-0.5">123 University Ave, Campus Building A, Room 101</p>
                       </div>
-                      <p className="font-bold text-gray-900">{sponsor.amount}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Event Requirements */}
-              <div className="space-y-4">
-                <h3 className="text-gray-800 font-semibold">Event Requirements</h3>
-                <div className="space-y-3 pl-1">
-                  {[
-                    'AV Equipment: Projector, Microphones, Speakers',
-                    'Catering: Breakfast, Lunch, Refreshments for 200',
-                    'Seating: Auditorium style for 200',
-                    'WiFi: High-speed internet access',
-                    'Registration Desk: 2 staff members',
-                    'Security: 3 personnel'
-                  ].map((req, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <CheckCircle size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-                      <p className="text-sm text-gray-700">{req}</p>
+                    <div className="flex gap-4">
+                      <FileText className="text-indigo-500 shrink-0 mt-0.5" size={20} />
+                      <div>
+                        <h4 className="font-medium text-gray-900">Description</h4>
+                        <p className="text-gray-600 text-sm mt-1 leading-relaxed">
+                          Annual technology summit featuring keynote speakers, workshops, and networking sessions for students and industry professionals. This flagship event brings together the brightest minds in technology to share insights, network, and collaborate on innovative solutions.
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+               </section>
 
-              {/* Action Buttons */}
-              <div className="pt-6 border-t border-gray-100 flex flex-wrap items-center gap-4">
-                <button className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-                  Download PDF
-                </button>
-                <button className="bg-white text-indigo-600 border border-indigo-200 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition-colors">
-                  Share Event
-                </button>
-                <button className="bg-white text-gray-600 border border-gray-200 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors">
-                  Print
-                </button>
-              </div>
+               {/* Event Statistics */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Statistics</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-[#eff6ff] border border-blue-100 rounded-xl p-5">
+                      <div className="flex items-center gap-2 text-blue-600 mb-3">
+                        <Users size={18} />
+                        <span className="font-medium text-sm">Attendance</span>
+                      </div>
+                      <p className="text-3xl font-bold text-gray-900 mb-1">168</p>
+                      <p className="text-sm text-gray-600">of 200 expected</p>
+                    </div>
+                    <div className="bg-[#f0fdf4] border border-green-100 rounded-xl p-5">
+                      <div className="flex items-center gap-2 text-green-600 mb-3">
+                        <DollarSign size={18} />
+                        <span className="font-medium text-sm">Budget Spent</span>
+                      </div>
+                      <p className="text-3xl font-bold text-gray-900 mb-1">$45.2K</p>
+                      <p className="text-sm text-gray-600">$14.8K remaining</p>
+                    </div>
+                    <div className="bg-[#fdf4ff] border border-fuchsia-100 rounded-xl p-5">
+                      <div className="flex items-center gap-2 text-fuchsia-600 mb-3">
+                        <CheckCircle size={18} />
+                        <span className="font-medium text-sm">Progress</span>
+                      </div>
+                      <p className="text-3xl font-bold text-gray-900 mb-1">75%</p>
+                      <p className="text-sm text-gray-600">Overall completion</p>
+                    </div>
+                  </div>
+               </section>
+
+               {/* Event Organizer */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Organizer</h3>
+                  <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-5 flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                      <User size={24} />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-medium text-gray-900 text-lg">Sarah Mitchell</h4>
+                      <p className="text-gray-500 text-sm">Chairperson</p>
+                      <div className="flex items-center gap-2 text-gray-600 text-sm mt-2">
+                        <Mail size={14} /> sarah.mitchell@eventlk.com
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600 text-sm">
+                        <Phone size={14} /> +1 (555) 123-4567
+                      </div>
+                    </div>
+                  </div>
+               </section>
+
+               {/* Event Agenda */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Agenda</h3>
+                  <div className="bg-gray-50/50 border border-gray-100 rounded-xl overflow-hidden">
+                    {[
+                      { time: "9:00 AM - 9:30 AM", title: "Registration & Welcome Coffee" },
+                      { time: "9:30 AM - 10:00 AM", title: "Opening Ceremony" },
+                      { time: "10:00 AM - 11:30 AM", title: "Keynote: Future of AI" },
+                      { time: "11:30 AM - 12:30 PM", title: "Workshop Session 1" },
+                      { time: "12:30 PM - 1:30 PM", title: "Lunch Break" },
+                      { time: "1:30 PM - 3:00 PM", title: "Panel Discussion" },
+                      { time: "3:00 PM - 4:30 PM", title: "Workshop Session 2" },
+                      { time: "4:30 PM - 5:00 PM", title: "Closing Remarks" },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex gap-6 p-4 border-b border-gray-100 last:border-0 items-center">
+                        <div className="flex items-center gap-2 text-indigo-500 w-48 shrink-0 text-sm font-medium">
+                          <Clock size={16} /> {item.time}
+                        </div>
+                        <p className="text-gray-800 font-medium">{item.title}</p>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+
+               {/* Featured Speakers */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Featured Speakers</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { name: "Dr. Emily Chen", role: "AI Research Lead, Tech Corp" },
+                      { name: "Marcus Johnson", role: "CTO, StartupX" },
+                      { name: "Prof. Amelia Rodriguez", role: "Computer Science Dept" },
+                      { name: "David Kim", role: "Product Manager, Innovation Labs" },
+                    ].map((speaker, idx) => (
+                      <div key={idx} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                          <User size={20} />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{speaker.name}</h4>
+                          <p className="text-gray-500 text-sm">{speaker.role}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+
+               {/* Sponsors */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Sponsors</h3>
+                  <div className="bg-gray-50/50 border border-gray-100 rounded-xl overflow-hidden">
+                    {[
+                      { name: "TechCorp", tier: "Platinum Sponsor", tierColor: "bg-fuchsia-100 text-fuchsia-700", amount: "$15,000" },
+                      { name: "Innovation Labs", tier: "Gold Sponsor", tierColor: "bg-amber-100 text-amber-700", amount: "$10,000" },
+                      { name: "StartupX", tier: "Silver Sponsor", tierColor: "bg-gray-200 text-gray-700", amount: "$5,000" },
+                    ].map((sponsor, idx) => (
+                      <div key={idx} className="flex justify-between items-center p-5 border-b border-gray-100 last:border-0">
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-1">{sponsor.name}</h4>
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${sponsor.tierColor}`}>
+                            {sponsor.tier}
+                          </span>
+                        </div>
+                        <p className="font-medium text-gray-900">{sponsor.amount}</p>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+
+               {/* Event Requirements */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Requirements</h3>
+                  <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-6">
+                    <ul className="space-y-4">
+                      {[
+                        "AV Equipment: Projector, Microphones, Speakers",
+                        "Catering: Breakfast, Lunch, Refreshments for 200",
+                        "Seating: Auditorium style for 200",
+                        "WiFi: High-speed internet access",
+                        "Registration Desk: 2 staff members",
+                        "Security: 3 personnel",
+                      ].map((req, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <CheckCircle className="text-green-500 mt-0.5 shrink-0" size={18} />
+                          <span className="text-gray-700">{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+               </section>
 
             </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
+               <button className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm">
+                 Download PDF
+               </button>
+               <button className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm">
+                 Share Event
+               </button>
+               <button className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm">
+                 Print
+               </button>
+            </div>
+
           </div>
         </div>
       )}
 
+      {/* EDIT EVENT MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="bg-[#4f46e5] p-6 text-white flex justify-between items-start shrink-0">
+               <div>
+                  <h2 className="text-2xl font-medium">Edit Event</h2>
+                  <p className="text-indigo-200 mt-1 text-sm">Update event details and information</p>
+               </div>
+               <button onClick={() => setIsEditModalOpen(false)} className="text-white hover:bg-white/20 p-1.5 rounded-full transition">
+                  <X size={24} />
+               </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-8 overflow-y-auto flex-1 space-y-8 custom-scrollbar">
+               
+               {/* Basic Information */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Basic Information</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Event Title</label>
+                      <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">Event Date</label>
+                        <input type="date" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">Start Time</label>
+                        <input type="time" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">End Time</label>
+                        <input type="time" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Venue</label>
+                      <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Venue Address</label>
+                      <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">Expected Attendees</label>
+                        <input type="number" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-1">Budget ($)</label>
+                        <input type="number" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Description</label>
+                      <textarea rows={4} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] resize-none text-gray-900"></textarea>
+                    </div>
+                  </div>
+               </section>
+
+               <hr className="border-gray-100" />
+
+               {/* Organizer Information */}
+               <section>
+                  <h3 className="text-lg text-gray-800 mb-4 font-medium">Organizer Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Organizer Name</label>
+                      <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Role</label>
+                      <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Email</label>
+                      <input type="email" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Phone</label>
+                      <input type="tel" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    </div>
+                  </div>
+               </section>
+
+               <hr className="border-gray-100" />
+
+               {/* Event Agenda */}
+               <section>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg text-gray-800 font-medium">Event Agenda</h3>
+                    <button className="flex items-center gap-1 bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">
+                      <Plus size={16} /> Add Item
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((item) => (
+                      <div key={item} className="flex gap-4 items-center">
+                        <input type="text" className="w-1/3 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <button className="text-red-500 hover:text-red-700 p-2">
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+
+               <hr className="border-gray-100" />
+
+               {/* Speakers */}
+               <section>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg text-gray-800 font-medium">Speakers</h3>
+                    <button className="flex items-center gap-1 bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">
+                      <Plus size={16} /> Add Speaker
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {[1, 2].map((item) => (
+                      <div key={item} className="flex gap-4 items-center">
+                        <input type="text" className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <button className="text-red-500 hover:text-red-700 p-2">
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+
+               <hr className="border-gray-100" />
+
+               {/* Sponsors */}
+               <section>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg text-gray-800 font-medium">Sponsors</h3>
+                    <button className="flex items-center gap-1 bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">
+                      <Plus size={16} /> Add Sponsor
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {[1, 2].map((item) => (
+                      <div key={item} className="flex gap-4 items-center">
+                        <input type="text" className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <button className="text-red-500 hover:text-red-700 p-2">
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
+               <button className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm">
+                 Save Changes
+               </button>
+               <button 
+                  onClick={() => setIsEditModalOpen(false)} 
+                  className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm"
+               >
+                 Cancel
+               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
