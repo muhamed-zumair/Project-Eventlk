@@ -80,10 +80,6 @@ export default function MyEventsPage() {
           <h2 className="text-2xl font-bold text-gray-800">My Events</h2>
           <p className="text-gray-500 text-sm mt-1">Manage and track all your university events</p>
         </div>
-        <button className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm">
-          <Plus size={18} />
-          Create Event
-        </button>
       </div>
 
       {/* Events Grid */}

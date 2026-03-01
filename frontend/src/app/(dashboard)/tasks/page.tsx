@@ -1,6 +1,7 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
+import React, { useState } from "react";
+import { MoreHorizontal, Plus, X } from "lucide-react";
 
 // Types for your backend data
 interface Task {
@@ -48,11 +49,21 @@ const PriorityBadge = ({ priority }: { priority: string }) => {
 }
 
 export default function TaskBoard() {
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+
   return (
-    <div className="h-full flex flex-col">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Task Board</h2>
-        <p className="text-gray-500 text-sm">Organize and track event tasks</p>
+    <div className="h-full flex flex-col relative">
+      <div className="mb-6 flex justify-between items-end">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Task Board</h2>
+          <p className="text-gray-500 text-sm mt-1">Organize and track event tasks</p>
+        </div>
+        <button 
+          onClick={() => setIsAddTaskModalOpen(true)}
+          className="bg-indigo-600 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:bg-indigo-700 transition shadow-sm"
+        >
+          <Plus size={18} /> Add Task
+        </button>
       </div>
 
       <div className="flex gap-6 overflow-x-auto pb-4 h-full">
@@ -82,6 +93,101 @@ export default function TaskBoard() {
           </div>
         ))}
       </div>
+
+      {/* ADD TASK MODAL */}
+      {isAddTaskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-6 shrink-0">
+              <h2 className="text-xl font-medium text-gray-800">Add New Task</h2>
+              <button 
+                onClick={() => setIsAddTaskModalOpen(false)} 
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="px-6 pb-2 space-y-5">
+              
+              {/* Task Title */}
+              <div>
+                <label className="block text-gray-700 text-sm mb-2">Task Title *</label>
+                <input 
+                  type="text" 
+                  placeholder="Enter task title" 
+                  className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400" 
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-gray-700 text-sm mb-2">Description</label>
+                <textarea 
+                  rows={4} 
+                  placeholder="Enter task description (optional)" 
+                  className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 resize-none placeholder:text-gray-400"
+                ></textarea>
+              </div>
+
+              {/* Column */}
+              <div>
+                <label className="block text-gray-700 text-sm mb-2">Column</label>
+                <select 
+                  defaultValue="To Do"
+                  className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 bg-white"
+                >
+                  <option value="To Do">To Do</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Review">Review</option>
+                  <option value="Done">Done</option>
+                </select>
+              </div>
+
+              {/* Assignee & Priority */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 text-sm mb-2">Assignee (Initials) *</label>
+                  <input 
+                    type="text" 
+                    placeholder="E.G., SM" 
+                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 uppercase" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-2">Priority</label>
+                  <select 
+                    defaultValue="Medium"
+                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 bg-white"
+                  >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 pt-4 flex items-center gap-4 shrink-0 mt-2">
+               <button className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition">
+                 Add Task
+               </button>
+               <button 
+                  onClick={() => setIsAddTaskModalOpen(false)} 
+                  className="flex-1 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition"
+               >
+                 Cancel
+               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
