@@ -1,3 +1,4 @@
+import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
@@ -80,16 +81,26 @@ def prepare_final_features(df):
     return X_final, encoder
 
 # ==========================================
-# MAIN EXECUTION
+# 5. STREAMLIT UI & MAIN EXECUTION (Commit 6)
 # ==========================================
-if __name__ == "__main__":
-    df_raw = load_data()
-    df_cleaned = clean_and_feature_eng(df_raw)
-    df_with_targets, y_targets = parse_targets(df_cleaned)
-    X_matrix, encoder_obj = prepare_final_features(df_with_targets)
-    
-    if X_matrix is not None:
-        print("\n--- Model Preparation Summary ---")
-        print(f"Total Samples: {X_matrix.shape[0]}")
-        print(f"Total Features: {X_matrix.shape[1]}")
-        print(f"Target Categories: {list(y_targets.columns)}")
+
+# Set up the page layout and tab info
+st.set_page_config(page_title="EventLK Planner", page_icon="📅", layout="wide")
+
+# Render the main titles
+st.title("🎉 EventLK: AI Event Planner")
+st.markdown("### Intelligent Venue & Budget Recommendation System")
+
+st.write("Initializing backend data pipeline...")
+
+# Run the backend logic
+df_raw = load_data()
+df_cleaned = clean_and_feature_eng(df_raw)
+df_with_targets, y_targets = parse_targets(df_cleaned)
+X_matrix, encoder_obj = prepare_final_features(df_with_targets)
+
+# Show basic UI feedback based on data loading success
+if X_matrix is not None:
+    st.success(f"✅ Data processing complete! Model is ready to be trained on {X_matrix.shape[0]} samples.")
+else:
+    st.error("❌ Failed to load or process data. Please check the dataset file.")
