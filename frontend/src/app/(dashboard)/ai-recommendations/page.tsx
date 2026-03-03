@@ -70,7 +70,7 @@ const ImpactBadge = ({ impact }: { impact: string }) => {
 
 export default function AIRecommendationsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-6 md:p-8">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-indigo-600 mb-1">
@@ -81,11 +81,11 @@ export default function AIRecommendationsPage() {
       </div>
 
       {/* Recommendations Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {recommendations.map((rec) => (
           <div
             key={rec.id}
-            className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200"
+            className="bg-white p-5 md:p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200"
           >
             {/* Card Header */}
             <div className="flex justify-between items-start mb-4">
@@ -109,7 +109,7 @@ export default function AIRecommendationsPage() {
             </div>
 
             {/* Action Button */}
-            <button className="flex items-center gap-2 text-indigo-600 text-sm font-bold hover:text-indigo-800 transition group">
+            <button className="flex items-center gap-2 text-indigo-600 text-sm font-bold hover:text-indigo-800 transition group whitespace-nowrap">
               Apply Recommendation
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </button>

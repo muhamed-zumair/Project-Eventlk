@@ -51,7 +51,7 @@ export default function BudgetPage() {
       </div>
 
       {/* Top Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Budget */}
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start gap-4">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">

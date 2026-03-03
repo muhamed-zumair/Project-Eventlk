@@ -55,9 +55,9 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Top Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <div key={index} className="bg-white p-4 md:p-6 rounded-xl border border-gray-100 shadow-sm">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 ${stat.color}`}>
               <stat.icon size={20} />
             </div>
@@ -74,7 +74,7 @@ export default function AnalyticsPage() {
         {/* Monthly Attendance Trends */}
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <h3 className="text-lg font-bold text-gray-800 mb-6">Monthly Attendance Trends</h3>
-          <div className="h-[300px] w-full">
+          <div className="h-[250px] md:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
@@ -90,15 +90,15 @@ export default function AnalyticsPage() {
         {/* Event Type Distribution */}
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <h3 className="text-lg font-bold text-gray-800 mb-6">Event Type Distribution</h3>
-          <div className="h-[300px] w-full flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[250px] md:h-[300px] w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="95%">
               <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius="40%"   // previously 60
+                  outerRadius="80%"   // previously 100
                   paddingAngle={5}
                   dataKey="value"
                 >
@@ -108,11 +108,12 @@ export default function AnalyticsPage() {
                 </Pie>
                 <Tooltip />
                 <Legend 
-                  layout="vertical" 
-                  verticalAlign="middle" 
-                  align="right"
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
                   iconType="circle"
                   iconSize={8}
+                  wrapperStyle={{ paddingTop: '20px' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -123,7 +124,7 @@ export default function AnalyticsPage() {
       {/* Bottom Row: Line Chart */}
       <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
         <h3 className="text-lg font-bold text-gray-800 mb-6">Budget vs Spending Trends</h3>
-        <div className="h-[300px] w-full">
+        <div className="h-[250px] md:h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={lineData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />

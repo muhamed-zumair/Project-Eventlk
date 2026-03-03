@@ -4,7 +4,7 @@ import { useState } from "react";
 import { User, Bell, Lock, Globe, Moon, Shield, Laptop, Smartphone } from "lucide-react";
 
 // Reusable Toggle Component
-const Toggle = ({ defaultChecked }) => {
+const Toggle = ({ defaultChecked }: { defaultChecked: boolean }) => {
   const [isChecked, setIsChecked] = useState(defaultChecked);
   return (
     <button
