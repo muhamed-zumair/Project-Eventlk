@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
 # ==========================================
-# 1. SETUP & DATA LOADING (Commit 1)
+# 1. SETUP & DATA LOADING 
 # ==========================================
 def load_data():
     file_path = "event_dataset_v2_distinct.csv"
@@ -17,7 +17,7 @@ def load_data():
         return None
 
 # ==========================================
-# 2. DATA CLEANING & FEATURE ENG (Commits 2 & 3)
+# 2. DATA CLEANING & FEATURE ENG 
 # ==========================================
 def clean_and_feature_eng(df):
     if df is None: return None
@@ -38,7 +38,7 @@ def clean_and_feature_eng(df):
     return df
 
 # ==========================================
-# 3. TARGET VARIABLE PARSING (Commit 4)
+# 3. TARGET VARIABLE PARSING 
 # ==========================================
 def parse_targets(df):
     if df is None: return None, None
@@ -57,7 +57,7 @@ def parse_targets(df):
     return df, y_alloc
 
 # ==========================================
-# 4. CATEGORICAL ENCODING (Commit 5)
+# 4. CATEGORICAL ENCODING 
 # ==========================================
 def prepare_final_features(df):
     """Encodes categorical data into a numeric feature matrix (X)."""
@@ -67,7 +67,6 @@ def prepare_final_features(df):
     encode_cols = ['eventtype', 'eventcategory', 'venuecategory']
     
     # Initialize OneHotEncoder
-    # handle_unknown='ignore' allows the model to handle new categories in the future
     encoder = OneHotEncoder(sparse_output=False, drop='first', handle_unknown='ignore')
     
     # Perform the transformation
@@ -81,7 +80,20 @@ def prepare_final_features(df):
     return X_final, encoder
 
 # ==========================================
-# 5. STREAMLIT UI & MAIN EXECUTION (Commit 6)
+# 5. CACHED PIPELINE EXECUTION (NEW in Commit 7)
+# ==========================================
+@st.cache_resource
+def run_data_pipeline():
+    """Runs the full data preparation pipeline and caches the result."""
+    df_raw = load_data()
+    df_cleaned = clean_and_feature_eng(df_raw)
+    df_with_targets, y_targets = parse_targets(df_cleaned)
+    X_matrix, encoder_obj = prepare_final_features(df_with_targets)
+    
+    return X_matrix, encoder_obj, y_targets
+
+# ==========================================
+# 6. STREAMLIT UI & MAIN EXECUTION
 # ==========================================
 
 # Set up the page layout and tab info
@@ -93,11 +105,8 @@ st.markdown("### Intelligent Venue & Budget Recommendation System")
 
 st.write("Initializing backend data pipeline...")
 
-# Run the backend logic
-df_raw = load_data()
-df_cleaned = clean_and_feature_eng(df_raw)
-df_with_targets, y_targets = parse_targets(df_cleaned)
-X_matrix, encoder_obj = prepare_final_features(df_with_targets)
+# Run the CACHED backend logic
+X_matrix, encoder_obj, y_targets = run_data_pipeline()
 
 # Show basic UI feedback based on data loading success
 if X_matrix is not None:
