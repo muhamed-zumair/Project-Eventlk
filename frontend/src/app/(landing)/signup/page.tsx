@@ -13,12 +13,12 @@ export default function SignUpPage() {
       <div className="absolute left-0 bottom-0 w-[500px] h-[500px] bg-purple-900/20 blur-[150px] pointer-events-none" />
 
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
-        
+
         {/* Left Side: Content */}
         <div className="hidden lg:block space-y-8">
           <div>
             <h2 className="text-purple-500 font-bold text-xl mb-2">EventLK</h2>
-            <h1 className="text-5xl font-bold leading-tight mb-4">Start Planning<br/>Amazing Events</h1>
+            <h1 className="text-5xl font-bold leading-tight mb-4">Start Planning<br />Amazing Events</h1>
             <p className="text-gray-400 text-lg">Join thousands of event planners who trust EventLK to create unforgettable experiences.</p>
           </div>
 
@@ -66,8 +66,19 @@ export default function SignUpPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">Organization (Optional)</label>
-              <input type="text" placeholder="Your company name" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors" />
+              <label className="text-xs text-gray-400">Organization (University)</label>
+              <select
+                name="organization"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-gray-300"
+              >
+                <option value="" className="bg-[#0F0F12]">Select your university...</option>
+                {/* Replace these values with the actual UUIDs from your Supabase table! */}
+                <option value="1436be71-3ab3-4ad2-a5ab-8a0481569890">University of Moratuwa (UoM)</option>
+                <option value="ba63b5e7-7355-47a1-aa2a-800d1f7c8b59">Sri Lanka Institute of Information Technology (SLIIT)</option>
+                <option value="0172247e-8b4e-49b5-a5d7-8a40da5323a3">Informatics Institute of Technology (IIT)</option>
+                <option value="6b2d9c31-03d5-4a50-b2c2-7705df4f87b1">University of Colombo (UoC)</option>
+                <option value="cef9ead1-a35e-461b-b498-2c7edc6200e3">University of Peradeniya (UoP)</option>
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -75,7 +86,7 @@ export default function SignUpPage() {
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} placeholder="Create a strong password" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                  {showPassword ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
