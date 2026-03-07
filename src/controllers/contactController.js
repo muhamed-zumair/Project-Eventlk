@@ -1,3 +1,8 @@
+const {v4: uuidv4} = require('uuid');
+const pool=require ('../config/db');
+
+
+
 const contactForm= async (req, res) => {
 
     const { name, email, phone, subject, message} = req.body;
@@ -32,7 +37,30 @@ const contactForm= async (req, res) => {
         }
     }
 
-    //4. Save the contact form data to the database (this part will be implemented later with database integration)
+    try{
+        //Database integration
+        const newInquiryId = uuidv4(); // Generate a unique ID for the inquiry
+
+        const insertQuery = `INSERT INTO "Platform_Inquiries" (id, name, email, phone, subject, message_body) 
+                             VALUES ($1, $2, $3, $4, $5, $6)`;
+        const values = [newInquiryId, name, email, phone || null, subject, message];
+
+        await pool.query(insertQuery, values);
+
+        return res.status(200).json({
+            success: true,
+            message: "Your message has been received! We will get back to you shortly."
+        });
+
+    } catch (error) {
+        console.error("Error occurred while saving contact form data:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while saving your message. Please try again later."
+        });
+    }
+
+    
     //sending an email notification to the admin (this part will be implemented later with email service integration) using nodemailer or similar package
 
     //temporary response until database and email service integration is done
