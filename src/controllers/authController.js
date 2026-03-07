@@ -1,15 +1,16 @@
-const {v4: uuidv4} = require('uuid');
-const pool=require ('../config/db');
+const { v4: uuidv4 } = require('uuid');
+const pool = require('../config/db');
 const bycrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 //function to handle the user registration
-const registerUser = async(req, res) => {
+const registerUser = async (req, res) => {
 
     // Extract user details from the request body
-    const{firstName, lastName, email, organization, password} = req.body;
+    const { firstName, lastName, email, organization, password } = req.body;
 
     //1. Validation check for empty fields
-    if (!firstName || !lastName || !email || !password){
+    if (!firstName || !lastName || !email || !password) {
         return res.status(400).json({
             success: false,
             message: "Please fill the required fields!"
@@ -19,7 +20,7 @@ const registerUser = async(req, res) => {
     //2. Validation check for email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)){
+    if (!emailRegex.test(email)) {
         return res.status(400).json({
             success: false,
             message: "Please provide a valid email address!"
@@ -29,18 +30,18 @@ const registerUser = async(req, res) => {
     //3. Validation check for password strength
 
     const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
-    if (!passwordRegex.test(password)){
+    if (!passwordRegex.test(password)) {
         return res.status(400).json({
-            success:false,
+            success: false,
             message: "Password must be atleast 8 characters long and contain at least one letter, one number and one special character!"
         })
     }
-    try{
+    try {
         //4. Check if the user already exists in database
         const checkUserQuery = 'SELECT * FROM "Users" WHERE email = $1';
         const existingUser = await pool.query(checkUserQuery, [email]);
 
-        if (existingUser.rows.length > 0){
+        if (existingUser.rows.length > 0) {
             return res.status(409).json({
                 success: false,
                 message: "User with this email already exists!"
@@ -63,7 +64,7 @@ const registerUser = async(req, res) => {
         await pool.query(insertUserQuery, values);
 
         return res.status(201).json({
-            success:true,
+            success: true,
             message: "User Registered Successfully!"
         })
     } catch (error) {
@@ -75,15 +76,16 @@ const registerUser = async(req, res) => {
 
 
     }
-    
+
 }
 
-const loginUser = async(req, res) => {
+//function to handle user login
+const loginUser = async (req, res) => {
 
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
     //1. Validation check for empty fields
-    if (!email || !password){
+    if (!email || !password) {
         return res.status(400).json({
             success: false,
             message: "Please fill the required fields!"
@@ -92,7 +94,7 @@ const loginUser = async(req, res) => {
     //2. Validation check for email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)){   
+    if (!emailRegex.test(email)) {
         return res.status(400).json({
             success: false,
             message: "Please provide a valid email address!"
@@ -100,27 +102,61 @@ const loginUser = async(req, res) => {
     }
 
     //3. Check if the user exists in database
+    try {
+        const userQuery = 'SELECT * FROM "Users" WHERE email = $1';
+        const result = await pool.query(userQuery, [email]);
 
-    //4. Compare the provided password with the hashed password in the database using bcrypt
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: "User with this email does not exist!"
+            })
+        }
 
-    //5. If the password matches, generate a JWT token for authentication
+        const user = result.rows[0];
 
-    //temporary response until database integration is done
-    return res.status(200).json({
-        success:true,
-        message: "User Logged in Successfully!"
-    })
+        //4. Compare the provided password with the hashed password in the database using bcrypt
+        const isMatch = await bycrypt.compare(password, user.password_hash);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password!"
+            })
+        }
+
+        //5. If the password matches, generate a JWT token for authentication
+        const token = jwt.sign(
+            { userId: user.id, role: user.role, organizationId: user.organization_id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+
+        //temporary response until database integration is done
+        return res.status(200).json({
+            success: true,
+            message: "User Logged in Successfully!",
+            token: token,
+            user: {
+                id: user.id,
+                firstName: user.first_name,
+                lastName: user.last_name,
+                email: user.email,
+                role: user.role,
+            }
+        })
+    } catch (error) {
+        console.error("Error occurred while logging in user:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error; Could not log in user at this time."
+        });
+    }
 }
+
 module.exports = {
     registerUser,
     loginUser
 }
-
-
-
-
-
-
-
-
 
