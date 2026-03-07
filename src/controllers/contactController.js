@@ -1,5 +1,6 @@
 const {v4: uuidv4} = require('uuid');
 const pool=require ('../config/db');
+const nodemailer = require ('nodemailer');
 
 
 
@@ -46,6 +47,37 @@ const contactForm= async (req, res) => {
         const values = [newInquiryId, name, email, phone || null, subject, message];
 
         await pool.query(insertQuery, values);
+
+        
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: process.env.EMAIL_USER, // Send the notification to the admin email
+            subject: `EventLK - New Inquiry: ${subject}`,
+            html: `
+                <p>You have received a new inquiry from the contact form:</p>
+                <ul>
+                    <li><strong>Name:</strong> ${name}</li>
+                    <li><strong>Email:</strong> ${email}</li>
+                    <li><strong>Phone:</strong> ${phone || 'Not Provided'}</li>
+                    <li><strong>Message:</strong> ${message}</li>
+                </ul>
+                
+                <p>Please respond to the inquiry as soon as possible.</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log("Notification email has been sent to the admin successfully!!");
+        
+
 
         return res.status(200).json({
             success: true,
