@@ -115,6 +115,15 @@ const loginUser = async (req, res) => {
 
         const user = result.rows[0];
 
+        // --- NEW LOGIC FOR GOOGLE USERS ---
+        // If the user signed up via Google, they might not have a password_hash
+        if (!user.password_hash) {
+            return res.status(400).json({
+                success: false,
+                message: "This account was created using Google. Please log in with Google."
+            });
+        }
+
         //4. Compare the provided password with the hashed password in the database using bcrypt
         const isMatch = await bycrypt.compare(password, user.password_hash);
 

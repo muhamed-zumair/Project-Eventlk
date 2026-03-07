@@ -1,5 +1,19 @@
+require('dotenv').config();
 const express = require('express');
 const app=express();
+const session = require('express-session');
+const passport = require('passport');
+require('./src/config/passport')(passport); // Import the Passport configuration
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.use(express.json());
 require('./src/config/db');//Importing the db connection
