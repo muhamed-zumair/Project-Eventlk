@@ -63,6 +63,13 @@ const registerUser = async (req, res) => {
         const values = [newUserId, firstName, lastName, email, hashedPassword, defaultRole, orgId];
         await pool.query(insertUserQuery, values);
 
+        const token = jwt.sign(
+            { userId: newUserId, role: defaultRole, organizationId: orgId },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+
         return res.status(201).json({
             success: true,
             message: "User Registered Successfully!"

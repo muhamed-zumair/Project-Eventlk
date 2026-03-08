@@ -4,6 +4,7 @@ const app=express();
 const session = require('express-session');
 const passport = require('passport');
 require('./src/config/passport')(passport); // Import the Passport configuration
+const cors = require('cors');
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -13,6 +14,11 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(cors({
+    origin: 'http://localhost:3000', // React app's URL
+    credentials: true // Allow cookies to be sent
+}));
 
 
 app.use(express.json());
