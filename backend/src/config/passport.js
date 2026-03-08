@@ -1,5 +1,6 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const pool = require('./db'); 
+const { sendWelcomeEmail } = require('../utils/emailService'); // Adjust path if necessary
 
 module.exports = function(passport) {
     passport.use(new GoogleStrategy({
@@ -32,7 +33,8 @@ module.exports = function(passport) {
                 const values = [firstName, lastName, email];
                 
                 const newUser = await pool.query(newUserQuery, values);
-                sendWelcomeEmail(profile.emails[0].value, profile.name.givenName);
+                
+                sendWelcomeEmail(email, firstName);
                 
                 return done(null, newUser.rows[0]);
             }

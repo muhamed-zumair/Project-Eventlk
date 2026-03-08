@@ -26,26 +26,23 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 // 2. The callback route (Fixed to use Supabase columns!)
 router.get('/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/login-failed' }),
+    passport.authenticate('google', { failureRedirect: 'http://localhost:3000/signin' }),
     (req, res) => {
-        // Generate a token for the Google User
         const token = jwt.sign(
-            { userId: req.user.id, role: req.user.role, organizationId: req.user.organization_id },
+            { userId: req.user.id, role: req.user.role },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        // For now, let's just send the token to the screen so you can copy it for Postman!
-        res.json({
-            success: true,
-            message: "Google Login Successful",
-            token: token,
-            user: {
-                id: req.user.id,
-                name: `${req.user.first_name} ${req.user.last_name}`,
-                email: req.user.email
-            }
-        });
+        // Make sure these keys (firstName) match what your Dashboard expects!
+        const userData = encodeURIComponent(JSON.stringify({
+            id: req.user.id,
+            firstName: req.user.first_name, 
+            lastName: req.user.last_name,
+            email: req.user.email
+        }));
+
+        res.redirect(`http://localhost:3000/auth-success?token=${token}&user=${userData}`);
     }
 );
 
