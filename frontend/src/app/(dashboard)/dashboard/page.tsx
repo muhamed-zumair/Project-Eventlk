@@ -25,39 +25,61 @@ export default function DashboardHome() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  const [greeting, setGreeting] = useState("Welcome");
+  // Split greeting to style the name separately
+  const [greetingPrefix, setGreetingPrefix] = useState("Welcome");
+  const [userName, setUserName] = useState("");
 
-  // Inside your Dashboard component
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const isNewUser = localStorage.getItem('isNewUser');
     const storedUser = localStorage.getItem('user');
 
-
-    if (!token) {
-      window.location.href = '/signin'; // Kick them out if no token!
+    // 1. Auth Check
+    if (!token || token === "undefined") {
+      window.location.href = '/signin';
       return;
     }
-  
-    if (storedUser) {
-      const userObj = JSON.parse(storedUser);
-      const name = userObj.firstName || "User";
-      
-      if (isNewUser === 'true') {
-        setGreeting(`Welcome to EventLK, ${name}!`);
-        // Remove the flag so next time they see "Welcome back"
-        localStorage.removeItem('isNewUser');
-      } else {
-        setGreeting(`Welcome back, ${name}!`);
+
+    // 2. Greeting Logic with Safety Check!
+    if (storedUser && storedUser !== "undefined") {
+      try {
+        const userObj = JSON.parse(storedUser);
+        const name = userObj.firstName || "User";
+
+        if (isNewUser === 'true') {
+          setGreetingPrefix(`Welcome to EventLK,`);
+          setUserName(name);
+          
+          setTimeout(() => {
+            localStorage.removeItem('isNewUser');
+          }, 1000);
+        } else {
+          setGreetingPrefix(`Welcome back,`);
+          setUserName(name);
+        }
+      } catch (error) {
+        console.error("Could not read user data:", error);
+        setGreetingPrefix("Welcome back,");
+        setUserName("User");
       }
+    } else {
+      setGreetingPrefix("Welcome back,");
+      setUserName("User");
     }
   }, []);
 
-  
+
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">{greeting}</h2>
+      <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight flex items-center gap-2">
+        {greetingPrefix}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+          {userName}
+        </span>
+        <span className="inline-block hover:animate-pulse cursor-default">👋</span>
+      </h2>
 
       {/* HERO SECTION - Annual Tech Summit */}
       <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg">
