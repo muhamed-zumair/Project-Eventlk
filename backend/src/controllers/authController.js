@@ -55,7 +55,7 @@ const registerUser = async (req, res) => {
 
         //saving the new user to the database
         const newUserId = uuidv4(); // Generate a unique ID for the user
-        const defaultRole = 'Attendee';
+        const defaultRole = 'User'; // Default role for new users
 
         const orgId = organization ? organization : null; // Generate an organization ID if organization is provided
 
