@@ -65,6 +65,7 @@ with st.sidebar:
     
     # Inputs
     headcount = st.slider("👥 Headcount", 10, 1000, 150, step=10)
+    budget = st.number_input("💰 Total Budget (LKR)", min_value=10000, value=150000, step=5000)
 
 # ==========================================
 # 3. MAIN DASHBOARD
