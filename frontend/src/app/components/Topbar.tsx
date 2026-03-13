@@ -42,7 +42,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
             <input
               type="text"
               placeholder="Search events, tasks, or team members..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              // ADDED: text-gray-900, placeholder-gray-500, and bg-gray-50
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-gray-900 placeholder-gray-500 bg-gray-50"
             />
           </div>
         </div>
