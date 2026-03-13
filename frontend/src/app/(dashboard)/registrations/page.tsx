@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { 
   QrCode, Mail, Users, Search, CheckCircle, 
-  Clock, CheckSquare, Square
+  Clock, CheckSquare, Square, Link as LinkIcon, Copy
 } from "lucide-react";
 
 export default function RegistrationsPage() {
@@ -18,6 +18,16 @@ export default function RegistrationsPage() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Mock Webhook URL
+  const webhookUrl = "https://api.eventlk.com/v1/webhooks/reg_8f72c99a";
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(webhookUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Toggle individual selection
   const toggleSelect = (id: number) => {
@@ -39,7 +49,6 @@ export default function RegistrationsPage() {
   // Bulk action to send QR codes
   const handleBulkSend = () => {
     setIsSending(true);
-    // Simulate API call to backend to generate and send QRs
     setTimeout(() => {
       setAttendees(prev => prev.map(a => 
         selectedIds.includes(a.id) ? { ...a, status: "QR Sent" } : a
@@ -59,6 +68,30 @@ export default function RegistrationsPage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Registrations & Tickets</h2>
           <p className="text-gray-500 text-sm mt-1">Manage confirmed attendees and issue bulk QR codes</p>
+        </div>
+      </div>
+
+      {/* NEW: Form Integration Section */}
+      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex flex-col lg:flex-row gap-6 justify-between items-start lg:items-center">
+        <div>
+          <h3 className="font-semibold text-indigo-900 flex items-center gap-2 mb-1">
+            <LinkIcon size={18} className="text-indigo-600" /> Connect External Form
+          </h3>
+          <p className="text-sm text-indigo-700 max-w-2xl">
+            Using Google Forms or Typeform for registration? Paste this unique Webhook URL into your form settings or Zapier to automatically sync new signups directly into the table below.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 w-full lg:w-auto">
+          <code className="bg-white border border-indigo-200 text-indigo-800 px-3 py-2 rounded-lg text-sm truncate w-full lg:w-64">
+            {webhookUrl}
+          </code>
+          <button 
+            onClick={handleCopy}
+            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shrink-0"
+          >
+            {copied ? <CheckCircle size={16} /> : <Copy size={16} />}
+            {copied ? "Copied!" : "Copy Link"}
+          </button>
         </div>
       </div>
 
