@@ -57,10 +57,13 @@ def load_and_prep_data():
 X_matrix, y_v, y_a, encoder_obj, alloc_cols, raw_df = load_and_prep_data()
 
 # ==========================================
-# 2. SIDEBAR - USER INPUTS (New in Commit 10)
+# 2. SIDEBAR - USER INPUTS (Updated in Commit 11)
 # ==========================================
 with st.sidebar:
-    st.write("🔧 Sidebar layout initialized. Inputs coming soon!")
+    st.header("📝 Event Details")
+    st.write("Tweaking these values changes the prediction instantly.")
+    
+    # Inputs will go here in the next commits...
 
 # ==========================================
 # 3. MAIN DASHBOARD
