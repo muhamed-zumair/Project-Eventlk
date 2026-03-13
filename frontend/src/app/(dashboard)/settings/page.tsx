@@ -31,8 +31,7 @@ export default function SettingsPage() {
   const navItems = [
     { id: "profile", label: "Profile", icon: User },
     { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "security", label: "Security", icon: Lock },
-    { id: "language", label: "Language", icon: Globe },
+    { id: "security", label: "Security", icon: Lock },    
     { id: "appearance", label: "Appearance", icon: Moon },
     { id: "privacy", label: "Data & Privacy", icon: Shield },
   ];
@@ -214,37 +213,7 @@ export default function SettingsPage() {
 
               <div className="border-t border-gray-100"></div>
 
-              <div className="space-y-6">
-                <h4 className="text-sm font-semibold text-gray-800">Notification Types</h4>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Event Updates</p>
-                    <p className="text-sm text-gray-500 mt-1">Get notified about event changes</p>
-                  </div>
-                  <Toggle defaultChecked={true} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Task Reminders</p>
-                    <p className="text-sm text-gray-500 mt-1">Reminders for upcoming tasks</p>
-                  </div>
-                  <Toggle defaultChecked={true} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Team Activity</p>
-                    <p className="text-sm text-gray-500 mt-1">Updates from team members</p>
-                  </div>
-                  <Toggle defaultChecked={false} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">AI Insights</p>
-                    <p className="text-sm text-gray-500 mt-1">AI-powered recommendations</p>
-                  </div>
-                  <Toggle defaultChecked={true} />
-                </div>
-              </div>
+              
 
               <div className="pt-4">
                 <button
@@ -361,62 +330,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* --- LANGUAGE TAB --- */}
-          {activeTab === "language" && (
-            <div className="space-y-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-6">
-                Language & Region
-              </h3>
-
-              <div className="space-y-6 max-w-2xl">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-800">Display Language</label>
-                  <select className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
-                    <option>English (English)</option>
-                    <option>Spanish (Español)</option>
-                    <option>French (Français)</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">Select your preferred language for the interface</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-800">Timezone</label>
-                  <select className="w-full px-4 py-2 border border-gray-200 border-indigo-500 rounded-lg text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
-                    <option>Eastern Time (ET)</option>
-                    <option>Pacific Time (PT)</option>
-                    <option>Central Time (CT)</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">Your timezone is used for event scheduling and reminders</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-800">Date Format</label>
-                  <select className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
-                    <option>MM/DD/YYYY</option>
-                    <option>DD/MM/YYYY</option>
-                    <option>YYYY-MM-DD</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-800">Time Format</label>
-                  <select className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
-                    <option>12-hour (AM/PM)</option>
-                    <option>24-hour</option>
-                  </select>
-                </div>
-
-                <div className="pt-4">
-                  <button
-                    type="button"
-                    className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
-                  >
-                    Save Settings
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          
 
           {/* --- APPEARANCE TAB --- */}
           {activeTab === "appearance" && (

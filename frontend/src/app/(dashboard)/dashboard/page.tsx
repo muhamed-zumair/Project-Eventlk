@@ -188,91 +188,9 @@ export default function DashboardHome() {
         </div>
       </div>
 
-      {/* QUICK STATS ROW */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[
-          { label: 'Total Attendees', val: '1,248', icon: Users, color: 'bg-blue-100 text-blue-600', change: '+12.5%', isPos: true },
-          { label: 'Budget Status', val: '$45,200', sub: 'of $60,000', icon: DollarSign, color: 'bg-green-100 text-green-600', progress: 75 },
-          { label: 'Pending Tasks', val: '8', sub: 'High Priority', icon: CheckCircle, color: 'bg-orange-100 text-orange-600' },
-          { label: 'Days Until Next Event', val: '12', sub: 'Annual Tech Summit', icon: Clock, color: 'bg-indigo-100 text-indigo-600' }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-lg ${stat.color}`}>
-                <stat.icon size={20} />
-              </div>
-              {stat.change && (
-                <span className={`text-xs font-medium ${stat.isPos ? 'text-green-600' : 'text-red-600'}`}>
-                  {stat.change}
-                </span>
-              )}
-            </div>
-            <h3 className="text-gray-500 text-sm font-medium mb-1">{stat.label}</h3>
-            <p className="text-2xl font-bold text-gray-900">{stat.val}</p>
-            {stat.sub && <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>}
-            {stat.progress && (
-              <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3">
-                <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${stat.progress}%` }}></div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      
 
-      {/* CHARTS & RECOMMENDATIONS ROW */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-800 mb-1">Real-time Attendance Trends</h3>
-          <p className="text-sm text-gray-400 mb-6">Registration vs. Actual Attendance (Last 7 Days)</p>
-
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="registration" stroke="#818cf8" strokeWidth={2} dot={{ r: 4, fill: '#818cf8' }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="actual" stroke="#34d399" strokeWidth={2} dot={{ r: 4, fill: '#34d399' }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Right: AI Suggestions */}
-        <div className="bg-indigo-600 text-white p-6 rounded-xl shadow-sm flex flex-col">
-          <div className="flex items-center gap-2 mb-6">
-            <Sparkles size={20} />
-            <h3 className="font-bold">AI Suggestions</h3>
-          </div>
-
-          <div className="space-y-4 flex-1">
-            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/10 hover:bg-white/20 transition cursor-pointer">
-              <div className="flex items-start gap-3">
-                <div className="bg-indigo-500/50 p-1.5 rounded-md"><MapPin size={14} /></div>
-                <div>
-                  <p className="text-xs text-indigo-200 mb-1">Venue Recommendation</p>
-                  <p className="text-sm font-medium leading-snug">Venue "Main Hall" aligns best with your current headcount.</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/10 hover:bg-white/20 transition cursor-pointer">
-              <div className="flex items-start gap-3">
-                <div className="bg-indigo-500/50 p-1.5 rounded-md"><DollarSign size={14} /></div>
-                <div>
-                  <p className="text-xs text-indigo-200 mb-1">Budget Optimization</p>
-                  <p className="text-sm font-medium leading-snug">You can save ~$2,400 by booking catering before Friday.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button className="w-full bg-white text-indigo-600 py-3 rounded-lg text-sm font-bold mt-6 hover:bg-indigo-50 transition">
-            View All Recommendations
-          </button>
-        </div>
-      </div>
+      
 
       {/* VIEW FULL DETAILS MODAL */}
       {isDetailsModalOpen && (
@@ -513,48 +431,48 @@ export default function DashboardHome() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Event Title</label>
-                    <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    <input type="text" defaultValue="Annual Tech Summit 2025" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Event Date</label>
-                      <input type="date" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <input type="date" defaultValue="2024-12-25" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Start Time</label>
-                      <input type="time" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <input type="time" defaultValue="09:00" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">End Time</label>
-                      <input type="time" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <input type="time" defaultValue="17:00" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Venue</label>
-                    <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    <input type="text" defaultValue="Main Hall, University Campus" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                   </div>
 
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Venue Address</label>
-                    <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    <input type="text" defaultValue="123 University Ave, Campus Building A, Room 101" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Expected Attendees</label>
-                      <input type="number" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <input type="number" defaultValue={200} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Budget ($)</label>
-                      <input type="number" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <input type="number" defaultValue={60000} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Description</label>
-                    <textarea rows={4} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] resize-none text-gray-900"></textarea>
+                    <textarea rows={4} defaultValue="Annual technology summit featuring keynote speakers, workshops, and networking sessions for students and industry professionals. This flagship event brings together the brightest minds in technology to share insights, network, and collaborate on innovative solutions." className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] resize-none text-gray-900"></textarea>
                   </div>
                 </div>
               </section>
@@ -567,19 +485,19 @@ export default function DashboardHome() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Organizer Name</label>
-                    <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    <input type="text" defaultValue="Sarah Mitchell" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Role</label>
-                    <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    <input type="text" defaultValue="Chairperson" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Email</label>
-                    <input type="email" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    <input type="email" defaultValue="sarah.mitchell@eventlk.com" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Phone</label>
-                    <input type="tel" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                    <input type="tel" defaultValue="+1 (555) 123-4567" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                   </div>
                 </div>
               </section>
@@ -594,11 +512,26 @@ export default function DashboardHome() {
                     <Plus size={16} /> Add Item
                   </button>
                 </div>
+                {/* NEW: Explicit Column Headers */}
+                <div className="flex gap-4 mb-2 px-1">
+                  <div className="w-1/3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Timeline / Time Slot</div>
+                  <div className="flex-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity / Process</div>
+                  <div className="w-9"></div> {/* spacing for trash icon */}
+                </div>
                 <div className="space-y-3">
-                  {[1, 2, 3].map((item) => (
-                    <div key={item} className="flex gap-4 items-center">
-                      <input type="text" className="w-1/3 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                      <input type="text" className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                  {[
+                    { time: "9:00 AM - 9:30 AM", title: "Registration & Welcome Coffee" },
+                    { time: "9:30 AM - 10:00 AM", title: "Opening Ceremony" },
+                    { time: "10:00 AM - 11:30 AM", title: "Keynote: Future of AI" },
+                    { time: "11:30 AM - 12:30 PM", title: "Workshop Session 1" },
+                    { time: "12:30 PM - 1:30 PM", title: "Lunch Break" },
+                    { time: "1:30 PM - 3:00 PM", title: "Panel Discussion" },
+                    { time: "3:00 PM - 4:30 PM", title: "Workshop Session 2" },
+                    { time: "4:30 PM - 5:00 PM", title: "Closing Remarks" },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex gap-4 items-center">
+                      <input type="text" defaultValue={item.time} className="w-1/3 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" placeholder="e.g. 9:00 AM - 10:00 AM" />
+                      <input type="text" defaultValue={item.title} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" placeholder="e.g. Opening Ceremony" />
                       <button className="text-red-500 hover:text-red-700 p-2">
                         <Trash2 size={20} />
                       </button>
@@ -617,11 +550,22 @@ export default function DashboardHome() {
                     <Plus size={16} /> Add Speaker
                   </button>
                 </div>
+                {/* NEW: Explicit Column Headers */}
+                <div className="flex gap-4 mb-2 px-1">
+                  <div className="w-1/2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Speaker Name</div>
+                  <div className="w-1/2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role / Organization</div>
+                  <div className="w-9"></div> {/* spacing for trash icon */}
+                </div>
                 <div className="space-y-3">
-                  {[1, 2].map((item) => (
-                    <div key={item} className="flex gap-4 items-center">
-                      <input type="text" className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                      <input type="text" className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                  {[
+                    { name: "Dr. Emily Chen", role: "AI Research Lead, Tech Corp" },
+                    { name: "Marcus Johnson", role: "CTO, StartupX" },
+                    { name: "Prof. Amelia Rodriguez", role: "Computer Science Dept" },
+                    { name: "David Kim", role: "Product Manager, Innovation Labs" },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex gap-4 items-center">
+                      <input type="text" defaultValue={item.name} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" placeholder="e.g. John Doe" />
+                      <input type="text" defaultValue={item.role} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" placeholder="e.g. CEO at Tech Innovations" />
                       <button className="text-red-500 hover:text-red-700 p-2">
                         <Trash2 size={20} />
                       </button>
@@ -640,12 +584,23 @@ export default function DashboardHome() {
                     <Plus size={16} /> Add Sponsor
                   </button>
                 </div>
+                {/* NEW: Explicit Column Headers */}
+                <div className="flex gap-4 mb-2 px-1">
+                  <div className="flex-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sponsor Company Name</div>
+                  <div className="w-32 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sponsorship Tier</div>
+                  <div className="w-32 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount ($)</div>
+                  <div className="w-9"></div> {/* spacing for trash icon */}
+                </div>
                 <div className="space-y-3">
-                  {[1, 2].map((item) => (
-                    <div key={item} className="flex gap-4 items-center">
-                      <input type="text" className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                      <input type="text" className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                      <input type="text" className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                  {[
+                    { name: "TechCorp", tier: "Platinum", amount: "$15,000" },
+                    { name: "Innovation Labs", tier: "Gold", amount: "$10,000" },
+                    { name: "StartupX", tier: "Silver", amount: "$5,000" },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex gap-4 items-center">
+                      <input type="text" defaultValue={item.name} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" placeholder="e.g. Acme Corp" />
+                      <input type="text" defaultValue={item.tier} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" placeholder="e.g. Gold" />
+                      <input type="text" defaultValue={item.amount} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" placeholder="e.g. $5,000" />
                       <button className="text-red-500 hover:text-red-700 p-2">
                         <Trash2 size={20} />
                       </button>
