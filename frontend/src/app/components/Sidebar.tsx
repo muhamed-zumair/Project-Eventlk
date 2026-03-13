@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Home, Calendar, ClipboardList, DollarSign, Users, 
-  Sparkles, BarChart2, Settings, ChevronLeft 
+  Sparkles, BarChart2, Settings, ChevronLeft , MessageSquare, QrCode
 } from "lucide-react";
 import { useState } from "react";
 
@@ -16,7 +16,10 @@ const navItems = [
   { name: "Team", href: "/team", icon: Users },
   { name: "AI Recommendations", href: "/ai-recommendations", icon: Sparkles },
   { name: "Analytics", href: "/analytics", icon: BarChart2 },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Communication ", href: "/communication", icon: MessageSquare },
+  { name: "Registrations", href: "/registrations", icon: QrCode },
+  { name: "Settings", href: "/settings", icon: Settings }
+  
 ];
 
 interface SidebarProps {
