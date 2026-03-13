@@ -63,7 +63,8 @@ with st.sidebar:
     st.header("📝 Event Details")
     st.write("Tweaking these values changes the prediction instantly.")
     
-    # Inputs will go here in the next commits...
+    # Inputs
+    headcount = st.slider("👥 Headcount", 10, 1000, 150, step=10)
 
 # ==========================================
 # 3. MAIN DASHBOARD
