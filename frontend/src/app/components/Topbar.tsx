@@ -178,7 +178,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div 
             className={`bg-white rounded-2xl shadow-2xl w-full transition-all duration-300 flex flex-col max-h-[95vh] ${
-              createMode === 'ai' ? 'max-w-[1100px]' : 'max-w-4xl'
+              createMode === 'ai' ? 'max-w-[1200px]' : 'max-w-4xl'
             }`}
           >
             {/* Modal Header */}
@@ -193,7 +193,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col relative">
               
               {/* Tab Selector */}
               <div className="grid grid-cols-2 gap-4 mb-6 shrink-0">
@@ -316,7 +316,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
               {/* === AI ASSISTED VIEW === */}
               {createMode === 'ai' && (
-                <div className="flex flex-col lg:flex-row gap-6 h-full min-h-[500px]">
+                <div className="flex flex-col lg:flex-row items-stretch gap-6 h-full min-h-[550px]">
                   
                   {/* Left Sidebar - Inputs */}
                   <div className="w-full lg:w-[380px] shrink-0 space-y-6 flex flex-col">
@@ -394,15 +394,16 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                           <label className="block text-sm text-gray-700 mb-1.5">Venue Style</label>
                           <select className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
                             <option>Any</option>
-                            <option>Modern / High-Tech</option>
-                            <option>Classic / Formal</option>
+                            <option>Auditorium</option>
+                            <option>Coworking Space</option>
+                            <option>Exhibition Hall</option>
+                            <option>Studio</option>
+                            <option>Open Space</option>
                           </select>
                         </div>
                       </div>
 
                       <div className="mt-6">
-                        <p className="text-sm text-gray-500 mb-1">Calculated Cost Per Head</p>
-                        <p className="text-2xl font-bold text-gray-900 mb-4">LKR {costPerHead}</p>
                         <button 
                           onClick={() => setIsAiGenerated(true)}
                           className="w-full bg-[#ef4444] text-white py-3.5 rounded-xl font-medium hover:bg-red-600 transition flex items-center justify-center gap-2"
@@ -414,12 +415,12 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
                   </div>
 
-                  {/* Right Content Area - Results or Placeholder */}
-                  <div className="flex-1 border border-gray-200 rounded-2xl bg-gray-50/30 overflow-hidden flex flex-col">
+                  {/* Right Content Area - Sticky Results */}
+                  <div className="flex-1 border border-gray-200 rounded-2xl bg-white overflow-hidden flex flex-col sticky top-0 h-full">
                     
                     {!isAiGenerated ? (
                       /* Idle State */
-                      <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                      <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-gray-50/30">
                         <div className="text-gray-300 mb-4">
                           <Sparkles size={64} strokeWidth={1.5} />
                         </div>
@@ -429,67 +430,49 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                     ) : (
                       /* Generated State */
                       <div className="flex flex-col h-full bg-white">
-                        <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                          <h3 className="text-lg font-medium text-gray-500 mb-6">Intelligent Venue & Budget Recommendation System</h3>
+                        <div className="p-8 flex-1 overflow-y-auto custom-scrollbar space-y-6">
                           
-                          {/* Top Highlight Cards */}
-                          <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-5">
-                              <p className="flex items-center gap-2 text-sm font-semibold text-[#166534] mb-2">
-                                <MapPin size={16} /> Recommended Venue
-                              </p>
-                              <h4 className="text-xl font-bold text-[#15803d] mb-1">NSBM</h4>
-                              <p className="text-sm text-[#16a34a]">Based on {aiHeadcount} people and LKR {costPerHead}/head budget.</p>
+                          {/* Header */}
+                          <div className="border-b border-gray-100 pb-4">
+                            <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                              <Sparkles className="text-indigo-600" size={24} /> AI Recommendations
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">Based on {aiHeadcount} attendees and LKR {aiBudget.toLocaleString()} budget.</p>
+                          </div>
+
+                          {/* Highlight: Recommended Venue */}
+                          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+                            <div className="absolute -top-6 -right-6 text-indigo-500 opacity-10">
+                               <MapPin size={160} />
                             </div>
-                            <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-xl p-5">
-                              <p className="flex items-center gap-2 text-sm font-semibold text-[#1e40af] mb-2">
-                                <DollarSign size={16} /> Est. Total Cost
+                            <div className="relative z-10">
+                              <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Top Venue Match</p>
+                              <h4 className="text-3xl font-extrabold text-gray-900 mb-2">NSBM Green University</h4>
+                              <p className="text-sm text-gray-700 max-w-md font-medium leading-relaxed">
+                                Perfectly matches your event category and headcount. Estimated at LKR {costPerHead}/head, fitting comfortably within your total budget.
                               </p>
-                              <h4 className="text-2xl font-bold text-[#1d4ed8]">LKR {aiBudget.toLocaleString()}</h4>
                             </div>
                           </div>
 
-                          {/* Budget Breakdown Section */}
-                          <div className="border border-gray-200 rounded-2xl p-6">
-                            <h4 className="flex items-center gap-2 font-semibold text-gray-900 mb-6">
-                              <div className="w-5 h-5 rounded bg-gradient-to-br from-pink-500 to-orange-400"></div>
-                              Suggested Budget Allocation
-                            </h4>
+                          {/* Highlight: Budget Allocation (Perfectly Spaced & Padded) */}
+                          <div className="border border-gray-200 rounded-2xl p-6 md:p-8 bg-white shadow-sm">
+                            <div className="mb-6">
+                              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Financial Strategy</p>
+                              <h4 className="text-xl font-bold text-gray-900">Suggested Budget Allocation</h4>
+                            </div>
                             
-                            <div className="flex flex-col xl:flex-row gap-8 items-center">
-                              {/* Table */}
-                              <div className="flex-1 w-full">
-                                <table className="w-full text-sm text-left">
-                                  <thead>
-                                    <tr className="border-b border-gray-100 text-gray-500">
-                                      <th className="pb-3 font-medium"># Category</th>
-                                      <th className="pb-3 font-medium text-right">Amount (LKR)</th>
-                                      <th className="pb-3 font-medium text-right">Percentage</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="text-gray-700">
-                                    {aiBudgetData.map((item, index) => (
-                                      <tr key={index} className="border-b border-gray-50 last:border-0">
-                                        <td className="py-3 font-medium">{index} {item.name}</td>
-                                        <td className="py-3 text-right">{item.value.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                        <td className="py-3 text-right text-gray-500">{item.percentage}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                              
+                            <div className="flex flex-col xl:flex-row gap-8 items-center justify-center">
                               {/* Pie Chart */}
-                              <div className="w-[240px] h-[240px] shrink-0">
+                              <div className="w-56 h-56 shrink-0 relative">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <PieChart>
                                     <Pie
                                       data={aiBudgetData}
                                       cx="50%"
                                       cy="50%"
-                                      innerRadius={0}
-                                      outerRadius={100}
-                                      paddingAngle={2}
+                                      innerRadius={65}
+                                      outerRadius={90}
+                                      paddingAngle={4}
                                       dataKey="value"
                                       stroke="none"
                                     >
@@ -497,19 +480,49 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                       ))}
                                     </Pie>
-                                    <RechartsTooltip formatter={(value) => `LKR ${value.toLocaleString()}`} />
+                                    <RechartsTooltip 
+                                      formatter={(value: any) => `LKR ${value.toLocaleString()}`}
+                                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                    />
                                   </PieChart>
                                 </ResponsiveContainer>
+                                {/* Inner Donut Text */}
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                  <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Total</span>
+                                  <span className="text-sm font-bold text-gray-800">100%</span>
+                                </div>
+                              </div>
+
+                              {/* Widely Spaced, Borderless Aligned Legend */}
+                              <div className="flex-1 w-full flex flex-col justify-center space-y-4 pl-0 xl:pl-8 pr-2 md:pr-6">
+                                {aiBudgetData.map((item, index) => (
+                                  <div key={index} className="flex items-center w-full group">
+                                    {/* Dot */}
+                                    <div className="w-3 h-3 rounded-full shrink-0 shadow-sm mr-3" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                    
+                                    {/* Name */}
+                                    <p className="text-sm font-bold text-gray-700 shrink-0">{item.name}</p>
+                                    
+                                    {/* Dotted spacer that dynamically fills empty space */}
+                                    <div className="flex-1 border-b-2 border-dotted border-gray-200 mx-4 opacity-50 group-hover:border-gray-400 transition-colors"></div>
+                                    
+                                    {/* Percentage */}
+                                    <p className="text-sm font-semibold text-gray-500 shrink-0 w-12 text-right">{item.percentage}</p>
+                                    
+                                    {/* Value - Given wider width to prevent edge touching */}
+                                    <p className="text-sm font-bold text-gray-900 shrink-0 w-28 text-right">LKR {item.value.toLocaleString()}</p>
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           </div>
 
                         </div>
                         
-                        {/* Right Panel Footer (Actions) */}
+                        {/* Footer */}
                         <div className="p-5 border-t border-gray-200 bg-white flex items-center gap-3 shrink-0 rounded-b-2xl">
                           <button className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm">
-                            Create Event with AI Plan
+                            Preview and Confirm
                           </button>
                           <button onClick={() => setIsCreateModalOpen(false)} className="bg-white border border-transparent text-gray-500 px-4 py-2.5 rounded-lg font-medium hover:bg-gray-50 hover:text-gray-700 transition text-sm ml-auto">
                             Cancel
