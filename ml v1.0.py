@@ -57,7 +57,7 @@ def load_and_prep_data():
 X_matrix, y_v, y_a, encoder_obj, alloc_cols, raw_df = load_and_prep_data()
 
 # ==========================================
-# 2. SIDEBAR - USER INPUTS (Updated in Commit 11)
+# 2. SIDEBAR - USER INPUTS
 # ==========================================
 with st.sidebar:
     st.header("📝 Event Details")
@@ -66,10 +66,16 @@ with st.sidebar:
     # Inputs
     headcount = st.slider("👥 Headcount", 10, 1000, 150, step=10)
     budget = st.number_input("💰 Total Budget (LKR)", min_value=10000, value=150000, step=5000)
-
+    
     # Derived Calculations
     bph = budget / headcount
     st.metric(label="Calculated Cost Per Head", value=f"LKR {bph:,.2f}")
+    
+    st.markdown("---")
+    st.subheader("Preferences")
+    
+    event_type_display = st.selectbox("Event Type", 
+                                      ["Workshop / Training", "Hackathon", "Meetup", "Conference", "Panel Discussion", "Networking"])
 
 # ==========================================
 # 3. MAIN DASHBOARD
@@ -78,7 +84,6 @@ st.title("🎉 EventLK: AI Event Planner")
 st.markdown("### Intelligent Venue & Budget Recommendation System")
 
 if X_matrix is not None:
-    st.success(f"✅ Data processing complete! Ready to train on {X_matrix.shape[0]} 
-    samples.")
+    st.success(f"✅ Data processing complete! Ready to train on {X_matrix.shape[0]} samples.")
 else:
     st.error("❌ Data file not found. Please ensure 'event_dataset_v2_distinct.csv' is in the folder.")
