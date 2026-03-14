@@ -2,13 +2,13 @@ const { v4: uuidv4 } = require('uuid');
 const pool = require('../config/db');
 const bycrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const {sendWelcomeEmail} = require('../utils/emailService');
+const { sendWelcomeEmail } = require('../utils/emailService');
 
 //function to handle the user registration
 const registerUser = async (req, res) => {
 
     // Extract user details from the request body
-    const { firstName, lastName, email, organization, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     //1. Validation check for empty fields
     if (!firstName || !lastName || !email || !password) {
@@ -57,17 +57,15 @@ const registerUser = async (req, res) => {
         const newUserId = uuidv4(); // Generate a unique ID for the user
         const defaultRole = 'User'; // Default role for new users
 
-        const orgId = organization ? organization : null; // Generate an organization ID if organization is provided
-
-        const insertUserQuery = `INSERT INTO "Users" (id, first_name, last_name, email, password_hash, role, organization_id) 
-                                 VALUES ($1, $2, $3, $4, $5, $6, $7)`;
-        const values = [newUserId, firstName, lastName, email, hashedPassword, defaultRole, orgId];
+        const insertUserQuery = `INSERT INTO "Users" (id, first_name, last_name, email, password_hash, role) 
+                         VALUES ($1, $2, $3, $4, $5, $6)`;
+        const values = [newUserId, firstName, lastName, email, hashedPassword, defaultRole];
         await pool.query(insertUserQuery, values);
 
         sendWelcomeEmail(email, firstName);
 
         const token = jwt.sign(
-            { userId: newUserId, role: defaultRole, organizationId: orgId },
+            { userId: newUserId, role: defaultRole },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
@@ -154,7 +152,7 @@ const loginUser = async (req, res) => {
 
         //5. If the password matches, generate a JWT token for authentication
         const token = jwt.sign(
-            { userId: user.id, role: user.role, organizationId: user.organization_id },
+            { userId: user.id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
