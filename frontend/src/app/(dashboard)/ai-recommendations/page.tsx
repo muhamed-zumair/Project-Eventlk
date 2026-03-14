@@ -1,121 +1,93 @@
 "use client";
 
-import { Sparkles, MapPin, DollarSign, Users, Clock, ArrowRight } from "lucide-react";
-
-// --- Types ---
-interface Recommendation {
-  id: string;
-  title: string;
-  insight: string;
-  description: string;
-  impact: 'High Impact' | 'Medium Impact' | 'Low Impact';
-  icon: any;
-  iconColor: string; // Background color for the icon box
-}
-
-// --- Mock Data ---
-const recommendations: Recommendation[] = [
-  {
-    id: "1",
-    title: "Optimal Venue Selection",
-    insight: 'Venue "Main Hall" aligns best with your current headcount of 200 attendees.',
-    description: "Based on your expected attendance and event type, Main Hall offers the best capacity-to-cost ratio with excellent acoustics for presentations.",
-    impact: "High Impact",
-    icon: MapPin,
-    iconColor: "bg-indigo-100 text-indigo-600",
-  },
-  {
-    id: "2",
-    title: "Cost Optimization",
-    insight: "You can save ~$2,400 by booking catering services before Friday.",
-    description: "Early booking discounts are available from your preferred caterer. Act within 3 days to secure 12% savings.",
-    impact: "High Impact",
-    icon: DollarSign,
-    iconColor: "bg-green-100 text-green-600",
-  },
-  {
-    id: "3",
-    title: "Attendance Boost",
-    insight: "Send reminder emails 48 hours before the event to boost attendance by 15%.",
-    description: "Historical data shows that two-day reminder emails increase actual attendance rates significantly for university events.",
-    impact: "Medium Impact",
-    icon: Users,
-    iconColor: "bg-blue-100 text-blue-600",
-  },
-  {
-    id: "4",
-    title: "Optimal Scheduling",
-    insight: "Schedule your next event on a Thursday afternoon for maximum engagement.",
-    description: "Thursday 2-5 PM slots show 23% higher attendance compared to other weekday time slots for similar events.",
-    impact: "Medium Impact",
-    icon: Clock,
-    iconColor: "bg-purple-100 text-purple-600",
-  },
-];
-
-// --- Components ---
-const ImpactBadge = ({ impact }: { impact: string }) => {
-  const styles = {
-    "High Impact": "bg-red-100 text-red-600",
-    "Medium Impact": "bg-orange-100 text-orange-600",
-    "Low Impact": "bg-gray-100 text-gray-600",
-  }[impact] || "bg-gray-100";
-
-  return (
-    <span className={`px-3 py-1 rounded-full text-xs font-bold ${styles}`}>
-      {impact}
-    </span>
-  );
-};
+import { 
+  Sparkles, MapPin, PieChart, Palette, 
+  ListChecks, BrainCircuit, Zap 
+} from "lucide-react";
 
 export default function AIRecommendationsPage() {
   return (
-    <div className="space-y-6 px-4 py-6 md:p-8">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 text-indigo-600 mb-1">
-          <Sparkles size={20} />
-          <h2 className="text-lg font-bold">AI Recommendations</h2>
-        </div>
-        <p className="text-gray-500 text-sm">Intelligent insights powered by machine learning</p>
-      </div>
+    <div className="space-y-8 max-w-6xl mx-auto h-full flex flex-col pt-4">
+      
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 rounded-3xl p-10 md:p-14 text-white shadow-xl relative overflow-hidden">
+        {/* Abstract background decorations */}
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-10 -mb-10 w-48 h-48 bg-purple-500 opacity-20 rounded-full blur-2xl"></div>
 
-      {/* Recommendations Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {recommendations.map((rec) => (
-          <div
-            key={rec.id}
-            className="bg-white p-5 md:p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            {/* Card Header */}
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-xl ${rec.iconColor}`}>
-                <rec.icon size={24} />
-              </div>
-              <ImpactBadge impact={rec.impact} />
-            </div>
-
-            {/* Content */}
-            <div className="mb-6">
-              <p className="text-xs text-gray-500 uppercase font-semibold mb-1 tracking-wide">
-                {rec.title}
-              </p>
-              <h3 className="text-lg font-bold text-gray-900 mb-3 leading-snug">
-                {rec.insight}
-              </h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                {rec.description}
-              </p>
-            </div>
-
-            {/* Action Button */}
-            <button className="flex items-center gap-2 text-indigo-600 text-sm font-bold hover:text-indigo-800 transition group whitespace-nowrap">
-              Apply Recommendation
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </button>
+        <div className="relative z-10 max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-indigo-100 text-sm font-semibold mb-6 backdrop-blur-sm">
+            <BrainCircuit size={16} /> EventLK Intelligence Engine
           </div>
-        ))}
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+            Meet your intelligent <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-200">
+              Co-Organizer.
+            </span>
+          </h1>
+          <p className="text-indigo-100/90 text-lg leading-relaxed max-w-2xl">
+            Our proprietary AI model analyzes thousands of data points to instantly generate comprehensive event strategies. Generate an event from the top menu to see the engine in action.
+          </p>
+        </div>
       </div>
+
+      {/* Title for features */}
+      <div className="pt-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">How the Engine Works</h2>
+          <p className="text-gray-500 mt-1">Four pillars of automated event planning</p>
+        </div>
+      </div>
+
+      {/* Core Capabilities Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
+        
+        {/* Capability 1: Venue */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <MapPin size={28} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Venue Matching</h3>
+          <p className="text-gray-600 leading-relaxed">
+            The AI cross-references your expected headcount, event category, and total budget to recommend the perfect real-world venue. It calculates exact capacity limits and cost-per-head viability to ensure you never overbook or overspend.
+          </p>
+        </div>
+
+        {/* Capability 2: Budget */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <PieChart size={28} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Financial Allocation</h3>
+          <p className="text-gray-600 leading-relaxed">
+            Stop guessing your budget. The model instantly structures a highly detailed financial strategy, dividing your total funds across key categories (Venue, AV, Food, Speakers, Marketing) based on historical data for your specific event type.
+          </p>
+        </div>
+
+        {/* Capability 3: Branding */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="w-14 h-14 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <Palette size={28} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Brand & Theme Generation</h3>
+          <p className="text-gray-600 leading-relaxed">
+            The AI generates a cohesive, psychology-backed color palette tailored to the mood of your event. From "Synergy Spectrum" for professional workshops to vibrant neon for hackathons, you get exact HEX codes for your marketing team.
+          </p>
+        </div>
+
+        {/* Capability 4: Planning */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <ListChecks size={28} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Pre-Event Action Plans</h3>
+          <p className="text-gray-600 leading-relaxed">
+            Transform ideas into execution. The engine writes a customized, week-by-week action plan. It details exactly when to book logistics, when to open registrations, and how to manage the committee right up until the day of the event.
+          </p>
+        </div>
+
+      </div>
+
     </div>
   );
 }
