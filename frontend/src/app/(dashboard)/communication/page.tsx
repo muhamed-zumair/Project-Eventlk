@@ -35,21 +35,20 @@ export default function CommunicationPage() {
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState(initialMessages);
   const [selectedRecipients, setSelectedRecipients] = useState<number[]>([]);
+  
+  // NEW: Internal Attachment State
+  const [internalAttachment, setInternalAttachment] = useState<File | null>(null);
+  const internalFileInputRef = useRef<HTMLInputElement>(null);
 
   // --- External Email State ---
   const [emailTarget, setEmailTarget] = useState("registered");
   const [customEmail, setCustomEmail] = useState("");
-  
-  // NEW: CSV Upload State
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
-
   const [emailPrompt, setEmailPrompt] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  // Attachments and Signatures
   const [attachments, setAttachments] = useState<File[]>([]);
   const [includeSignature, setIncludeSignature] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +74,14 @@ export default function CommunicationPage() {
   };
 
   const handleSendMessage = () => {
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() && !internalAttachment) return;
+
+    // WIRED UP: Check if recipients are selected
+    if (selectedRecipients.length === 0) {
+      alert("Please select at least one team member to send this message to.");
+      return;
+    }
+
     const newMessage = {
       id: Date.now(),
       eventId: selectedEventId,
@@ -83,10 +89,22 @@ export default function CommunicationPage() {
       initials: "SM",
       text: chatInput,
       time: "Just now",
-      isMe: true
+      isMe: true,
+      attachmentName: internalAttachment ? internalAttachment.name : undefined // WIRED UP: Attachment name
     };
+
     setMessages([...messages, newMessage]);
     setChatInput("");
+    setInternalAttachment(null);
+
+    // Tell the backend exactly who to send this to
+    console.log("SENDING INTERNAL MESSAGE TO RECIPIENT IDs:", selectedRecipients);
+  };
+
+  const handleInternalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setInternalAttachment(e.target.files[0]);
+    }
   };
 
   // --- Handlers: External Emails ---
@@ -123,7 +141,6 @@ export default function CommunicationPage() {
     setAttachments(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  // NEW: Handle CSV Upload
   const handleCsvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setCsvFile(e.target.files[0]);
@@ -146,18 +163,15 @@ export default function CommunicationPage() {
       return;
     }
 
-    // Append signature if checked (UPDATED FORMAT)
     let finalBody = emailBody;
     if (includeSignature) {
       finalBody += `\n\n---\nBest Regards,\nThe Organizing Committee\n${currentEventName}`;
     }
 
-    // Determine exact target for the log
     let printTarget = "All Registered Attendees";
     if (emailTarget === "custom") printTarget = `Custom Email: ${customEmail}`;
     if (emailTarget === "csv") printTarget = `CSV Upload: ${csvFile?.name}`;
 
-    // For presentation/testing
     console.log("SENDING TO BACKEND:");
     console.log("Target:", printTarget);
     console.log("Subject:", emailSubject);
@@ -166,7 +180,6 @@ export default function CommunicationPage() {
 
     alert(`Successfully sent emails for ${currentEventName}!`);
     
-    // Reset Form
     setEmailSubject("");
     setEmailBody("");
     setEmailPrompt("");
@@ -287,7 +300,7 @@ export default function CommunicationPage() {
                   No messages yet. Start the conversation!
                 </div>
               ) : (
-                currentMessages.map(msg => (
+                currentMessages.map((msg: any) => (
                   <div key={msg.id} className={`flex flex-col gap-1 max-w-[80%] ${msg.isMe ? 'ml-auto items-end' : ''}`}>
                     <div className={`flex items-center gap-2 ${msg.isMe ? 'flex-row-reverse' : ''}`}>
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${msg.isMe ? 'bg-indigo-600' : 'bg-gray-400'}`}>
@@ -297,7 +310,13 @@ export default function CommunicationPage() {
                       <span className="text-xs text-gray-400">{msg.time}</span>
                     </div>
                     <div className={`text-sm p-3 rounded-2xl ${msg.isMe ? 'bg-indigo-600 text-white rounded-tr-none mr-10' : 'bg-indigo-50 border border-indigo-100 text-gray-800 rounded-tl-none ml-10'}`}>
-                      {msg.text}
+                      {msg.text && <p>{msg.text}</p>}
+                      {/* WIRED UP: Displays the attachment inside the message bubble! */}
+                      {msg.attachmentName && (
+                        <div className={`flex items-center gap-2 mt-2 p-2 rounded text-xs ${msg.isMe ? 'bg-indigo-700/50 border border-indigo-500' : 'bg-white border border-indigo-200 text-indigo-700'}`}>
+                          <Paperclip size={14} /> {msg.attachmentName}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -305,10 +324,32 @@ export default function CommunicationPage() {
             </div>
 
             <div className="p-4 border-t border-gray-100 bg-white">
+              {/* WIRED UP: Show selected file above input box */}
+              {internalAttachment && (
+                <div className="flex items-center gap-2 mb-2 bg-gray-50 p-2 rounded-lg w-fit border border-gray-200">
+                  <Paperclip size={14} className="text-gray-500" />
+                  <span className="text-xs text-gray-700">{internalAttachment.name}</span>
+                  <button onClick={() => setInternalAttachment(null)} className="text-gray-400 hover:text-red-500 ml-2">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+              
               <div className="flex items-end gap-2">
-                <button className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
+                {/* WIRED UP: Hidden file input & Attachment button */}
+                <input 
+                  type="file" 
+                  ref={internalFileInputRef}
+                  onChange={handleInternalFileChange}
+                  className="hidden" 
+                />
+                <button 
+                  onClick={() => internalFileInputRef.current?.click()}
+                  className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                >
                   <Paperclip size={20} />
                 </button>
+                
                 <textarea 
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
@@ -321,7 +362,7 @@ export default function CommunicationPage() {
                 />
                 <button 
                   onClick={handleSendMessage}
-                  disabled={!chatInput.trim()}
+                  disabled={!chatInput.trim() && !internalAttachment}
                   className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send size={18} />
@@ -360,7 +401,6 @@ export default function CommunicationPage() {
                   <option value="csv">Upload Custom CSV List</option>
                 </select>
 
-                {/* WIRED UP: Custom Email Input */}
                 {emailTarget === "custom" && (
                   <input 
                     type="email" 
@@ -371,7 +411,6 @@ export default function CommunicationPage() {
                   />
                 )}
                 
-                {/* WIRED UP: CSV Upload Input */}
                 {emailTarget === "csv" && (
                   <div 
                     onClick={() => csvInputRef.current?.click()}
