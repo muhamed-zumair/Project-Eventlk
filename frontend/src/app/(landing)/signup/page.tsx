@@ -11,12 +11,11 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 1. STATE FOR FORM DATA
+  // 1. STATE FOR FORM DATA (Removed organization)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    organization: '',
     password: ''
   });
 
@@ -65,7 +64,7 @@ export default function SignUpPage() {
 
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
 
-        {/* Left Side: Content (Same as before) */}
+        {/* Left Side: Content */}
         <div className="hidden lg:block space-y-8">
           <div>
             <h2 className="text-purple-500 font-bold text-xl mb-2">EventLK</h2>
@@ -133,22 +132,6 @@ export default function SignUpPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">Organization (University)</label>
-              <select
-                name="organization"
-                onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-gray-300"
-              >
-                <option value="" className="bg-[#0F0F12]">Select your university...</option>
-                <option value="1436be71-3ab3-4ad2-a5ab-8a0481569890" className="bg-[#0F0F12]">University of Moratuwa (UoM)</option>
-                <option value="ba63b5e7-7355-47a1-aa2a-800d1f7c8b59" className="bg-[#0F0F12]">Sri Lanka Institute of Information Technology (SLIIT)</option>
-                <option value="0172247e-8b4e-49b5-a5d7-8a40da5323a3" className="bg-[#0F0F12]">Informatics Institute of Technology (IIT)</option>
-                <option value="6b2d9c31-03d5-4a50-b2c2-7705df4f87b1" className="bg-[#0F0F12]">University of Colombo (UoC)</option>
-                <option value="cef9ead1-a35e-461b-b498-2c7edc6200e3" className="bg-[#0F0F12]">University of Peradeniya (UoP)</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
               <label className="text-xs text-gray-400">Password *</label>
               <div className="relative">
                 <input 
@@ -179,16 +162,13 @@ export default function SignUpPage() {
               <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#0F0F12] px-2 text-gray-500">Or continue with</span></div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <button 
                 type="button"
                 onClick={() => window.location.href = 'http://localhost:5000/api/auth/google'}
-                className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-lg text-sm transition-colors"
+                className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-lg text-sm transition-colors text-white"
               >
                 Google
-              </button>
-              <button type="button" className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-lg text-sm transition-colors text-gray-500">
-                Facebook
               </button>
             </div>
           </form>

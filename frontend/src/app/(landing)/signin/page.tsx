@@ -115,7 +115,7 @@ export default function SignInPage() {
               <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#0F0F12] px-2 text-gray-500">Or continue with</span></div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <button
                 type="button"
                 onClick={() => window.location.href = 'http://localhost:5000/api/auth/google'}
@@ -123,15 +123,12 @@ export default function SignInPage() {
               >
                 Google
               </button>
-              <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-lg text-sm transition-colors">
-                Facebook
-              </button>
             </div>
           </form>
         </div>
 
         <div className="mt-8 text-xs text-gray-500">
-          By signing in, you agree to our <a href="#" className="text-purple-400">Terms of Service</a> and <a href="#" className="text-purple-400">Privacy Policy</a>
+          By signing in, you agree to our <Link href="/terms" className="text-purple-400 hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-purple-400 hover:underline">Privacy Policy</Link>
         </div>
       </div>
     </div>
