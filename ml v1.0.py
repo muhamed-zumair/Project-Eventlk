@@ -76,6 +76,9 @@ with st.sidebar:
     
     event_type_display = st.selectbox("Event Type", 
                                       ["Workshop / Training", "Hackathon", "Meetup", "Conference", "Panel Discussion", "Networking"])
+    
+    venue_pref_display = st.selectbox("Venue Style", 
+                                      ["Any", "Auditorium (University/Govt)", "Coworking Space (Startup)", "Exhibition Hall", "Studio", "Open Space"])
 
 # ==========================================
 # 3. MAIN DASHBOARD
