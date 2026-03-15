@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { 
   MessageSquare, Mail, Users, Send, Sparkles, 
   Search, Paperclip, CalendarDays, Loader2, Upload,
-  Link as LinkIcon, X, FileText, History, Info, Clock, User
+  Link as LinkIcon, X, FileText, History, Info, Clock, User, Lock
 } from "lucide-react";
 
 // --- Mock Data ---
@@ -21,10 +21,11 @@ const initialTeamMembers = [
   { id: 5, eventId: 'evt_2', name: "Michael Brown", role: "Team Lead" },
 ];
 
+// Added `toText` to track private recipients
 const initialMessages = [
-  { id: 1, eventId: 'evt_1', sender: "Sarah Mitchell", initials: "SM", text: "Hey team! Just a reminder that we need to finalize the catering budget by tomorrow.", time: "10:42 AM", isMe: true },
-  { id: 2, eventId: 'evt_1', sender: "David Kim", initials: "DK", text: "I'll have the final numbers ready by 3 PM today.", time: "10:45 AM", isMe: false },
-  { id: 3, eventId: 'evt_2', sender: "Michael Brown", initials: "MB", text: "Has anyone contacted the Spring guest speakers yet?", time: "09:00 AM", isMe: false },
+  { id: 1, eventId: 'evt_1', sender: "Sarah Mitchell", initials: "SM", text: "Hey team! Just a reminder that we need to finalize the catering budget by tomorrow.", time: "10:42 AM", isMe: true, toText: "David Kim, Emily Chen" },
+  { id: 2, eventId: 'evt_1', sender: "David Kim", initials: "DK", text: "I'll have the final numbers ready by 3 PM today.", time: "10:45 AM", isMe: false, toText: "Sarah Mitchell" },
+  { id: 3, eventId: 'evt_2', sender: "Michael Brown", initials: "MB", text: "Has anyone contacted the Spring guest speakers yet?", time: "09:00 AM", isMe: false, toText: "Sarah Mitchell" },
 ];
 
 const initialSentHistory = [
@@ -50,7 +51,7 @@ export default function CommunicationPage() {
   const [selectedEventId, setSelectedEventId] = useState<string>(myEvents[0].id);
   const [activeTab, setActiveTab] = useState<"internal" | "external">("internal");
 
-  // --- Internal Chat State (STRICTLY UNTOUCHED) ---
+  // --- Internal Chat State ---
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState(initialMessages);
   const [selectedRecipients, setSelectedRecipients] = useState<number[]>([]);
@@ -105,6 +106,13 @@ export default function CommunicationPage() {
       alert("Please select at least one team member to send this message to.");
       return;
     }
+
+    // Capture the names of the selected people to show in the UI
+    const recipientNames = currentTeam
+      .filter(m => selectedRecipients.includes(m.id))
+      .map(m => m.name)
+      .join(", ");
+
     const newMessage = {
       id: Date.now(),
       eventId: selectedEventId,
@@ -113,8 +121,10 @@ export default function CommunicationPage() {
       text: chatInput,
       time: "Just now",
       isMe: true,
+      toText: recipientNames, // Store the names here
       attachmentName: internalAttachment ? internalAttachment.name : undefined 
     };
+    
     setMessages([...messages, newMessage]);
     setChatInput("");
     setInternalAttachment(null);
@@ -235,7 +245,7 @@ export default function CommunicationPage() {
         </button>
       </div>
 
-      {/* TAB CONTENT: Internal Messaging (UNTOUCHED) */}
+      {/* TAB CONTENT: Internal Messaging */}
       {activeTab === "internal" && (
         <div className="flex flex-col lg:flex-row gap-6 h-[600px]">
           <div className="w-full lg:w-1/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
@@ -261,8 +271,8 @@ export default function CommunicationPage() {
           </div>
           <div className="w-full lg:w-2/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col">
             <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-              <h3 className="font-semibold text-gray-800">{currentEventName} - Announcement Board</h3>
-              <p className="text-xs text-gray-500">Messages sent here will notify selected team members.</p>
+              <h3 className="font-semibold text-gray-800">{currentEventName} - Private Messages</h3>
+              <p className="text-xs text-gray-500">Messages sent here are only visible to selected team members.</p>
             </div>
             <div className="flex-1 p-6 overflow-y-auto bg-gray-50/30 space-y-6">
               {currentMessages.map((msg: any) => (
@@ -275,8 +285,21 @@ export default function CommunicationPage() {
                     <span className="text-xs text-gray-400">{msg.time}</span>
                   </div>
                   <div className={`text-sm p-3 rounded-2xl ${msg.isMe ? 'bg-indigo-600 text-white rounded-tr-none mr-10' : 'bg-indigo-50 border border-indigo-100 text-gray-800 rounded-tl-none ml-10'}`}>
+                    
+                    {/* Private 'To' Badge */}
+                    {msg.toText && (
+                      <div className={`flex items-center gap-1.5 mb-2 pb-2 text-[10px] font-medium border-b ${msg.isMe ? 'border-indigo-500/50 text-indigo-100' : 'border-indigo-200/50 text-indigo-600'}`}>
+                        <Lock size={10} /> To: {msg.toText}
+                      </div>
+                    )}
+                    
                     {msg.text && <p>{msg.text}</p>}
-                    {msg.attachmentName && <div className={`flex items-center gap-2 mt-2 p-2 rounded text-xs ${msg.isMe ? 'bg-indigo-700/50' : 'bg-white'}`}><Paperclip size={14} /> {msg.attachmentName}</div>}
+                    
+                    {msg.attachmentName && (
+                      <div className={`flex items-center gap-2 mt-2 p-2 rounded text-xs ${msg.isMe ? 'bg-indigo-700/50' : 'bg-white'}`}>
+                        <Paperclip size={14} /> {msg.attachmentName}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -286,7 +309,7 @@ export default function CommunicationPage() {
               <div className="flex items-end gap-2">
                 <input type="file" ref={internalFileInputRef} onChange={handleInternalFileChange} className="hidden" />
                 <button onClick={() => internalFileInputRef.current?.click()} className="p-2 text-gray-400 hover:text-indigo-600"><Paperclip size={20} /></button>
-                <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type message..." className="flex-1 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none" rows={2} />
+                <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type private message..." className="flex-1 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none" rows={2} />
                 <button onClick={handleSendMessage} className="p-3 bg-indigo-600 text-white rounded-xl"><Send size={18} /></button>
               </div>
             </div>
@@ -294,7 +317,7 @@ export default function CommunicationPage() {
         </div>
       )}
 
-      {/* TAB CONTENT: AI Bulk Emails */}
+      {/* TAB CONTENT: AI Bulk Emails (UNTOUCHED) */}
       {activeTab === "external" && (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2 space-y-6">
