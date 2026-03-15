@@ -142,16 +142,17 @@ export default function DashboardHome() {
         });
 
         // 2. Map the Database Agenda to match our Frontend State
+        
         setAgendaItems(fullEvent.agenda.map((a: any) => ({
-          startTime: a.start_time?.substring(0, 5) || "",
-          endTime: a.end_time?.substring(0, 5) || "",
+          startTime: a.start_time ? String(a.start_time).substring(0, 5) : "",
+          endTime: a.end_time ? String(a.end_time).substring(0, 5) : "",
           title: a.title
         })));
 
         // 3. Map the Database Speakers
         setSpeakers(fullEvent.speakers.map((s: any) => ({
           name: s.name,
-          designation: s.designation
+          role: s.designation
         })));
 
         // 4. Map the Database Sponsors
@@ -552,8 +553,8 @@ export default function DashboardHome() {
                     <div className="bg-gray-50/50 border border-gray-100 rounded-xl overflow-hidden">
                       {agendaItems.map((item, idx) => (
                         <div key={idx} className="flex gap-6 p-4 border-b border-gray-100 last:border-0 items-center">
-                          <div className="flex items-center gap-2 text-indigo-500 w-48 shrink-0 text-sm font-medium">
-                            <Clock size={16} /> {item.startTime} - {item.endTime}
+                          <div className="flex items-center gap-2 text-indigo-500 w -48 shrink-0 text-sm font-medium">
+                            <Clock size={16} /> {item.startTime ||"TBA"} - {item.endTime || "TBA"} 
                           </div>
                           <p className="text-gray-800 font-medium">{item.title}</p>
                         </div>
@@ -589,7 +590,7 @@ export default function DashboardHome() {
                               {sponsor.tier}
                             </span>
                           </div>
-                          <p className="font-medium text-gray-900">{sponsor.amount}</p>
+                          <p className="font-medium text-gray-900">LKR {Number(sponsor.amount).toLocaleString()}</p>
                         </div>
                       ))}
                     </div>
@@ -779,13 +780,6 @@ export default function DashboardHome() {
                   </section>
 
                   <hr className="border-gray-100" />
-
-
-
-
-
-
-
                   <section>
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg text-gray-800 font-medium">Event Agenda</h3>
@@ -796,9 +790,37 @@ export default function DashboardHome() {
                     <div className="space-y-3">
                       {agendaItems.map((item, idx) => (
                         <div key={idx} className="flex gap-4 items-center">
-                          <input type="time" value={item.startTime || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx].startTime = e.target.value; setAgendaItems(newArr); }} className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                          <input type="time" value={item.endTime || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx].endTime = e.target.value; setAgendaItems(newArr); }} className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                          <input type="text" placeholder="Session Title" value={item.title || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx].title = e.target.value; setAgendaItems(newArr); }} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input 
+                            type="time" 
+                            value={item.startTime || ""} 
+                            onChange={(e) => { 
+                              const newArr = [...agendaItems]; 
+                              newArr[idx] = { ...newArr[idx], startTime: e.target.value }; 
+                              setAgendaItems(newArr); 
+                            }} 
+                            className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" 
+                          />
+                          <input 
+                            type="time" 
+                            value={item.endTime || ""} 
+                            onChange={(e) => { 
+                              const newArr = [...agendaItems]; 
+                              newArr[idx] = { ...newArr[idx], endTime: e.target.value }; 
+                              setAgendaItems(newArr); 
+                            }} 
+                            className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" 
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="Session Title" 
+                            value={item.title || ""} 
+                            onChange={(e) => { 
+                              const newArr = [...agendaItems]; 
+                              newArr[idx] = { ...newArr[idx], title: e.target.value }; 
+                              setAgendaItems(newArr); 
+                            }} 
+                            className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" 
+                          />
                           <button onClick={() => setAgendaItems(agendaItems.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2">
                             <Trash2 size={20} />
                           </button>
@@ -806,7 +828,6 @@ export default function DashboardHome() {
                       ))}
                     </div>
                   </section>
-
                   <section>
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg text-gray-800 font-medium">Speakers</h3>
