@@ -9,8 +9,8 @@ import {
 
 // --- Mock Data ---
 const myEvents = [
-  { id: 'evt_1', name: "Annual Tech Summit 2026" },
-  { id: 'evt_2', name: "Spring Conference" },
+  { id: 'evt_1', name: "Annual Tech Summit 2026", venue: "University Grand Hall", managerEmail: "manager@university.edu" },
+  { id: 'evt_2', name: "Spring Conference", venue: "NSBM Green University", managerEmail: "venue.manager@nsbm.lk" },
 ];
 
 const initialTeamMembers = [
@@ -27,7 +27,6 @@ const initialMessages = [
   { id: 3, eventId: 'evt_2', sender: "Michael Brown", initials: "MB", text: "Has anyone contacted the Spring guest speakers yet?", time: "09:00 AM", isMe: false },
 ];
 
-// --- Mock History Data ---
 const initialSentHistory = [
   { 
     id: 1, 
@@ -78,15 +77,14 @@ export default function CommunicationPage() {
   // --- Dynamic Filtering ---
   const currentTeam = initialTeamMembers.filter(m => m.eventId === selectedEventId);
   const currentMessages = messages.filter(m => m.eventId === selectedEventId);
-  const currentEventName = myEvents.find(e => e.id === selectedEventId)?.name;
+  const currentEvent = myEvents.find(e => e.id === selectedEventId);
+  const currentEventName = currentEvent?.name;
   const currentHistory = sentHistory.filter(h => h.eventId === selectedEventId);
 
-  // --- Helper: Initials Function ---
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
-  // --- Handlers: Internal Chat (STRICTLY UNTOUCHED LOGIC) ---
   const handleToggleRecipient = (id: number) => {
     setSelectedRecipients(prev => 
       prev.includes(id) ? prev.filter(rId => rId !== id) : [...prev, id]
@@ -128,7 +126,6 @@ export default function CommunicationPage() {
     }
   };
 
-  // --- Handlers: External Emails ---
   const handleGenerateAI = () => {
     if (!emailPrompt.trim()) {
       alert("Please provide some key details for the AI to use!");
@@ -164,7 +161,6 @@ export default function CommunicationPage() {
     }
   };
 
-  // --- IMPROVED: Send Mail Logic ---
   const handleSendMail = () => {
     if (!emailSubject || !emailBody) {
       alert("Please write or generate an email body first.");
@@ -178,8 +174,11 @@ export default function CommunicationPage() {
         alert("Please enter at least one custom email address.");
         return;
       }
-      // Captures the actual typed emails for history
       printTarget = customEmails; 
+    }
+
+    if (emailTarget === "venue") {
+      printTarget = `${currentEvent?.venue} Venue Manager (${currentEvent?.managerEmail})`;
     }
 
     if (emailTarget === "csv") {
@@ -187,7 +186,6 @@ export default function CommunicationPage() {
         alert("Please upload a CSV file first.");
         return;
       }
-      // Captures the specific file name for history
       printTarget = `CSV: ${csvFile.name}`;
     }
 
@@ -201,10 +199,8 @@ export default function CommunicationPage() {
     };
 
     setSentHistory([newHistoryItem, ...sentHistory]);
-
     alert(`Successfully sent bulk emails for ${currentEventName}!`);
     
-    // Reset Fields
     setEmailSubject("");
     setEmailBody("");
     setEmailPrompt("");
@@ -313,6 +309,7 @@ export default function CommunicationPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">1. Recipients</label>
                     <select value={emailTarget} onChange={(e) => setEmailTarget(e.target.value)} className="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:border-indigo-500 outline-none">
                       <option value="registered">All Registered Attendees</option>
+                      <option value="venue">{currentEvent?.venue} Venue Manager</option>
                       <option value="custom">Custom Email Addresses</option>
                       <option value="csv">Upload CSV List</option>
                     </select>
@@ -320,6 +317,13 @@ export default function CommunicationPage() {
                       <div className="mt-3">
                         <input type="text" placeholder="e.g. a@b.com, c@d.com" value={customEmails} onChange={(e) => setCustomEmails(e.target.value)} className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none" />
                         <p className="text-[10px] text-gray-400 mt-1 italic">Type one or more emails separated by commas.</p>
+                      </div>
+                    )}
+                    {emailTarget === "venue" && (
+                      <div className="mt-3 bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                        <p className="text-xs text-indigo-700 font-medium flex items-center gap-2">
+                          <Info size={14} /> To: {currentEvent?.managerEmail}
+                        </p>
                       </div>
                     )}
                     {emailTarget === "csv" && <div onClick={() => csvInputRef.current?.click()} className="mt-3 border-2 border-dashed border-gray-300 rounded-xl p-3 flex items-center justify-center gap-2 text-gray-500 text-sm cursor-pointer hover:bg-gray-50"><input type="file" accept=".csv" ref={csvInputRef} onChange={handleCsvChange} className="hidden" /> {csvFile ? <span className="text-indigo-600 font-medium">{csvFile.name}</span> : <span><Upload size={16} /> Upload CSV</span>}</div>}
@@ -377,7 +381,7 @@ export default function CommunicationPage() {
         </div>
       )}
 
-      {/* VIEW HISTORY MODAL */}
+      {/* VIEW HISTORY MODAL (UNTOUCHED) */}
       {viewingHistoryEmail && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
