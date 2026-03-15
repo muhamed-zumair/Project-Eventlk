@@ -26,8 +26,8 @@ module.exports = function(passport) {
 
                 // Insert into your specific "Users" table
                 const newUserQuery = `
-                    INSERT INTO "Users" (id, first_name, last_name, email, role) 
-                    VALUES (gen_random_uuid(), $1, $2, $3, 'Attendee') 
+                    INSERT INTO "Users" (id, first_name, last_name, email, global_role) 
+                    VALUES (gen_random_uuid(), $1, $2, $3, 'User') 
                     RETURNING *
                 `;
                 const values = [firstName, lastName, email];
