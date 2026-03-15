@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, Calendar, MapPin, Users, DollarSign,
   CheckCircle, Clock, AlertCircle, Pencil, X, Trash2, Plus,
-  FileText, Mail, Phone, User, Check
+  FileText, Mail, Phone, User, Check, Lock
 } from "lucide-react";
 
 export default function DashboardHome() {
@@ -13,8 +13,6 @@ export default function DashboardHome() {
   const [greetingPrefix, setGreetingPrefix] = useState("Welcome");
   const [userName, setUserName] = useState("");
 
-  // --- NEW: Dynamic Event Details State ---
-  // This replaces all the hardcoded text so you can actually edit it!
   const [eventDetails, setEventDetails] = useState({
     title: "Annual Tech Summit 2026",
     date: "2026-12-25",
@@ -31,7 +29,6 @@ export default function DashboardHome() {
     organizerPhone: "+1 (555) 123-4567"
   });
 
-  // State to hold temporary edits before the user clicks "Save"
   const [editForm, setEditForm] = useState(eventDetails);
 
   const [agendaItems, setAgendaItems] = useState([
@@ -58,10 +55,14 @@ export default function DashboardHome() {
     { name: "StartupX", tier: "Silver", amount: "$5,000" },
   ]);
 
+  // --- UPDATED: Event Files State to include confidentiality ---
   const [eventFiles, setEventFiles] = useState([
-    { id: '1', name: "Venue_Contract_Final.pdf", size: "2.4 MB", date: "Oct 12, 2024" },
-    { id: '2', name: "Sponsor_Packages_v2.pdf", size: "1.1 MB", date: "Oct 15, 2024" }
+    { id: '1', name: "Venue_Contract_Final.pdf", size: "2.4 MB", date: "Oct 12, 2024", isConfidential: true },
+    { id: '2', name: "Sponsor_Packages_v2.pdf", size: "1.1 MB", date: "Oct 15, 2024", isConfidential: false }
   ]);
+  
+  // NEW: State for the checkbox when uploading
+  const [isUploadConfidential, setIsUploadConfidential] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -69,6 +70,7 @@ export default function DashboardHome() {
     fileInputRef.current?.click();
   };
 
+  // --- UPDATED: Attach the checkbox state to the new file ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
@@ -79,10 +81,12 @@ export default function DashboardHome() {
         id: Date.now().toString(),
         name: selectedFile.name,
         size: `${sizeInMB} MB`,
-        date: "Just now"
+        date: "Just now",
+        isConfidential: isUploadConfidential // Uses the checkbox value
       };
 
       setEventFiles([newFile, ...eventFiles]);
+      setIsUploadConfidential(false); // Reset checkbox after upload
     }
   };
 
@@ -94,7 +98,6 @@ export default function DashboardHome() {
     window.print();
   };
 
-  // Safe Date Formatter (e.g., "2026-12-25" -> "December 25, 2026")
   const formattedDate = new Date(eventDetails.date + "T00:00:00").toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -134,7 +137,6 @@ export default function DashboardHome() {
     }
   }, []);
 
-  // --- AUTOMATIC STATUS LOGIC ---
   const eventDateObj = new Date(eventDetails.date + "T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0); 
@@ -142,7 +144,6 @@ export default function DashboardHome() {
 
   const eventStatus = eventDateObj < today ? "Done" : "In Progress";
   
-  // Calculate Days Left
   const diffTime = eventDateObj.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -156,10 +157,7 @@ export default function DashboardHome() {
         <span className="inline-block hover:animate-pulse cursor-default">👋</span>
       </h2>
 
-      {/* --- CONDITIONAL RENDERING: Hide if Done! --- */}
       {eventStatus === "Done" ? (
-        
-        /* IMPRESSIVE EMPTY STATE */
         <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-16 flex flex-col items-center justify-center text-center shadow-sm min-h-[500px]">
           <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-6">
             <Sparkles size={40} />
@@ -172,9 +170,7 @@ export default function DashboardHome() {
             <Plus size={20} /> Create New Event
           </button>
         </div>
-
       ) : (
-        /* NORMAL DASHBOARD HERO */
         <>
           <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg">
             <div className="flex justify-between items-start mb-4">
@@ -195,7 +191,6 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Stats Grid inside Hero */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs">
@@ -231,7 +226,6 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Progress Bar Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-indigo-800/40 p-4 rounded-xl flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-3">
@@ -265,7 +259,6 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="mt-6 flex items-center gap-4">
               <button
                 onClick={() => setIsDetailsModalOpen(true)}
@@ -275,7 +268,7 @@ export default function DashboardHome() {
               </button>
               <button
                 onClick={() => {
-                  setEditForm(eventDetails); // Reset form to current details before opening
+                  setEditForm(eventDetails); 
                   setIsEditModalOpen(true);
                 }}
                 className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center"
@@ -291,7 +284,6 @@ export default function DashboardHome() {
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
               <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
-                {/* Modal Header */}
                 <div className="bg-[#4f46e5] p-6 text-white flex justify-between items-start shrink-0">
                   <div>
                     <h2 className="text-2xl font-medium mb-2">{eventDetails.title}</h2>
@@ -301,7 +293,6 @@ export default function DashboardHome() {
                   </button>
                 </div>
 
-                {/* Modal Body */}
                 <div className="p-8 overflow-y-auto flex-1 space-y-8 custom-scrollbar bg-white">
 
                   <section>
@@ -383,7 +374,6 @@ export default function DashboardHome() {
                     </div>
                   </section>
 
-                  {/* The rest of the modal stays exactly the same */}
                   <section>
                     <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Agenda</h3>
                     <div className="bg-gray-50/50 border border-gray-100 rounded-xl overflow-hidden">
@@ -419,7 +409,7 @@ export default function DashboardHome() {
                     <h3 className="text-lg text-gray-800 mb-4 font-medium">Sponsors</h3>
                     <div className="bg-gray-50/50 border border-gray-100 rounded-xl overflow-hidden">
                       {sponsors.map((sponsor, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-5 border-b border-gray-100 last:border-0">
+                        <div className="flex justify-between items-center p-5 border-b border-gray-100 last:border-0">
                           <div>
                             <h4 className="font-medium text-gray-900 mb-1">{sponsor.name}</h4>
                             <span className={`px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700`}>
@@ -432,9 +422,25 @@ export default function DashboardHome() {
                     </div>
                   </section>
 
+                  {/* --- UPDATED: Event Documents Section --- */}
                   <section>
                     <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Documents</h3>
                     <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-6">
+                      
+                      {/* Checkbox added above the dropzone */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <input 
+                          type="checkbox" 
+                          id="confidential-check" 
+                          checked={isUploadConfidential} 
+                          onChange={(e) => setIsUploadConfidential(e.target.checked)} 
+                          className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                        />
+                        <label htmlFor="confidential-check" className="text-sm text-gray-700 cursor-pointer font-medium">
+                          Restrict uploaded file to Executive Committee only
+                        </label>
+                      </div>
+
                       <div 
                         onClick={handleUploadClick}
                         className="border-2 border-dashed border-indigo-200 bg-white rounded-xl p-8 text-center hover:bg-indigo-50/50 transition cursor-pointer mb-4"
@@ -461,8 +467,16 @@ export default function DashboardHome() {
                               <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                 <FileText size={16} />
                               </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-800">{file.name}</p>
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-medium text-gray-800">{file.name}</p>
+                                  {/* Render badge if file is restricted */}
+                                  {file.isConfidential && (
+                                    <span className="flex items-center gap-1 text-[10px] bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 rounded-full font-bold">
+                                      <Lock size={10} /> Restricted
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-xs text-gray-500">{file.size} • Uploaded {file.date}</p>
                               </div>
                             </div>
@@ -516,7 +530,6 @@ export default function DashboardHome() {
 
                 <div className="p-8 overflow-y-auto flex-1 space-y-8 custom-scrollbar">
 
-                  {/* Basic Information - WIRED UP */}
                   <section>
                     <h3 className="text-lg text-gray-800 mb-4 font-medium">Basic Information</h3>
                     <div className="space-y-4">
@@ -570,7 +583,6 @@ export default function DashboardHome() {
 
                   <hr className="border-gray-100" />
 
-                  {/* Organizer Information - WIRED UP */}
                   <section>
                     <h3 className="text-lg text-gray-800 mb-4 font-medium">Organizer Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -593,7 +605,6 @@ export default function DashboardHome() {
                     </div>
                   </section>
 
-                  {/* Dynamic sections below are kept exactly identical */}
                   <hr className="border-gray-100" />
 
                   <section>
@@ -659,12 +670,11 @@ export default function DashboardHome() {
 
                 </div>
 
-                {/* WIRED UP SAVE BUTTON */}
                 <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
                   <button 
                     onClick={() => {
-                      setEventDetails(editForm); // This actively saves the typed changes!
-                      setIsEditModalOpen(false); // Closes the window
+                      setEventDetails(editForm);
+                      setIsEditModalOpen(false);
                     }}
                     className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm"
                   >
