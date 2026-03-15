@@ -1,4 +1,7 @@
 "use client";
+import {fetchAPI} from '../../../utils/api';
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, Calendar, MapPin, Users, DollarSign,
@@ -113,6 +116,19 @@ export default function DashboardHome() {
       window.location.href = '/signin';
       return;
     }
+
+    //Quick API test
+    const testConnection = async () => {
+      try {
+        const response = await fetchAPI('/events', {
+          method: 'GET',
+        });
+        console.log('API Connection Successful:', response);
+      } catch (error) {
+        console.error('API Connection Failed:', error);
+      }
+    };
+    testConnection();
 
     if (storedUser && storedUser !== "undefined") {
       try {
