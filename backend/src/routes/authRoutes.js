@@ -29,7 +29,7 @@ router.get('/google/callback',
     passport.authenticate('google', { failureRedirect: 'http://localhost:3000/signin' }),
     (req, res) => {
         const token = jwt.sign(
-            { userId: req.user.id, role: req.user.role },
+            { userId: req.user.id, role: req.user.global_role },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );

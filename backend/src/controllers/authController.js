@@ -57,7 +57,7 @@ const registerUser = async (req, res) => {
         const newUserId = uuidv4(); // Generate a unique ID for the user
         const defaultRole = 'User'; // Default role for new users
 
-        const insertUserQuery = `INSERT INTO "Users" (id, first_name, last_name, email, password_hash, role) 
+        const insertUserQuery = `INSERT INTO "Users" (id, first_name, last_name, email, password_hash, global_role) 
                          VALUES ($1, $2, $3, $4, $5, $6)`;
         const values = [newUserId, firstName, lastName, email, hashedPassword, defaultRole];
         await pool.query(insertUserQuery, values);
@@ -152,7 +152,7 @@ const loginUser = async (req, res) => {
 
         //5. If the password matches, generate a JWT token for authentication
         const token = jwt.sign(
-            { userId: user.id, role: user.role },
+            { userId: user.id, role: user.global_role },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
@@ -168,7 +168,7 @@ const loginUser = async (req, res) => {
                 firstName: user.first_name,
                 lastName: user.last_name,
                 email: user.email,
-                role: user.role,
+                role: user.global_role,
             }
         })
     } catch (error) {

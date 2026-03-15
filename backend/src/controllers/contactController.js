@@ -37,9 +37,11 @@ const contactForm = async (req, res) => {
         // Database integration
         const newInquiryId = uuidv4(); 
 
-        const insertQuery = `INSERT INTO "Platform_Inquiries" (id, name, email, phone, subject, message_body) 
-                             VALUES ($1, $2, $3, $4, $5, $6)`;
-        const values = [newInquiryId, name, email, phone || null, subject, message];
+        const userId = req.user ? req.user.userId : null; // Get user ID from authenticated user, if available
+
+        const insertQuery = `INSERT INTO "Platform_Inquiries" (id, name, email, phone, subject, message_body, user_id) 
+                             VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+        const values = [newInquiryId, name, email, phone || null, subject, message, userId];
 
         await pool.query(insertQuery, values);
 
