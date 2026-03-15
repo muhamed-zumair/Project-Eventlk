@@ -36,4 +36,6 @@ app.listen(PORT,() =>{
     console.log("EventtLK Backend Server is running!");
 })
 
+const eventRoutes = require('./routes/eventRoutes');
+app.use('/api/events', eventRoutes);
 
