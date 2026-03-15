@@ -160,9 +160,66 @@ const updateEvent = async (req, res) => {
     }
 };
 
+const getEventById = async (req, res) => {
+    const eventId = req.params.id;
+    const userId = req.user.userId;
+
+    try{
+        const eventQuery = `
+            SELECT 
+                e.*, t.role as my_role
+            FROM "Events" e
+            INNER JOIN "Event_Team" t ON e.id = t.event_id
+            WHERE e.id = $1 AND t.user_id = $2;`;
+        const eventResult = await pool.query(eventQuery, [eventId, userId]);
+
+        if(eventResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event not found or you do not have access to it'
+            });
+        }
+
+        const eventData = eventResult.rows[0];
+
+        const [agendaRes , speakersRes, sponsorsRes, docRes, teamRes] = await Promise.all([
+            pool.query('SELECT * FROM "Agenda" WHERE event_id = $1 ORDER BY start_time ASC', [eventId]),
+            pool.query('SELECT * FROM "Guest_Speakers" WHERE event_id = $1', [eventId]),
+            pool.query('SELECT * FROM "Sponsors" WHERE event_id = $1', [eventId]),
+            pool.query('SELECT * FROM "Event_Documents" WHERE event_id = $1', [eventId]),
+            pool.query(`
+                SELECT u.id, u.first_name, u.last_name,u.email, t.role
+                FROM "Event_Team" t
+                JOIN "Users" u ON t.user_id = u.id
+                WHERE t.event_id = $1;`, [eventId])
+        ]);
+
+        const fullEventDetails = {
+            ...eventData,
+            agenda: agendaRes.rows,
+            speakers: speakersRes.rows,
+            sponsors: sponsorsRes.rows,
+            documents: docRes.rows,
+            team: teamRes.rows
+        };
+
+        return res.status(200).json({
+            success: true,
+            event: fullEventDetails
+        });
+    }catch (error) {
+        console.error('Error fetching event details:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch event details..Please try again later'
+        });
+    }
+};
+
 
 module.exports = {
     createEvent,
     getEvents,
-    updateEvent
+    updateEvent,
+    getEventById
 };
