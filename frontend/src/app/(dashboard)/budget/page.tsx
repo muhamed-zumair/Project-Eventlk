@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle } from "lucide-react";
+import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle, Receipt, User, Clock } from "lucide-react";
 
 // --- Types ---
 interface BudgetCategory {
@@ -10,6 +10,15 @@ interface BudgetCategory {
   name: string;
   spent: number;
   total: number;
+}
+
+interface ExpenseTransaction {
+  id: string;
+  categoryId: string;
+  amount: number;
+  description: string;
+  loggedBy: string;
+  date: string;
 }
 
 // --- Mock Events ---
@@ -27,6 +36,15 @@ const initialBudgets: BudgetCategory[] = [
   
   { id: '6', eventId: 'evt_2', name: 'Venue Rental', spent: 5000, total: 10000 },
   { id: '7', eventId: 'evt_2', name: 'Catering', spent: 2000, total: 8000 },
+];
+
+const initialExpenses: ExpenseTransaction[] = [
+  { id: 'exp_1', categoryId: '1', amount: 5000, description: 'Advance Payment', loggedBy: 'Sarah Mitchell', date: '2026-02-15T10:30:00Z' },
+  { id: 'exp_2', categoryId: '1', amount: 10000, description: 'Second Installment', loggedBy: 'Sarah Mitchell', date: '2026-03-01T14:15:00Z' },
+  { id: 'exp_3', categoryId: '2', amount: 18500, description: 'Buffet Booking', loggedBy: 'David Lee', date: '2026-03-05T09:00:00Z' },
+  { id: 'exp_4', categoryId: '3', amount: 4000, description: 'Facebook Ads', loggedBy: 'Emily Chen', date: '2026-03-10T11:20:00Z' },
+  { id: 'exp_5', categoryId: '3', amount: 2200, description: 'Flyer Printing', loggedBy: 'Sarah Mitchell', date: '2026-03-12T16:45:00Z' },
+  { id: 'exp_6', categoryId: '4', amount: 5500, description: 'Projector Rental', loggedBy: 'Michael Brown', date: '2026-03-14T08:30:00Z' },
 ];
 
 const StatusBadge = ({ spent, total }: { spent: number, total: number }) => {
@@ -54,14 +72,18 @@ const StatusBadge = ({ spent, total }: { spent: number, total: number }) => {
 export default function BudgetPage() {
   const [selectedEventId, setSelectedEventId] = useState<string>(myEvents[0].id);
   const [budgets, setBudgets] = useState<BudgetCategory[]>(initialBudgets);
+  const [expenses, setExpenses] = useState<ExpenseTransaction[]>(initialExpenses);
 
-  // Add Expense State
+  // Modals State
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
+  const [viewDetailsCategory, setViewDetailsCategory] = useState<BudgetCategory | null>(null);
+  
+  // Add Expense Inputs
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseDescription, setExpenseDescription] = useState("");
 
-  // Add Category State
+  // Add Category Inputs
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryAmount, setNewCategoryAmount] = useState("");
@@ -87,6 +109,7 @@ export default function BudgetPage() {
     const parsedAmount = parseFloat(expenseAmount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) return;
 
+    // 1. Update the total spent for the category
     const updatedBudgets = budgets.map(cat => {
       if (cat.id === selectedCategory.id) {
         return { ...cat, spent: cat.spent + parsedAmount };
@@ -94,11 +117,22 @@ export default function BudgetPage() {
       return cat;
     });
 
+    // 2. Create the new transaction record
+    const newExpense: ExpenseTransaction = {
+      id: Date.now().toString(),
+      categoryId: selectedCategory.id,
+      amount: parsedAmount,
+      description: expenseDescription || 'Uncategorized Expense',
+      loggedBy: 'You', // In reality, this comes from the logged-in user's token
+      date: new Date().toISOString(),
+    };
+
     setBudgets(updatedBudgets);
+    setExpenses([newExpense, ...expenses]); // Add to beginning of list
     handleCloseModal();
   };
 
-  // Add Category Logic (For Manual Flow)
+  // Add Category Logic
   const handleAddCategory = () => {
     if (!newCategoryName || !newCategoryAmount) return;
     const parsedAmount = parseFloat(newCategoryAmount);
@@ -116,6 +150,12 @@ export default function BudgetPage() {
     setIsCategoryModalOpen(false);
     setNewCategoryName("");
     setNewCategoryAmount("");
+  };
+
+  // Helper to format date
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
   return (
@@ -201,7 +241,6 @@ export default function BudgetPage() {
               </div>
               
               <div className="flex items-center gap-3">
-                {/* NEW: Add Category Button */}
                 <button 
                   onClick={() => setIsCategoryModalOpen(true)}
                   className="bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
@@ -254,14 +293,23 @@ export default function BudgetPage() {
                  return (
                   <div key={item.id}>
                     <div className="flex justify-between items-end mb-2">
-                      <div>
+                      <div className="flex items-center gap-3">
                         <h4 className="font-semibold text-gray-800">{item.name}</h4>
-                        <p className="text-sm mt-1">
-                          <span className={isOverBudget ? 'text-red-600 font-medium' : 'text-gray-900 font-medium'}>LKR {item.spent.toLocaleString()}</span>
-                          <span className="text-gray-400"> / LKR {item.total.toLocaleString()}</span>
+                        {/* VIEW DETAILS BUTTON */}
+                        <button 
+                          onClick={() => setViewDetailsCategory(item)}
+                          className="text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
+                        >
+                          View Details
+                        </button>
+                      </div>
+                      <div className="text-right">
+                        <StatusBadge spent={item.spent} total={item.total} />
+                        <p className="text-sm mt-1.5">
+                          <span className={isOverBudget ? 'text-red-600 font-bold' : 'text-gray-900 font-bold'}>LKR {item.spent.toLocaleString()}</span>
+                          <span className="text-gray-500 font-medium"> / LKR {item.total.toLocaleString()}</span>
                         </p>
                       </div>
-                      <StatusBadge spent={item.spent} total={item.total} />
                     </div>
                     <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                       <div className={`${barColor} h-full rounded-full transition-all duration-500 ease-out`} style={{ width: `${Math.min(percent, 100)}%` }}></div>
@@ -303,7 +351,7 @@ export default function BudgetPage() {
         </div>
       )}
 
-      {/* --- ADD EXPENSE MODAL (Unchanged) --- */}
+      {/* --- ADD EXPENSE MODAL --- */}
       {selectedCategory && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
@@ -327,10 +375,79 @@ export default function BudgetPage() {
                   <input type="number" value={expenseAmount} onChange={(e) => setExpenseAmount(e.target.value)} className="w-full border border-gray-300 rounded-xl pl-12 pr-3 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 font-medium" placeholder="0.00" autoFocus />
                 </div>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description (Optional)</label>
+                <textarea
+                  rows={2}
+                  value={expenseDescription}
+                  onChange={(e) => setExpenseDescription(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 resize-none"
+                  placeholder="What was this expense for?"
+                />
+              </div>
             </div>
             <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50 shrink-0">
               <button onClick={handleAddExpense} disabled={!expenseAmount || Number(expenseAmount) <= 0} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Save Expense</button>
               <button onClick={handleCloseModal} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- VIEW DETAILS MODAL --- */}
+      {viewDetailsCategory && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">{viewDetailsCategory.name} History</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Total Spent: <span className="font-semibold text-gray-700">LKR {viewDetailsCategory.spent.toLocaleString()}</span>
+                </p>
+              </div>
+              <button onClick={() => setViewDetailsCategory(null)} className="text-gray-400 hover:text-gray-600 transition bg-gray-100 p-2 rounded-full hover:bg-gray-200">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+              <div className="space-y-4">
+                {expenses.filter(exp => exp.categoryId === viewDetailsCategory.id).length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 text-sm flex flex-col items-center">
+                    <Receipt className="text-gray-300 mb-2" size={32} />
+                    No expenses recorded for this category yet.
+                  </div>
+                ) : (
+                  expenses
+                    .filter(exp => exp.categoryId === viewDetailsCategory.id)
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((transaction) => (
+                    <div key={transaction.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-sm mb-1">{transaction.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <span className="flex items-center gap-1.5"><User size={14} className="text-gray-400"/> {transaction.loggedBy}</span>
+                          <span className="flex items-center gap-1.5"><Clock size={14} className="text-gray-400"/> {formatDate(transaction.date)}</span>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-bold bg-indigo-50 text-indigo-700">
+                          LKR {transaction.amount.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            
+            <div className="p-5 border-t border-gray-100 bg-white shrink-0">
+              <button 
+                onClick={() => setViewDetailsCategory(null)}
+                className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition"
+              >
+                Close Window
+              </button>
             </div>
           </div>
         </div>
