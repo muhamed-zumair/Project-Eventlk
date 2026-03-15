@@ -22,30 +22,12 @@ export default function DashboardHome() {
 
   const [editForm, setEditForm] = useState(eventDetails);
 
-  const [agendaItems, setAgendaItems] = useState([
-    { time: "9:00 AM - 9:30 AM", title: "Registration & Welcome Coffee" },
-    { time: "9:30 AM - 10:00 AM", title: "Opening Ceremony" },
-    { time: "10:00 AM - 11:30 AM", title: "Keynote: Future of AI" },
-    { time: "11:30 AM - 12:30 PM", title: "Workshop Session 1" },
-    { time: "12:30 PM - 1:30 PM", title: "Lunch Break" },
-    { time: "1:30 PM - 3:00 PM", title: "Panel Discussion" },
-    { time: "3:00 PM - 4:30 PM", title: "Workshop Session 2" },
-    { time: "4:30 PM - 5:00 PM", title: "Closing Remarks" },
-  ]);
+  const [agendaItems, setAgendaItems] = useState<any[]>([]);
+  const [speakers, setSpeakers] = useState<any[]>([]);
 
-  const [speakers, setSpeakers] = useState([
-    { name: "Dr. Emily Chen", role: "AI Research Lead, Tech Corp" },
-    { name: "Marcus Johnson", role: "CTO, StartupX" },
-    { name: "Prof. Amelia Rodriguez", role: "Computer Science Dept" },
-    { name: "David Kim", role: "Product Manager, Innovation Labs" },
-  ]);
+  const [sponsors, setSponsors] = useState<any[]>([]);
 
-  const [sponsors, setSponsors] = useState([
-    { name: "TechCorp", tier: "Platinum", amount: "$15,000" },
-    { name: "Innovation Labs", tier: "Gold", amount: "$10,000" },
-    { name: "StartupX", tier: "Silver", amount: "$5,000" },
-  ]);
-
+  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
   // --- UPDATED: Event Files State to include confidentiality ---
   const [eventFiles, setEventFiles] = useState([
     { id: '1', name: "Venue_Contract_Final.pdf", size: "2.4 MB", date: "Oct 12, 2024", isConfidential: true },
@@ -132,6 +114,64 @@ export default function DashboardHome() {
       setIsLoading(false); // Stop loading spinner after fetch attempt
     }
   };
+  const fetchFullEventDetails = async (eventId: string, modalType: 'edit' | 'details') => {
+    setIsFetchingDetails(true);
+    try {
+      const response = await fetchAPI(`/events/${eventId}`, { method: 'GET' });
+
+      if (response.success) {
+        const fullEvent = response.event;
+
+        // 1. Populate the basic edit form
+        setEditForm({
+          ...eventDetails,
+          title: fullEvent.title,
+          date: fullEvent.start_date ? fullEvent.start_date.split('T')[0] : "",
+          startTime: "09:00", // Will be made dynamic later
+          endTime: "17:00",
+          venue: fullEvent.venue || "Main Hall",
+          venueAddress: fullEvent.venue_address || "University Campus",
+          expectedAttendees: fullEvent.expected_headcount,
+          budget: Number(fullEvent.total_budget),
+          description: fullEvent.description,
+          // Pulling your real name from the Users table join!
+          organizerName: fullEvent.team[0]?.first_name + " " + fullEvent.team[0]?.last_name,
+          organizerRole: fullEvent.my_role,
+          organizerEmail: fullEvent.team[0]?.email,
+          organizerPhone: "+94 77 123 4567" // Hardcoded until added to profile
+        });
+
+        // 2. Map the Database Agenda to match our Frontend State
+        setAgendaItems(fullEvent.agenda.map((a: any) => ({
+          startTime: a.start_time?.substring(0, 5) || "",
+          endTime: a.end_time?.substring(0, 5) || "",
+          title: a.title
+        })));
+
+        // 3. Map the Database Speakers
+        setSpeakers(fullEvent.speakers.map((s: any) => ({
+          name: s.name,
+          designation: s.designation
+        })));
+
+        // 4. Map the Database Sponsors
+        setSponsors(fullEvent.sponsors.map((s: any) => ({
+          name: s.name,
+          tier: s.tier,
+          amount: s.contribution_amount
+        })));
+
+        // 5. Finally, open the correct modal!
+        if (modalType === 'edit') setIsEditModalOpen(true);
+        if (modalType === 'details') setIsDetailsModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Failed to fetch full event details:", error);
+      alert("Could not load event details. Please try again.");
+    } finally {
+      setIsFetchingDetails(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -173,7 +213,7 @@ export default function DashboardHome() {
   // FIX 2: Removed stray bracket and moved logic securely
   const storedUser = localStorage.getItem('user');
   const isNewUser = localStorage.getItem('isNewUser');
-  
+
   if (storedUser && storedUser !== "undefined") {
     try {
       const userObj = JSON.parse(storedUser);
@@ -181,27 +221,27 @@ export default function DashboardHome() {
 
       if (isNewUser === 'true') {
         if (greetingPrefix !== "Welcome to EventLK,") {
-            setGreetingPrefix(`Welcome to EventLK,`);
-            setUserName(name);
-            setTimeout(() => localStorage.removeItem('isNewUser'), 1000);
+          setGreetingPrefix(`Welcome to EventLK,`);
+          setUserName(name);
+          setTimeout(() => localStorage.removeItem('isNewUser'), 1000);
         }
       } else {
         if (greetingPrefix !== "Welcome back,") {
-            setGreetingPrefix(`Welcome back,`);
-            setUserName(name);
+          setGreetingPrefix(`Welcome back,`);
+          setUserName(name);
         }
       }
     } catch (error) {
-        if (greetingPrefix !== "Welcome back,") {
-            setGreetingPrefix("Welcome back,");
-            setUserName("User");
-        }
+      if (greetingPrefix !== "Welcome back,") {
+        setGreetingPrefix("Welcome back,");
+        setUserName("User");
+      }
     }
   } else {
-      if (greetingPrefix !== "Welcome back,") {
-          setGreetingPrefix("Welcome back,");
-          setUserName("User");
-      }
+    if (greetingPrefix !== "Welcome back,") {
+      setGreetingPrefix("Welcome back,");
+      setUserName("User");
+    }
   }
 
   // FIX 3: Safely calculate dates only if an event actually exists
@@ -243,12 +283,12 @@ export default function DashboardHome() {
           <p className="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             You have no events currently in progress. Create one to get started!
           </p>
-          <button 
-             onClick={() => {
-                // To open create modal, you'd trigger your topbar function here
-                // For now, it matches your UI aesthetic.
-             }}
-             className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+          <button
+            onClick={() => {
+              // To open create modal, you'd trigger your topbar function here
+              // For now, it matches your UI aesthetic.
+            }}
+            className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
             <Plus size={20} /> Create New Event
           </button>
         </div>
@@ -343,17 +383,18 @@ export default function DashboardHome() {
 
             <div className="mt-6 flex items-center gap-4">
               <button
-                onClick={() => setIsDetailsModalOpen(true)}
-                className="bg-white text-indigo-700 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+                // NEW: Call the fetch function and tell it to open 'details'
+                onClick={() => fetchFullEventDetails(eventDetails.id, 'details')}
+                disabled={isFetchingDetails}
+                className="bg-white text-indigo-700 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
               >
-                View Full Details
+                {isFetchingDetails ? "Loading..." : "View Full Details"}
               </button>
               <button
-                onClick={() => {
-                  setEditForm(eventDetails);
-                  setIsEditModalOpen(true);
-                }}
-                className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center"
+                // NEW: Call the fetch function and tell it to open 'edit'
+                onClick={() => fetchFullEventDetails(eventDetails.id, 'edit')}
+                disabled={isFetchingDetails}
+                className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center disabled:opacity-50"
                 title="Edit Event"
               >
                 <Pencil size={20} />
