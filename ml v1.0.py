@@ -66,11 +66,7 @@ with st.sidebar:
     # Inputs
     headcount = st.slider("👥 Headcount", 10, 1000, 150, step=10)
     budget = st.number_input("💰 Total Budget (LKR)", min_value=10000, value=150000, step=5000)
-    
-    # Derived Calculations
-    bph = budget / headcount
-    st.metric(label="Calculated Cost Per Head", value=f"LKR {bph:,.2f}")
-    
+
     st.markdown("---")
     st.subheader("Preferences")
     
@@ -79,6 +75,14 @@ with st.sidebar:
     
     venue_pref_display = st.selectbox("Venue Style", 
                                       ["Any", "Auditorium (University/Govt)", "Coworking Space (Startup)", "Exhibition Hall", "Studio", "Open Space"])
+    
+    # Derived Calculations (Moved to the bottom!)
+    bph = budget / headcount
+    st.metric(label="Calculated Cost Per Head", value=f"LKR {bph:,.2f}")
+
+    # NEW: The generation button
+    predict_btn = st.button("🚀 Generate Plan", type="primary")
+    
 
 # ==========================================
 # 3. MAIN DASHBOARD
