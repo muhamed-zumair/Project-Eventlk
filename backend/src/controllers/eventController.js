@@ -87,7 +87,82 @@ const getEvents = async (req, res) => {
     }
 };
 
+const updateEvent = async (req, res) => {
+
+    const eventId = req.params.id;
+    const userId = req.user.userId;
+
+    const { title, date, expectedAttendees, budget, description, agenda, speakers, sponsors } = req.body;
+
+    try {
+        await pool.query('BEGIN');
+        const checkTeam = await pool.query(`
+            SELECT role FROM "Event_Team" 
+            WHERE event_id = $1 AND user_id = $2;`, [eventId, userId]);
+
+        if (checkTeam.rows.length === 0) {
+            await pool.query('ROLLBACK');
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied..You are not part of this event team'
+            });
+        }
+
+        const updateEventQuery = `
+            UPDATE "Events"
+            SET title = $1, start_date = $2, expected_headcount = $3, total_budget = $4, description = $5
+            WHERE id = $6
+            RETURNING *;`;
+
+        await pool.query(updateEventQuery, [title, date, expectedAttendees, budget, description, eventId]);
+
+        await pool.query('DELETE FROM "Agenda" WHERE event_id = $1;', [eventId]);
+        await pool.query('DELETE FROM "Guest_Speakers" WHERE event_id = $1;', [eventId]);
+        await pool.query('DELETE FROM "Sponsors" WHERE event_id = $1;', [eventId]);
+
+        if (agenda && agenda.length > 0) {
+            for (let item of agenda) {
+                await pool.query(`
+                    INSERT INTO "Agenda" (id, event_id, start_time, end_time, title)
+                    VALUES ($1, $2, $3, $4, $5);`, [uuidv4(), eventId, item.start_time, item.end_time, item.title]);
+            }
+        }
+
+        if (speakers && speakers.length > 0) {
+            for (let speaker of speakers) {
+                await pool.query(`
+                    INSERT INTO "Guest_Speakers" (id, event_id, name, designation)
+                    VALUES ($1, $2, $3, $4);`, [uuidv4(), eventId, speaker.name, speaker.designation]);
+            }
+        }
+
+        if (sponsors && sponsors.length > 0) {
+            for (let sponsor of sponsors) {
+                await pool.query(`
+                    INSERT INTO "Sponsors" (id, event_id, name, tier,contribution_amount)
+                    VALUES ($1, $2, $3, $4, $5);`, [uuidv4(), eventId, sponsor.name, sponsor.tier, sponsor.amount]);
+            }
+        }
+
+        await pool.query('COMMIT');// Commit the transaction after all operations are successful
+
+        res.status(200).json({
+            success: true,
+            message: 'Event details updated successfully'
+        });
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Error updating event:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to update event..Please try again later'
+        });
+    }
+};
+
+
 module.exports = {
     createEvent,
-    getEvents
+    getEvents,
+    updateEvent
 };
