@@ -173,6 +173,56 @@ export default function DashboardHome() {
     }
   };
 
+  // Add a small loading state for the save button
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleUpdateEvent = async () => {
+    setIsSaving(true);
+    try {
+      // 1. Package all the data perfectly for the backend
+      const payload = {
+        title: editForm.title,
+        date: editForm.date,
+        expectedAttendees: Number(editForm.expectedAttendees),
+        budget: Number(editForm.budget),
+        description: editForm.description,
+
+        // Map the arrays to ensure no empty fields crash the backend
+        agenda: agendaItems.map(item => ({
+          startTime: item.startTime || "00:00",
+          endTime: item.endTime || "00:00",
+          title: item.title || "Untitled Session"
+        })),
+        speakers: speakers.map(speaker => ({
+          name: speaker.name || "TBA",
+          designation: speaker.role || "TBA"
+        })),
+        sponsors: sponsors.map(sponsor => ({
+          name: sponsor.name || "TBA",
+          tier: sponsor.tier || "Standard",
+          amount: Number(sponsor.amount) || 0
+        }))
+      };
+
+      // 2. Send the PUT request to update the event!
+      const response = await fetchAPI(`/events/${eventDetails.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+
+      if (response.success) {
+        setIsEditModalOpen(false); // Close the modal
+        // 3. Trigger the walkie-talkie so the dashboard instantly updates!
+        window.dispatchEvent(new Event('eventCreated'));
+      }
+    } catch (error) {
+      console.error("Failed to update event:", error);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const isNewUser = localStorage.getItem('isNewUser');
@@ -503,7 +553,7 @@ export default function DashboardHome() {
                       {agendaItems.map((item, idx) => (
                         <div key={idx} className="flex gap-6 p-4 border-b border-gray-100 last:border-0 items-center">
                           <div className="flex items-center gap-2 text-indigo-500 w-48 shrink-0 text-sm font-medium">
-                            <Clock size={16} /> {item.time}
+                            <Clock size={16} /> {item.startTime} - {item.endTime}
                           </div>
                           <p className="text-gray-800 font-medium">{item.title}</p>
                         </div>
@@ -730,18 +780,25 @@ export default function DashboardHome() {
 
                   <hr className="border-gray-100" />
 
+
+
+
+
+
+
                   <section>
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg text-gray-800 font-medium">Event Agenda</h3>
-                      <button onClick={() => setAgendaItems([...agendaItems, { time: "", title: "" }])} className="flex items-center gap-1 bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">
+                      <button onClick={() => setAgendaItems([...agendaItems, { startTime: "", endTime: "", title: "" }])} className="flex items-center gap-1 bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">
                         <Plus size={16} /> Add Item
                       </button>
                     </div>
                     <div className="space-y-3">
                       {agendaItems.map((item, idx) => (
                         <div key={idx} className="flex gap-4 items-center">
-                          <input type="text" defaultValue={item.time} className="w-1/3 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                          <input type="text" defaultValue={item.title} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="time" value={item.startTime || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx].startTime = e.target.value; setAgendaItems(newArr); }} className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="time" value={item.endTime || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx].endTime = e.target.value; setAgendaItems(newArr); }} className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="text" placeholder="Session Title" value={item.title || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx].title = e.target.value; setAgendaItems(newArr); }} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                           <button onClick={() => setAgendaItems(agendaItems.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2">
                             <Trash2 size={20} />
                           </button>
@@ -760,8 +817,8 @@ export default function DashboardHome() {
                     <div className="space-y-3">
                       {speakers.map((item, idx) => (
                         <div key={idx} className="flex gap-4 items-center">
-                          <input type="text" defaultValue={item.name} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                          <input type="text" defaultValue={item.role} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="text" placeholder="Name" value={item.name || ""} onChange={(e) => { const newArr = [...speakers]; newArr[idx].name = e.target.value; setSpeakers(newArr); }} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="text" placeholder="Role/Designation" value={item.role || ""} onChange={(e) => { const newArr = [...speakers]; newArr[idx].role = e.target.value; setSpeakers(newArr); }} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                           <button onClick={() => setSpeakers(speakers.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2">
                             <Trash2 size={20} />
                           </button>
@@ -780,9 +837,9 @@ export default function DashboardHome() {
                     <div className="space-y-3">
                       {sponsors.map((item, idx) => (
                         <div key={idx} className="flex gap-4 items-center">
-                          <input type="text" defaultValue={item.name} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                          <input type="text" defaultValue={item.tier} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                          <input type="text" defaultValue={item.amount} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="text" placeholder="Company Name" value={item.name || ""} onChange={(e) => { const newArr = [...sponsors]; newArr[idx].name = e.target.value; setSponsors(newArr); }} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="text" placeholder="Tier (e.g. Gold)" value={item.tier || ""} onChange={(e) => { const newArr = [...sponsors]; newArr[idx].tier = e.target.value; setSponsors(newArr); }} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="number" placeholder="Amount" value={item.amount || ""} onChange={(e) => { const newArr = [...sponsors]; newArr[idx].amount = e.target.value; setSponsors(newArr); }} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                           <button onClick={() => setSponsors(sponsors.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2">
                             <Trash2 size={20} />
                           </button>
@@ -794,14 +851,13 @@ export default function DashboardHome() {
                 </div>
 
                 <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
+                  {/* NEW: Connect the handleUpdateEvent function here */}
                   <button
-                    onClick={() => {
-                      setEventDetails(editForm);
-                      setIsEditModalOpen(false);
-                    }}
-                    className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm"
+                    onClick={handleUpdateEvent}
+                    disabled={isSaving}
+                    className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm disabled:opacity-50"
                   >
-                    Save Changes
+                    {isSaving ? "Saving..." : "Save Changes"}
                   </button>
                   <button
                     onClick={() => setIsEditModalOpen(false)}
