@@ -51,6 +51,43 @@ const createEvent = async (req, res) => {
 
 };
 
+const getEvents = async (req, res) => {
+    const userId = req.user.userId; // Assuming you have authentication middleware that sets req.user
+
+    try {
+        const fetchEventsQuery = `
+            SELECT 
+                e.id,
+                e.title,
+                e.type,
+                e.status,
+                e.start_date,
+                e.expected_headcount,   
+                e.total_budget,
+                e.description,
+                t.role
+            FROM "Events" e
+            INNER JOIN "Event_Team" t ON e.id = t.event_id
+            WHERE t.user_id = $1
+            ORDER BY e.start_date ASC;`;
+
+            const result = await pool.query(fetchEventsQuery, [userId]);
+
+            return res.status(200).json({
+                success: true,
+                count: result.rows.length,
+                events: result.rows
+            });
+    }catch (error) {
+        console.error('Error fetching events:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch events..Please try again later'
+        });
+    }
+};
+
 module.exports = {
-    createEvent
+    createEvent,
+    getEvents
 };

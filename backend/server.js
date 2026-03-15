@@ -40,3 +40,4 @@ app.listen(PORT,() =>{
 const eventRoutes = require('./src/routes/eventRoutes');
 app.use('/api/events', eventRoutes);
 
+
