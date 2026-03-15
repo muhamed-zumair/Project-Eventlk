@@ -1,6 +1,5 @@
 "use client";
-import {fetchAPI} from '../../../utils/api';
-
+import { fetchAPI } from '../../../utils/api';
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -16,21 +15,10 @@ export default function DashboardHome() {
   const [greetingPrefix, setGreetingPrefix] = useState("Welcome");
   const [userName, setUserName] = useState("");
 
-  const [eventDetails, setEventDetails] = useState({
-    title: "Annual Tech Summit 2026",
-    date: "2026-12-25",
-    startTime: "09:00",
-    endTime: "17:00",
-    venue: "Main Hall, University Campus",
-    venueAddress: "123 University Ave, Campus Building A, Room 101",
-    expectedAttendees: 200,
-    budget: 60000,
-    description: "Annual technology summit featuring keynote speakers, workshops, and networking sessions for students and industry professionals. This flagship event brings together the brightest minds in technology to share insights, network, and collaborate on innovative solutions.",
-    organizerName: "Sarah Mitchell",
-    organizerRole: "Chairperson",
-    organizerEmail: "sarah.mitchell@eventlk.com",
-    organizerPhone: "+1 (555) 123-4567"
-  });
+  // Placeholder for event details - in a real app, this would come from an API
+  const [eventDetails, setEventDetails] = useState<any>(null);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const [editForm, setEditForm] = useState(eventDetails);
 
@@ -63,7 +51,7 @@ export default function DashboardHome() {
     { id: '1', name: "Venue_Contract_Final.pdf", size: "2.4 MB", date: "Oct 12, 2024", isConfidential: true },
     { id: '2', name: "Sponsor_Packages_v2.pdf", size: "1.1 MB", date: "Oct 15, 2024", isConfidential: false }
   ]);
-  
+
   // NEW: State for the checkbox when uploading
   const [isUploadConfidential, setIsUploadConfidential] = useState(false);
 
@@ -79,7 +67,7 @@ export default function DashboardHome() {
     if (files && files.length > 0) {
       const selectedFile = files[0];
       const sizeInMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
-      
+
       const newFile = {
         id: Date.now().toString(),
         name: selectedFile.name,
@@ -101,11 +89,49 @@ export default function DashboardHome() {
     window.print();
   };
 
-  const formattedDate = new Date(eventDetails.date + "T00:00:00").toLocaleDateString('en-US', {
+  // FIX 1: Safely format date only if eventDetails is not null
+  const formattedDate = eventDetails?.date ? new Date(eventDetails.date + "T00:00:00").toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
-  });
+  }) : "";
+
+  const fetchMyEvents = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetchAPI('/events/', {
+        method: 'GET',
+      });
+      if (response.success && response.events.length > 0) {
+        const dbEvent = response.events[0];
+
+        // For demonstration, we're using static values for some fields. In a real application, these would come from the database.
+        setEventDetails({
+          id: dbEvent.id,
+          title: dbEvent.title,
+          date: dbEvent.start_date ? dbEvent.start_date.split('T')[0] : "",
+          startTime: "09:00",
+          endTime: "17:00",
+          venue: "Main Hall, Convention Center",
+          venueAddress: "123 Main St, Cityville",
+          expectedAttendees: 250,
+          budget: Number(dbEvent.total_budget),
+          description: dbEvent.description,
+          organizerName: "Sahan Perera",
+          organizerRole: dbEvent.role || "President",
+          organizerEmail: "example@example.com",
+          organizerPhone: "+94 77 123 4567",
+        });
+
+      } else {
+        setEventDetails(null); // No events found, set to null to show "All caught up!" message
+      }
+    } catch (error) {
+      console.error('Error fetching event details:', error);
+    } finally {
+      setIsLoading(false); // Stop loading spinner after fetch attempt
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -117,52 +143,83 @@ export default function DashboardHome() {
       return;
     }
 
-    //Quick API test
-    const testConnection = async () => {
-      try {
-        const response = await fetchAPI('/events', {
-          method: 'GET',
-        });
-        console.log('API Connection Successful:', response);
-      } catch (error) {
-        console.error('API Connection Failed:', error);
-      }
+    fetchMyEvents(); // Fetch event details when the component mounts
+
+    const handleEventCreated = (event: any) => {
+      console.log('Walkie Talkie Event Received! Fetcching event!!!');
+      fetchMyEvents();
     };
-    testConnection();
 
-    if (storedUser && storedUser !== "undefined") {
-      try {
-        const userObj = JSON.parse(storedUser);
-        const name = userObj.firstName || "User";
+    window.addEventListener('eventCreated', handleEventCreated);
 
-        if (isNewUser === 'true') {
-          setGreetingPrefix(`Welcome to EventLK,`);
-          setUserName(name);
-          setTimeout(() => localStorage.removeItem('isNewUser'), 1000);
-        } else {
-          setGreetingPrefix(`Welcome back,`);
-          setUserName(name);
-        }
-      } catch (error) {
-        setGreetingPrefix("Welcome back,");
-        setUserName("User");
-      }
-    } else {
-      setGreetingPrefix("Welcome back,");
-      setUserName("User");
-    }
+    return () => {
+      window.removeEventListener('eventCreated', handleEventCreated);
+    };
   }, []);
 
-  const eventDateObj = new Date(eventDetails.date + "T00:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); 
-  eventDateObj.setHours(0, 0, 0, 0);
+  //Quick API test
+  const testConnection = async () => {
+    try {
+      const response = await fetchAPI('/events', {
+        method: 'GET',
+      });
+      console.log('API Connection Successful:', response);
+    } catch (error) {
+      console.error('API Connection Failed:', error);
+    }
+  };
+  testConnection();
 
-  const eventStatus = eventDateObj < today ? "Done" : "In Progress";
+  // FIX 2: Removed stray bracket and moved logic securely
+  const storedUser = localStorage.getItem('user');
+  const isNewUser = localStorage.getItem('isNewUser');
   
-  const diffTime = eventDateObj.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  if (storedUser && storedUser !== "undefined") {
+    try {
+      const userObj = JSON.parse(storedUser);
+      const name = userObj.firstName || "User";
 
+      if (isNewUser === 'true') {
+        if (greetingPrefix !== "Welcome to EventLK,") {
+            setGreetingPrefix(`Welcome to EventLK,`);
+            setUserName(name);
+            setTimeout(() => localStorage.removeItem('isNewUser'), 1000);
+        }
+      } else {
+        if (greetingPrefix !== "Welcome back,") {
+            setGreetingPrefix(`Welcome back,`);
+            setUserName(name);
+        }
+      }
+    } catch (error) {
+        if (greetingPrefix !== "Welcome back,") {
+            setGreetingPrefix("Welcome back,");
+            setUserName("User");
+        }
+    }
+  } else {
+      if (greetingPrefix !== "Welcome back,") {
+          setGreetingPrefix("Welcome back,");
+          setUserName("User");
+      }
+  }
+
+  // FIX 3: Safely calculate dates only if an event actually exists
+  let eventStatus = "In Progress";
+  let diffDays = 0;
+
+  if (eventDetails?.date) {
+    const eventDateObj = new Date(eventDetails.date + "T00:00:00");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDateObj.setHours(0, 0, 0, 0);
+
+    eventStatus = eventDateObj < today ? "Done" : "In Progress";
+    const diffTime = eventDateObj.getTime() - today.getTime();
+    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // FIX 4: Cleaned up the nested ternary rendering and removed duplicated UI code
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight flex items-center gap-2">
@@ -173,16 +230,25 @@ export default function DashboardHome() {
         <span className="inline-block hover:animate-pulse cursor-default">👋</span>
       </h2>
 
-      {eventStatus === "Done" ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64 text-indigo-600">
+          <span className="animate-pulse font-medium">Loading your events...</span>
+        </div>
+      ) : !eventDetails ? (
         <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-16 flex flex-col items-center justify-center text-center shadow-sm min-h-[500px]">
           <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-6">
             <Sparkles size={40} />
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-3">All caught up!</h3>
           <p className="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
-            You have no events currently in progress. All completed events have been safely archived to your Past Events page.
+            You have no events currently in progress. Create one to get started!
           </p>
-          <button className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+          <button 
+             onClick={() => {
+                // To open create modal, you'd trigger your topbar function here
+                // For now, it matches your UI aesthetic.
+             }}
+             className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
             <Plus size={20} /> Create New Event
           </button>
         </div>
@@ -228,7 +294,7 @@ export default function DashboardHome() {
                   <p className="font-semibold">168 / {eventDetails.expectedAttendees}</p>
                 </div>
                 <div className="w-full bg-indigo-900/50 h-1.5 rounded-full mt-2">
-                  <div className="bg-white h-1.5 rounded-full" style={{ width: `${(168/eventDetails.expectedAttendees)*100}%` }}></div>
+                  <div className="bg-white h-1.5 rounded-full" style={{ width: `${(168 / eventDetails.expectedAttendees) * 100}%` }}></div>
                 </div>
               </div>
               <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
@@ -237,7 +303,7 @@ export default function DashboardHome() {
                 </div>
                 <p className="font-semibold">$45,200 / ${eventDetails.budget.toLocaleString()}</p>
                 <div className="w-full bg-indigo-900/50 h-1.5 rounded-full mt-2">
-                  <div className="bg-white h-1.5 rounded-full" style={{ width: `${(45200/eventDetails.budget)*100}%` }}></div>
+                  <div className="bg-white h-1.5 rounded-full" style={{ width: `${(45200 / eventDetails.budget) * 100}%` }}></div>
                 </div>
               </div>
             </div>
@@ -284,7 +350,7 @@ export default function DashboardHome() {
               </button>
               <button
                 onClick={() => {
-                  setEditForm(eventDetails); 
+                  setEditForm(eventDetails);
                   setIsEditModalOpen(true);
                 }}
                 className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center"
@@ -358,7 +424,7 @@ export default function DashboardHome() {
                           <span className="font-medium text-sm">Budget Spent</span>
                         </div>
                         <p className="text-3xl font-bold text-gray-900 mb-1">$45.2K</p>
-                        <p className="text-sm text-gray-600">${((eventDetails.budget - 45200)/1000).toFixed(1)}K remaining</p>
+                        <p className="text-sm text-gray-600">${((eventDetails.budget - 45200) / 1000).toFixed(1)}K remaining</p>
                       </div>
                       <div className="bg-[#fdf4ff] border border-fuchsia-100 rounded-xl p-5">
                         <div className="flex items-center gap-2 text-fuchsia-600 mb-3">
@@ -425,7 +491,7 @@ export default function DashboardHome() {
                     <h3 className="text-lg text-gray-800 mb-4 font-medium">Sponsors</h3>
                     <div className="bg-gray-50/50 border border-gray-100 rounded-xl overflow-hidden">
                       {sponsors.map((sponsor, idx) => (
-                        <div className="flex justify-between items-center p-5 border-b border-gray-100 last:border-0">
+                        <div key={idx} className="flex justify-between items-center p-5 border-b border-gray-100 last:border-0">
                           <div>
                             <h4 className="font-medium text-gray-900 mb-1">{sponsor.name}</h4>
                             <span className={`px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700`}>
@@ -442,14 +508,14 @@ export default function DashboardHome() {
                   <section>
                     <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Documents</h3>
                     <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-6">
-                      
+
                       {/* Checkbox added above the dropzone */}
                       <div className="flex items-center gap-2 mb-4">
-                        <input 
-                          type="checkbox" 
-                          id="confidential-check" 
-                          checked={isUploadConfidential} 
-                          onChange={(e) => setIsUploadConfidential(e.target.checked)} 
+                        <input
+                          type="checkbox"
+                          id="confidential-check"
+                          checked={isUploadConfidential}
+                          onChange={(e) => setIsUploadConfidential(e.target.checked)}
                           className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
                         />
                         <label htmlFor="confidential-check" className="text-sm text-gray-700 cursor-pointer font-medium">
@@ -457,17 +523,17 @@ export default function DashboardHome() {
                         </label>
                       </div>
 
-                      <div 
+                      <div
                         onClick={handleUploadClick}
                         className="border-2 border-dashed border-indigo-200 bg-white rounded-xl p-8 text-center hover:bg-indigo-50/50 transition cursor-pointer mb-4"
                       >
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          onChange={handleFileChange} 
-                          className="hidden" 
-                          multiple 
-                          accept=".pdf,.docx,.xlsx" 
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                          className="hidden"
+                          multiple
+                          accept=".pdf,.docx,.xlsx"
                         />
                         <div className="mx-auto w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-3">
                           <Plus size={24} />
@@ -475,7 +541,7 @@ export default function DashboardHome() {
                         <p className="text-sm font-medium text-gray-900">Click to upload documents</p>
                         <p className="text-xs text-gray-500 mt-1">PDF, DOCX, XLSX (Saved securely to AWS S3)</p>
                       </div>
-                      
+
                       <div className="space-y-3">
                         {eventFiles.map((file) => (
                           <div key={file.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -497,14 +563,14 @@ export default function DashboardHome() {
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <button 
+                              <button
                                 className="text-sm text-gray-400 cursor-not-allowed font-medium transition"
                               >
                                 Download
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleDeleteFile(file.id)}
-                                className="text-gray-400 hover:text-red-600 transition" 
+                                className="text-gray-400 hover:text-red-600 transition"
                                 title="Delete"
                               >
                                 <Trash2 size={16} />
@@ -551,48 +617,48 @@ export default function DashboardHome() {
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Event Title</label>
-                        <input type="text" value={editForm.title} onChange={(e) => setEditForm({...editForm, title: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Event Date</label>
-                          <input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Start Time</label>
-                          <input type="time" value={editForm.startTime} onChange={(e) => setEditForm({...editForm, startTime: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="time" value={editForm.startTime} onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">End Time</label>
-                          <input type="time" value={editForm.endTime} onChange={(e) => setEditForm({...editForm, endTime: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="time" value={editForm.endTime} onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Venue</label>
-                        <input type="text" value={editForm.venue} onChange={(e) => setEditForm({...editForm, venue: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" value={editForm.venue} onChange={(e) => setEditForm({ ...editForm, venue: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       </div>
 
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Venue Address</label>
-                        <input type="text" value={editForm.venueAddress} onChange={(e) => setEditForm({...editForm, venueAddress: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" value={editForm.venueAddress} onChange={(e) => setEditForm({ ...editForm, venueAddress: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Expected Attendees</label>
-                          <input type="number" value={editForm.expectedAttendees} onChange={(e) => setEditForm({...editForm, expectedAttendees: Number(e.target.value)})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="number" value={editForm.expectedAttendees} onChange={(e) => setEditForm({ ...editForm, expectedAttendees: Number(e.target.value) })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">Budget ($)</label>
-                          <input type="number" value={editForm.budget} onChange={(e) => setEditForm({...editForm, budget: Number(e.target.value)})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                          <input type="number" value={editForm.budget} onChange={(e) => setEditForm({ ...editForm, budget: Number(e.target.value) })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Description</label>
-                        <textarea rows={4} value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] resize-none text-gray-900"></textarea>
+                        <textarea rows={4} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] resize-none text-gray-900"></textarea>
                       </div>
                     </div>
                   </section>
@@ -604,19 +670,19 @@ export default function DashboardHome() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Organizer Name</label>
-                        <input type="text" value={editForm.organizerName} onChange={(e) => setEditForm({...editForm, organizerName: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" value={editForm.organizerName} onChange={(e) => setEditForm({ ...editForm, organizerName: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Role</label>
-                        <input type="text" value={editForm.organizerRole} onChange={(e) => setEditForm({...editForm, organizerRole: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="text" value={editForm.organizerRole} onChange={(e) => setEditForm({ ...editForm, organizerRole: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Email</label>
-                        <input type="email" value={editForm.organizerEmail} onChange={(e) => setEditForm({...editForm, organizerEmail: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="email" value={editForm.organizerEmail} onChange={(e) => setEditForm({ ...editForm, organizerEmail: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       </div>
                       <div>
                         <label className="block text-sm text-gray-600 mb-1">Phone</label>
-                        <input type="tel" value={editForm.organizerPhone} onChange={(e) => setEditForm({...editForm, organizerPhone: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                        <input type="tel" value={editForm.organizerPhone} onChange={(e) => setEditForm({ ...editForm, organizerPhone: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       </div>
                     </div>
                   </section>
@@ -687,7 +753,7 @@ export default function DashboardHome() {
                 </div>
 
                 <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
-                  <button 
+                  <button
                     onClick={() => {
                       setEventDetails(editForm);
                       setIsEditModalOpen(false);

@@ -1,4 +1,5 @@
 "use client";
+import {fetchAPI} from "../../utils/api"; // Adjust the path as necessary
 import React, { useState } from "react";
 import {
   Search, Plus, Bell, X, Calendar, Tag, Users,
@@ -36,6 +37,16 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [aiHeadcount, setAiHeadcount] = useState<number>(400);
   const [aiBudget, setAiBudget] = useState<number>(200000);
 
+  //state to capture the details in the manual creation form
+  const[title, setTitle] = useState("");
+  const[date, setDate] = useState("");
+  const[category, setCategory] = useState("");
+  const[expectedAttendees, setExpectedAttendees] = useState(0);
+  const[budget, setBudget] = useState(0);
+  const[description, setDescription] = useState("");
+  const[isSubmitting, setIsSubmitting] = useState(false);
+
+
   const toggleNotifications = () => {
     setIsNotificationOpen(!isNotificationOpen);
     setIsProfileOpen(false);
@@ -47,6 +58,36 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   };
 
   const costPerHead = aiHeadcount > 0 ? (aiBudget / aiHeadcount).toFixed(2) : "0.00";
+
+  const handleCreateManualEvent = async() => {
+
+    if (!title || !date || !category || expectedAttendees <= 0 || budget <= 0) {
+      alert("Please fill in all required fields with valid values.");
+      return;
+    }
+
+    try{
+      await fetchAPI("/events", {
+        method: "POST",
+        body: JSON.stringify({
+          title,
+          date,
+          category,
+          expectedAttendees: Number(expectedAttendees),
+          budget: Number(budget),
+          description
+        })
+      });
+      alert("Event created successfully!");
+      setIsCreateModalOpen(false);
+      window.dispatchEvent(new Event("eventCreated")); // Trigger a custom event to notify other components
+    } catch (error) {
+      console.error("Error creating event:", error);
+      alert("Failed to create event. Please try again.");
+    }finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -227,6 +268,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
                     <input
                       type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
                       placeholder="e.g., Annual Tech Summit 2025"
                       className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
                     />
@@ -240,6 +283,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       </label>
                       <input
                         type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
                         className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900"
                       />
                     </div>
@@ -250,6 +295,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       <select
                         defaultValue=""
                         className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 bg-white"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
                       >
                         <option value="" disabled>Select a category</option>
                         <option value="Workshops & Training">Workshops & Training</option>
@@ -271,6 +318,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       </label>
                       <input
                         type="number"
+                        value={expectedAttendees}
+                        onChange={(e) => setExpectedAttendees(Number(e.target.value))}
                         placeholder="e.g., 200"
                         className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
                       />
@@ -281,6 +330,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       </label>
                       <input
                         type="number"
+                        value={budget}
+                        onChange={(e) => setBudget(Number(e.target.value))}
                         placeholder="e.g., 50000"
                         className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
                       />
@@ -294,6 +345,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                     </label>
                     <textarea
                       rows={4}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                       placeholder="Brief description of the event..."
                       className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 resize-none placeholder-gray-400"
                     />
@@ -301,8 +354,11 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                   
                   {/* Actions for Manual */}
                   <div className="pt-4 flex items-center gap-4">
-                    <button className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition">
-                      Create Event
+                    <button 
+                    onClick={handleCreateManualEvent}
+                    disabled={isSubmitting}
+                    className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition">
+                      {isSubmitting ? "Creating..." : "Create Event"}
                     </button>
                     <button
                       onClick={() => setIsCreateModalOpen(false)}
