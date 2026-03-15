@@ -85,6 +85,15 @@ with st.sidebar:
         "Panel Discussion": ("aipanel", "talkspanels"),
         "Networking": ("networknight", "careernetworking")
     }
+    
+    venue_map = {
+        "Any": "auditorium", # Default fallback
+        "Auditorium (University/Govt)": "auditorium",
+        "Coworking Space (Startup)": "coworkingspace",
+        "Exhibition Hall": "exhibitionhall",
+        "Studio": "studio",
+        "Open Space": "openspace"
+    }
 
     # Derived Calculations
     bph = budget / headcount
