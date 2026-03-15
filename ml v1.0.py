@@ -10,8 +10,8 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 st.set_page_config(page_title="EventLK Planner", page_icon="📅", layout="wide")
 
 @st.cache_resource
-def load_and_train_model():
-    """Loads data, prepares features, and trains the ML models."""
+def load_and_prep_data():
+    """Loads, cleans, and encodes the dataset in a single cached run."""
     # Load Data
     file_path = "event_dataset_v2_distinct.csv"
     try:
@@ -47,19 +47,15 @@ def load_and_train_model():
     encoder = OneHotEncoder(sparse_output=False, drop='first', handle_unknown='ignore')
     X_encoded = encoder.fit_transform(df[encode_cols])
     
-    # Prepare X and y
+    # Prepare matrices
     X = np.hstack([df[numeric_features].values, X_encoded])
     y_venue = df['venue'].astype(str)
     y_alloc = alloc_df
-
-    # --- NEW IN COMMIT 22: Train Models ---
-    rf_v = RandomForestClassifier(n_estimators=100, max_depth=15, random_state=42)
-    rf_v.fit(X, y_venue)
     
     return X, y_venue, y_alloc, encoder, alloc_df.columns, df
 
-# Load the brain (Updated function name)
-X_matrix, y_v, y_a, encoder_obj, alloc_cols, raw_df = load_and_train_model()
+# Run the cached backend logic
+X_matrix, y_v, y_a, encoder_obj, alloc_cols, raw_df = load_and_prep_data()
 
 # ==========================================
 # 2. SIDEBAR - USER INPUTS
