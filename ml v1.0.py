@@ -75,6 +75,16 @@ with st.sidebar:
     
     venue_pref_display = st.selectbox("Venue Style", 
                                       ["Any", "Auditorium (University/Govt)", "Coworking Space (Startup)", "Exhibition Hall", "Studio", "Open Space"])
+
+    # --- NEW IN COMMIT 18: Map display names to model keys ---
+    type_map = {
+        "Workshop / Training": ("aiworkshop", "workshopstraining"),
+        "Hackathon": ("codehack", "competitionshackathons"),
+        "Meetup": ("devmeetup", "meetupscommunity"),
+        "Conference": ("techconf", "conferencesexpos"),
+        "Panel Discussion": ("aipanel", "talkspanels"),
+        "Networking": ("networknight", "careernetworking")
+    }
     
     # Derived Calculations (Moved to the bottom!)
     bph = budget / headcount
