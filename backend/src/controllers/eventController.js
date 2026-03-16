@@ -55,19 +55,13 @@ const getEvents = async (req, res) => {
     const userId = req.user.userId; // Assuming you have authentication middleware that sets req.user
 
     try {
-        const fetchEventsQuery = `
+       const fetchEventsQuery = `
             SELECT 
-                e.id,
-                e.title,
-                e.type,
-                e.status,
-                e.start_date,
-                e.expected_headcount,   
-                e.total_budget,
-                e.description,
-                t.role
+                e.id, e.title, e.type, e.status, e.start_date, e.expected_headcount, e.total_budget, e.description,
+                v.name as venue, t.role
             FROM "Events" e
             INNER JOIN "Event_Team" t ON e.id = t.event_id
+            LEFT JOIN "Venues" v ON e.venue_id = v.id
             WHERE t.user_id = $1
             ORDER BY e.start_date ASC;`;
 
@@ -92,10 +86,18 @@ const updateEvent = async (req, res) => {
     const eventId = req.params.id;
     const userId = req.user.userId;
 
-    const { title, date, expectedAttendees, budget, description, agenda, speakers, sponsors } = req.body;
+    const { title, date, expectedAttendees, budget, description, agenda, speakers, sponsors, startTime, endTime, venue, venueAddress, organizerRole } = req.body;
 
     try {
         await pool.query('BEGIN');
+        let venueId = null;
+        if (venue) {
+            venueId = uuidv4();
+            await pool.query(`
+                INSERT INTO "Venues" (id, name, address)
+                VALUES ($1, $2, $3);`, [venueId, venue, venueAddress]
+            );
+        }
         const checkTeam = await pool.query(`
             SELECT role FROM "Event_Team" 
             WHERE event_id = $1 AND user_id = $2;`, [eventId, userId]);
@@ -110,11 +112,11 @@ const updateEvent = async (req, res) => {
 
         const updateEventQuery = `
             UPDATE "Events"
-            SET title = $1, start_date = $2, expected_headcount = $3, total_budget = $4, description = $5
-            WHERE id = $6
+            SET title = $1, start_date = $2, expected_headcount = $3, total_budget = $4, description = $5, start_time = $6, end_time = $7, venue_id = $8
+            WHERE id = $9
             RETURNING *;`;
 
-        await pool.query(updateEventQuery, [title, date, expectedAttendees, budget, description, eventId]);
+        await pool.query(updateEventQuery, [title, date, expectedAttendees, budget, description, startTime, endTime, venueId, eventId]);
 
         await pool.query('DELETE FROM "Agenda" WHERE event_id = $1;', [eventId]);
         await pool.query('DELETE FROM "Guest_Speakers" WHERE event_id = $1;', [eventId]);
@@ -122,9 +124,17 @@ const updateEvent = async (req, res) => {
 
         if (agenda && agenda.length > 0) {
             for (let item of agenda) {
+                // Safely grab the time whether it arrives as camelCase or snake_case, 
+                // and force a fallback to "00:00" so it NEVER inserts NULL again!
+                const safeStartTime = item.startTime || item.start_time || "00:00";
+                const safeEndTime = item.endTime || item.end_time || "00:00";
+                const safeTitle = item.title || "Untitled Session";
+
                 await pool.query(`
                     INSERT INTO "Agenda" (id, event_id, start_time, end_time, title)
-                    VALUES ($1, $2, $3, $4, $5);`, [uuidv4(), eventId, item.start_time, item.end_time, item.title]);
+                    VALUES ($1, $2, $3, $4, $5);`, 
+                    [uuidv4(), eventId, safeStartTime, safeEndTime, safeTitle]
+                );
             }
         }
 
@@ -142,6 +152,16 @@ const updateEvent = async (req, res) => {
                     INSERT INTO "Sponsors" (id, event_id, name, tier,contribution_amount)
                     VALUES ($1, $2, $3, $4, $5);`, [uuidv4(), eventId, sponsor.name, sponsor.tier, sponsor.amount]);
             }
+        }
+
+        // Update the Organizer's role in the Event_Team table
+        if (organizerRole) {
+            await pool.query(`
+                UPDATE "Event_Team" 
+                SET role = $1 
+                WHERE event_id = $2 AND user_id = $3;`, 
+                [organizerRole, eventId, userId]
+            );
         }
 
         await pool.query('COMMIT');// Commit the transaction after all operations are successful
@@ -167,9 +187,10 @@ const getEventById = async (req, res) => {
     try{
         const eventQuery = `
             SELECT 
-                e.*, t.role as my_role
+                e.*, t.role as my_role, v.name as venue, v.address as venue_address
             FROM "Events" e
             INNER JOIN "Event_Team" t ON e.id = t.event_id
+            LEFT JOIN "Venues" v ON e.venue_id = v.id
             WHERE e.id = $1 AND t.user_id = $2;`;
         const eventResult = await pool.query(eventQuery, [eventId, userId]);
 
