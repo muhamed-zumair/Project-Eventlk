@@ -57,6 +57,7 @@ def load_and_prep_data():
     rf_v.fit(X, y_venue)
     
     rf_a = RandomForestRegressor(n_estimators=100, max_depth=15, random_state=42)
+    rf_a.fit(X, y_alloc)
     
     return X, y_venue, y_alloc, encoder, alloc_df.columns, df
 
