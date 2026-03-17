@@ -23,29 +23,29 @@ export default function AIRecommendationsPage() {
     if (!draft) return;
     setIsSaving(true);
     try {
-      // 1. Save the main event and get back the ID
       const response = await fetchAPI("/events", {
         method: "POST",
         body: JSON.stringify({
-          title: draft.title,
-          date: draft.date,
-          category: draft.category,
-          expectedAttendees: draft.headcount,
-          budget: draft.totalBudget,
-          description: `AI Generated Plan: ${draft.plan.join(". ")}`,
-          venue: draft.venue, // This will be handled by your controller's venue logic
+          // Add default fallbacks using || to prevent empty strings
+          title: draft.title || "AI Generated Event",
+          date: draft.date || new Date().toISOString().split('T')[0],
+          category: draft.category || "Workshops & Training", 
+          expectedAttendees: Number(draft.headcount) || 100,
+          budget: Number(draft.totalBudget) || 50000,
+          description: draft.plan ? `AI Plan: ${draft.plan.join(", ")}` : "AI Generated Strategy",
+          venue: draft.venue || "Recommended Venue",
           venueAddress: "Recommended by EventLK AI"
         })
       });
 
       if (response.success) {
         alert("AI Event Created Successfully!");
-        localStorage.removeItem("aiDraft");
-        window.location.href = "/dashboard"; // Change this to your actual dashboard route
+        localStorage.removeItem("aiDraft"); // Clear the draft so it shows "How it Works" again
+        window.location.href = "/dashboard"; 
       }
-    } catch (error) {
-      console.error("Error saving AI event:", error);
-      alert("Failed to create AI event.");
+    } catch (error: any) {
+      console.error("Full Error Details:", error);
+      alert(`Error: ${error.message}`); // This will show the actual message from your backend
     } finally {
       setIsSaving(false);
     }

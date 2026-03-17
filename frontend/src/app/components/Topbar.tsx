@@ -606,9 +606,9 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                               const aiDraft = {
                                 title: title || "New Tech Event", // Uses manual title state if available
                                 date: date,
-                                headcount: aiHeadcount,
-                                totalBudget: aiBudget,
-                                category: category || "Workshop",
+                                headcount: Number(aiHeadcount),
+                                totalBudget: Number(aiBudget),
+                                category: category || "Workshops & Training", // Default category if not selected
                                 venue: "SLIIT - Computing Faculty", // Mock recommended venue
                                 theme: {
                                   name: "Synergy Spectrum",
