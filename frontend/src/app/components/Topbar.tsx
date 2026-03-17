@@ -1,6 +1,6 @@
 "use client";
 import {fetchAPI} from "../../utils/api"; // Adjust the path as necessary
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Search, Plus, Bell, X, Calendar, Tag, Users,
   DollarSign, FileText, User, LogOut, Settings,
@@ -46,15 +46,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const[description, setDescription] = useState("");
   const[isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const handleOpenCreateModal = () => {
-      setIsCreateModalOpen(true);
-      setCreateMode('manual');
-    };
-    window.addEventListener('openCreateModal', handleOpenCreateModal);
-    return () => window.removeEventListener('openCreateModal', handleOpenCreateModal);
-  }, []);
-
 
   const toggleNotifications = () => {
     setIsNotificationOpen(!isNotificationOpen);
@@ -68,8 +59,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
   const costPerHead = aiHeadcount > 0 ? (aiBudget / aiHeadcount).toFixed(2) : "0.00";
 
-  // Get today's date in YYYY-MM-DD format to block past dates
-  const todayString = new Date().toISOString().split('T')[0];
   const handleCreateManualEvent = async() => {
 
     if (!title || !date || !category || expectedAttendees <= 0 || budget <= 0) {
@@ -92,15 +81,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       alert("Event created successfully!");
       setIsCreateModalOpen(false);
       window.dispatchEvent(new Event("eventCreated")); // Trigger a custom event to notify other components
-
-      // ADD THESE 6 LINES TO CLEAR THE FORM!
-      setTitle("");
-      setDate("");
-      setCategory("");
-      setExpectedAttendees(0);
-      setBudget(0);
-      setDescription("");
-
     } catch (error) {
       console.error("Error creating event:", error);
       alert("Failed to create event. Please try again.");
@@ -303,7 +283,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       </label>
                       <input
                         type="date"
-                        min={todayString}
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
                         className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900"
@@ -314,6 +293,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         <Tag size={16} className="text-gray-500" /> Event Category *
                       </label>
                       <select
+                        
                         className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 bg-white"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
@@ -338,7 +318,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       </label>
                       <input
                         type="number"
-                        min="0"
                         value={expectedAttendees}
                         onChange={(e) => setExpectedAttendees(Number(e.target.value))}
                         placeholder="e.g., 200"
@@ -351,7 +330,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       </label>
                       <input
                         type="number"
-                        min="0"
                         value={budget}
                         onChange={(e) => setBudget(Number(e.target.value))}
                         placeholder="e.g., 50000"
@@ -456,7 +434,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         
                         <div>
                           <label className="block text-sm text-gray-700 mb-1.5">Event Category</label>
-                          <select defaultValue="" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
+                          <select  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
                             <option value="" disabled>Select a category</option>
                             <option value="Workshops & Training">Workshops & Training</option>
                             <option value="Competitions & Hackathons">Competitions & Hackathons</option>
