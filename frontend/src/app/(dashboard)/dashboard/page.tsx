@@ -260,6 +260,26 @@ export default function DashboardHome() {
       setIsSaving(false);
     }
   };
+  const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
+    // Standard browser confirmation - prevents accidental clicks!
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`);
+    
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetchAPI(`/events/${eventId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.success) {
+        // Re-fetch events to update the dashboard instantly
+        fetchMyEvents();
+      }
+    } catch (error) {
+      console.error("Failed to delete event:", error);
+      alert("Failed to delete the event. Please try again.");
+    }
+  };
 
 
   useEffect(() => {
@@ -472,6 +492,14 @@ export default function DashboardHome() {
                   title="Edit Event"
                 >
                   <Pencil size={20} />
+                </button>
+                {/* --- NEW DELETE BUTTON --- */}
+                <button
+                  onClick={() => handleDeleteEvent(event.id, event.title)}
+                  className="bg-red-500/20 border border-red-400/30 text-red-100 p-2.5 rounded-lg hover:bg-red-500/40 hover:text-white transition-colors flex items-center justify-center ml-auto"
+                  title="Delete Event"
+                >
+                  <Trash2 size={20} />
                 </button>
               </div>
             </div>
