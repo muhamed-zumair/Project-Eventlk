@@ -2,6 +2,7 @@ const e = require('express');
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { parse } = require('dotenv');
+const {sendExistingUserInviteEmail, sendNewUserInviteEmail} = require('../utils/emailService');
 
 // @desc    Create a new event
 // @route   POST /api/events
@@ -472,6 +473,7 @@ const inviteTeamMember = async (req, res) => {
 
             // TODO: Trigger Nodemailer here for Existing User
             // sendEmail(email, "You've been added to a team!", `You are now a ${role} for ${eventTitle}. Login to EventLK to view your dashboard.`);
+            await sendExistingUserInviteEmail(email, eventTitle, role, "Event organizer");
 
             await pool.query('COMMIT');
             return res.status(200).json({ success: true, message: 'User added to the team successfully!' });
@@ -485,6 +487,7 @@ const inviteTeamMember = async (req, res) => {
 
             // TODO: Trigger Nodemailer here for New User
             // sendEmail(email, "You're invited to EventLK!", `You've been invited to be the ${role} for ${eventTitle}. Sign up to accept the invite!`);
+            await sendNewUserInviteEmail(email, eventTitle, role, "Event organizer");
 
             await pool.query('COMMIT');
             return res.status(200).json({ success: true, message: 'Invitation sent successfully!' });
