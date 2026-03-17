@@ -56,35 +56,38 @@ const createEvent = async (req, res) => {
 };
 
 const getEvents = async (req, res) => {
-    const userId = req.user.userId; // Assuming you have authentication middleware that sets req.user
-
+    const userId = req.user.userId;
 
     try {
-    
+        // 1. Corrected Syntax: Added the missing comma before [userId]
+        // 2. Corrected Logic: Now targets 'In Progress' events that have passed their date
         await pool.query(`
             UPDATE "Events" 
             SET status = 'Done'
-            WHERE start_date < CURRENT_DATE AND status != 'In Progress'
-            AND id IN (SELECT event_id FROM "Event_Team" WHERE user_id = $1);` [userId]
+            WHERE start_date < CURRENT_DATE 
+            AND status = 'In Progress'
+            AND id IN (SELECT event_id FROM "Event_Team" WHERE user_id = $1);`, 
+            [userId] 
         );
-       const fetchEventsQuery = `
+
+        const fetchEventsQuery = `
             SELECT 
                 e.id, e.title, e.type, e.status, e.start_date, e.expected_headcount, e.total_budget, e.description,
                 v.name as venue, t.role
             FROM "Events" e
             INNER JOIN "Event_Team" t ON e.id = t.event_id
             LEFT JOIN "Venues" v ON e.venue_id = v.id
-            WHERE t.user_id = $1 AND e.status ='In Progress'
+            WHERE t.user_id = $1 AND e.status = 'In Progress'
             ORDER BY e.start_date ASC;`;
 
-            const result = await pool.query(fetchEventsQuery, [userId]);
+        const result = await pool.query(fetchEventsQuery, [userId]);
 
-            return res.status(200).json({
-                success: true,
-                count: result.rows.length,
-                events: result.rows
-            });
-    }catch (error) {
+        return res.status(200).json({
+            success: true,
+            count: result.rows.length,
+            events: result.rows
+        });
+    } catch (error) {
         console.error('Error fetching events:', error);
         return res.status(500).json({
             success: false,
@@ -92,6 +95,37 @@ const getEvents = async (req, res) => {
         });
     }
 };
+
+const getPastEvents = async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const fetchPastEventsQuery = `
+            SELECT
+                e.*, v.name as venue_name
+            FROM "Events" e
+            INNER JOIN "Event_Team" t ON e.id = t.event_id
+            LEFT JOIN "Venues" v ON e.venue_id = v.id
+            WHERE t.user_id = $1 AND e.status = 'Done'
+            ORDER BY e.start_date DESC;`;
+
+        const result = await pool.query(fetchPastEventsQuery, [userId]);
+
+        // Added missing return statement!
+        return res.status(200).json({
+            success: true,
+            events: result.rows
+        });
+    } catch (error) {
+        console.error('Error fetching past events:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch past events..Please try again later'
+        });
+    }
+};
+
+
 
 const updateEvent = async (req, res) => {
 
@@ -253,28 +287,6 @@ const getEventById = async (req, res) => {
     }
 };
 
-const getPastEvents = async (req, res) => {
-    const userId = req.user.userId;
-
-    try{
-        const fetchPastEventsQuery = `
-            SELECT
-             e.* , v.name as venue_name
-            FROM "Events" e
-            INNER JOIN "Event_Team" t ON e.id = t.event_id
-            LEFT JOIN "Venues" v ON e.venue_id = v.id
-            WHERE t.user_id = $1 AND e.status='Done'
-            ORDER BY e.start_date DESC;`;
-
-            const result = await pool.query(fetchPastEventsQuery, [userId]);
-    }catch (error) {
-        console.error('Error fetching past events:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to fetch past events..Please try again later'
-        });
-    }
-}
 
 
 module.exports = {

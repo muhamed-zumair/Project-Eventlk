@@ -10,9 +10,10 @@ router.post('/', protect, createEvent);
 router.get('/', protect, getEvents);
 
 router.put('/:id', protect, updateEvent);
+router.get('/past', protect, getPastEvents);
 
 router.get('/:id', protect, getEventById);
 
-router.get('/past', protect, getPastEvents);
+
 
 module.exports = router;
