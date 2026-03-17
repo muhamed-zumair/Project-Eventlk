@@ -1,5 +1,7 @@
+const e = require('express');
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
+const { parse } = require('dotenv');
 
 // @desc    Create a new event
 // @route   POST /api/events
@@ -24,7 +26,7 @@ const createEvent = async (req, res) => {
 
         const safeHeadcount = Number(expectedAttendees) || 0; // Default to 0 if not a valid number
         const safeBudget = Number(budget) || 0; // Default to 0 if not a valid number
-        
+
         // 2. Handle Venue creation if AI provided one
         let venueId = null;
         if (venue) {
@@ -66,8 +68,8 @@ const getEvents = async (req, res) => {
             SET status = 'Done'
             WHERE start_date < CURRENT_DATE 
             AND status = 'In Progress'
-            AND id IN (SELECT event_id FROM "Event_Team" WHERE user_id = $1);`, 
-            [userId] 
+            AND id IN (SELECT event_id FROM "Event_Team" WHERE user_id = $1);`,
+            [userId]
         );
 
         const fetchEventsQuery = `
@@ -182,7 +184,7 @@ const updateEvent = async (req, res) => {
 
                 await pool.query(`
                     INSERT INTO "Agenda" (id, event_id, start_time, end_time, title)
-                    VALUES ($1, $2, $3, $4, $5);`, 
+                    VALUES ($1, $2, $3, $4, $5);`,
                     [uuidv4(), eventId, safeStartTime, safeEndTime, safeTitle]
                 );
             }
@@ -209,7 +211,7 @@ const updateEvent = async (req, res) => {
             await pool.query(`
                 UPDATE "Event_Team" 
                 SET role = $1 
-                WHERE event_id = $2 AND user_id = $3;`, 
+                WHERE event_id = $2 AND user_id = $3;`,
                 [organizerRole, eventId, userId]
             );
         }
@@ -234,7 +236,7 @@ const getEventById = async (req, res) => {
     const eventId = req.params.id;
     const userId = req.user.userId;
 
-    try{
+    try {
         const eventQuery = `
             SELECT 
                 e.*, t.role as my_role, v.name as venue, v.address as venue_address
@@ -244,7 +246,7 @@ const getEventById = async (req, res) => {
             WHERE e.id = $1 AND t.user_id = $2;`;
         const eventResult = await pool.query(eventQuery, [eventId, userId]);
 
-        if(eventResult.rows.length === 0) {
+        if (eventResult.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Event not found or you do not have access to it'
@@ -253,7 +255,7 @@ const getEventById = async (req, res) => {
 
         const eventData = eventResult.rows[0];
 
-        const [agendaRes , speakersRes, sponsorsRes, docRes, teamRes] = await Promise.all([
+        const [agendaRes, speakersRes, sponsorsRes, docRes, teamRes] = await Promise.all([
             pool.query('SELECT * FROM "Agenda" WHERE event_id = $1 ORDER BY start_time ASC', [eventId]),
             pool.query('SELECT * FROM "Guest_Speakers" WHERE event_id = $1', [eventId]),
             pool.query('SELECT * FROM "Sponsors" WHERE event_id = $1', [eventId]),
@@ -278,7 +280,7 @@ const getEventById = async (req, res) => {
             success: true,
             event: fullEventDetails
         });
-    }catch (error) {
+    } catch (error) {
         console.error('Error fetching event details:', error);
         return res.status(500).json({
             success: false,
@@ -287,6 +289,63 @@ const getEventById = async (req, res) => {
     }
 };
 
+const getPostEventReport = async (req, res) => {
+    const eventId = req.params.id;
+    const userId = req.user.userId;
+
+    try {
+        const eventQuery = `
+            SELECT
+                e.*, v.name as venue_name
+            FROM "Events" e
+            LEFT JOIN "Venues" v ON e.venue_id = v.id
+            WHERE e.id = $1;`;
+
+        const attendanceQuery = `
+            SELECT COUNT(*) FROM "Attendees"
+            WHERE event_id=$1 AND status = 'Checked In'`;
+
+        const budgetQuery = `
+    SELECT COALESCE(SUM(amount), 0) as total_spent 
+    FROM "Expenses" 
+    WHERE event_id = $1;`;
+
+        const [eventRes, attendanceRes, budgetRes, speakerRes, sponsorsRes, docsRes] = await Promise.all([
+            pool.query(eventQuery, [eventId]),
+            pool.query(attendanceQuery, [eventId]),
+            pool.query(budgetQuery, [eventId]),
+
+            pool.query('SELECT * FROM "Guest_Speakers" WHERE event_id = $1', [eventId]),
+            pool.query('SELECT * FROM "Sponsors" WHERE event_id = $1', [eventId]),
+            pool.query('SELECT * FROM "Event_Documents" WHERE event_id = $1', [eventId])
+        ]);
+
+        const event = eventRes.rows[0];
+        const finalAttendance = Number(attendanceRes.rows[0].count) || 0;
+        const totalSpent = Number(budgetRes.rows[0].total_spent) || 0.00;
+
+        return res.status(200).json({
+            success: true,
+            report: {
+                ...event,
+                finalAttendance,
+                attendanceRate: event.expected_headcount > 0 ? Math.round((finalAttendance / event.expected_headcount) * 100) : 0,
+                totalSpent,
+                budgetUtilization: event.total_budget > 0 ? Math.round((totalSpent / event.total_budget) * 100) : 0,
+                speakers: speakerRes.rows,
+                sponsors: sponsorsRes.rows,
+                documents: docsRes.rows
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching post-event report:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch post-event report..Please try again later'
+        });
+    }
+};
 
 
 module.exports = {
@@ -294,5 +353,7 @@ module.exports = {
     getEvents,
     updateEvent,
     getEventById,
-    getPastEvents
+    getPastEvents,
+    getPostEventReport
+
 };
