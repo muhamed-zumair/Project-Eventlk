@@ -1,5 +1,6 @@
+
 "use client";
-import {fetchAPI} from "../../utils/api"; // Adjust the path as necessary
+import { fetchAPI } from "../../utils/api"; // Adjust the path as necessary
 import React, { useState, useEffect } from "react";
 import {
   Search, Plus, Bell, X, Calendar, Tag, Users,
@@ -8,6 +9,7 @@ import {
   SlidersHorizontal, Sparkles, Minus, MapPin
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+
 
 interface TopbarProps {
   toggleSidebar: () => void;
@@ -32,19 +34,19 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   // Modal States
   const [createMode, setCreateMode] = useState<'manual' | 'ai'>('manual');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
-  
+
   // AI Form States
   const [aiHeadcount, setAiHeadcount] = useState<number>(400);
   const [aiBudget, setAiBudget] = useState<number>(200000);
 
   //state to capture the details in the manual creation form
-  const[title, setTitle] = useState("");
-  const[date, setDate] = useState("");
-  const[category, setCategory] = useState("");
-  const[expectedAttendees, setExpectedAttendees] = useState(0);
-  const[budget, setBudget] = useState(0);
-  const[description, setDescription] = useState("");
-  const[isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [category, setCategory] = useState("");
+  const [expectedAttendees, setExpectedAttendees] = useState(0);
+  const [budget, setBudget] = useState(0);
+  const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleOpenCreateModal = () => {
@@ -70,14 +72,14 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
   // Get today's date in YYYY-MM-DD format to block past dates
   const todayString = new Date().toISOString().split('T')[0];
-  const handleCreateManualEvent = async() => {
+  const handleCreateManualEvent = async () => {
 
     if (!title || !date || !category || expectedAttendees <= 0 || budget <= 0) {
       alert("Please fill in all required fields with valid values.");
       return;
     }
 
-    try{
+    try {
       await fetchAPI("/events", {
         method: "POST",
         body: JSON.stringify({
@@ -104,7 +106,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     } catch (error) {
       console.error("Error creating event:", error);
       alert("Failed to create event. Please try again.");
-    }finally {
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -237,10 +239,9 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       {/* CREATE NEW EVENT MODAL */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div 
-            className={`bg-white rounded-2xl shadow-2xl w-full transition-all duration-300 flex flex-col max-h-[95vh] ${
-              createMode === 'ai' ? 'max-w-[1200px]' : 'max-w-4xl'
-            }`}
+          <div
+            className={`bg-white rounded-2xl shadow-2xl w-full transition-all duration-300 flex flex-col max-h-[95vh] ${createMode === 'ai' ? 'max-w-[1200px]' : 'max-w-4xl'
+              }`}
           >
             {/* Modal Header */}
             <div className="flex justify-between items-center p-5 border-b border-gray-100 shrink-0">
@@ -255,26 +256,24 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
             {/* Modal Body */}
             <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col relative">
-              
+
               {/* Tab Selector */}
               <div className="grid grid-cols-2 gap-4 mb-6 shrink-0">
-                <button 
+                <button
                   onClick={() => setCreateMode('manual')}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-medium transition-colors ${
-                    createMode === 'manual' 
-                      ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50' 
+                  className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-medium transition-colors ${createMode === 'manual'
+                      ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50'
                       : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <SlidersHorizontal size={18} /> Manual Creation
                 </button>
-                <button 
+                <button
                   onClick={() => setCreateMode('ai')}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-medium transition-colors ${
-                    createMode === 'ai' 
-                      ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50' 
+                  className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-medium transition-colors ${createMode === 'ai'
+                      ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50'
                       : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <Sparkles size={18} /> AI Assisted
                 </button>
@@ -373,13 +372,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 resize-none placeholder-gray-400"
                     />
                   </div>
-                  
+
                   {/* Actions for Manual */}
                   <div className="pt-4 flex items-center gap-4">
-                    <button 
-                    onClick={handleCreateManualEvent}
-                    disabled={isSubmitting}
-                    className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition">
+                    <button
+                      onClick={handleCreateManualEvent}
+                      disabled={isSubmitting}
+                      className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition">
                       {isSubmitting ? "Creating..." : "Create Event"}
                     </button>
                     <button
@@ -395,21 +394,21 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
               {/* === AI ASSISTED VIEW === */}
               {createMode === 'ai' && (
                 <div className="flex flex-col lg:flex-row items-stretch gap-6 h-full min-h-[550px]">
-                  
+
                   {/* Left Sidebar - Inputs */}
                   <div className="w-full lg:w-[380px] shrink-0 space-y-6 flex flex-col">
-                    
+
                     {/* Event Details Card */}
                     <div className="bg-gray-50/50 border border-gray-200 rounded-2xl p-5 space-y-5">
                       <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                         <Sparkles size={18} className="text-indigo-600" /> Event Details
                       </h3>
-                      
+
                       <div>
                         <label className="block text-sm text-gray-700 mb-1.5">Event Title *</label>
                         <input type="text" placeholder="e.g., Tech Conference 2025" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 placeholder-gray-400" />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm text-gray-700 mb-1.5">Event Date *</label>
                         <input type="date" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900" />
@@ -419,12 +418,12 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         <label className="block text-sm text-gray-700 mb-2 flex justify-between">
                           <span className="flex items-center gap-1.5"><Users size={16} /> Headcount: {aiHeadcount}</span>
                         </label>
-                        <input 
-                          type="range" 
-                          min="50" max="1000" step="10" 
-                          value={aiHeadcount} 
+                        <input
+                          type="range"
+                          min="50" max="1000" step="10"
+                          value={aiHeadcount}
                           onChange={(e) => setAiHeadcount(Number(e.target.value))}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" 
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                         />
                         <div className="flex justify-between text-xs text-gray-500 mt-2">
                           <span>50</span>
@@ -438,11 +437,11 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         </label>
                         <div className="flex items-center gap-2">
                           <button onClick={() => setAiBudget(Math.max(0, aiBudget - 10000))} className="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-600"><Minus size={16} /></button>
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             value={aiBudget}
                             onChange={(e) => setAiBudget(Number(e.target.value))}
-                            className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 text-center font-medium" 
+                            className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 text-center font-medium"
                           />
                           <button onClick={() => setAiBudget(aiBudget + 10000)} className="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-600"><Plus size={16} /></button>
                         </div>
@@ -453,10 +452,10 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                     <div className="bg-gray-50/50 border border-gray-200 rounded-2xl p-5 flex-1 flex flex-col justify-between">
                       <div className="space-y-5">
                         <h3 className="font-semibold text-gray-900">Preferences</h3>
-                        
+
                         <div>
                           <label className="block text-sm text-gray-700 mb-1.5">Event Category</label>
-                          <select  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
+                          <select className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
                             <option value="" disabled>Select a category</option>
                             <option value="Workshops & Training">Workshops & Training</option>
                             <option value="Competitions & Hackathons">Competitions & Hackathons</option>
@@ -467,7 +466,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                             <option value="Tech Experiences">Tech Experiences</option>
                           </select>
                         </div>
-                        
+
                         <div>
                           <label className="block text-sm text-gray-700 mb-1.5">Venue Style</label>
                           <select className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
@@ -482,7 +481,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       </div>
 
                       <div className="mt-6">
-                        <button 
+                        <button
                           onClick={() => setIsAiGenerated(true)}
                           className="w-full bg-[#ef4444] text-white py-3.5 rounded-xl font-medium hover:bg-red-600 transition flex items-center justify-center gap-2"
                         >
@@ -495,7 +494,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
                   {/* Right Content Area - Sticky Results */}
                   <div className="flex-1 border border-gray-200 rounded-2xl bg-white overflow-hidden flex flex-col sticky top-0 h-full">
-                    
+
                     {!isAiGenerated ? (
                       /* Idle State */
                       <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-gray-50/30">
@@ -509,7 +508,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                       /* Generated State */
                       <div className="flex flex-col h-full bg-white">
                         <div className="p-8 flex-1 overflow-y-auto custom-scrollbar space-y-6">
-                          
+
                           {/* Header */}
                           <div className="border-b border-gray-100 pb-4">
                             <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -521,7 +520,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                           {/* Highlight: Recommended Venue */}
                           <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-6 relative overflow-hidden shadow-sm">
                             <div className="absolute -top-6 -right-6 text-indigo-500 opacity-10">
-                               <MapPin size={160} />
+                              <MapPin size={160} />
                             </div>
                             <div className="relative z-10">
                               <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Top Venue Match</p>
@@ -538,7 +537,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Financial Strategy</p>
                               <h4 className="text-xl font-bold text-gray-900">Suggested Budget Allocation</h4>
                             </div>
-                            
+
                             <div className="flex flex-col xl:flex-row gap-8 items-center justify-center">
                               {/* Pie Chart */}
                               <div className="w-56 h-56 shrink-0 relative">
@@ -558,7 +557,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                       ))}
                                     </Pie>
-                                    <RechartsTooltip 
+                                    <RechartsTooltip
                                       formatter={(value: any) => `LKR ${value.toLocaleString()}`}
                                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                     />
@@ -577,16 +576,16 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                                   <div key={index} className="flex items-center w-full group">
                                     {/* Dot */}
                                     <div className="w-3 h-3 rounded-full shrink-0 shadow-sm mr-3" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                                    
+
                                     {/* Name */}
                                     <p className="text-sm font-bold text-gray-700 shrink-0">{item.name}</p>
-                                    
+
                                     {/* Dotted spacer that dynamically fills empty space */}
                                     <div className="flex-1 border-b-2 border-dotted border-gray-200 mx-4 opacity-50 group-hover:border-gray-400 transition-colors"></div>
-                                    
+
                                     {/* Percentage */}
                                     <p className="text-sm font-semibold text-gray-500 shrink-0 w-12 text-right">{item.percentage}</p>
-                                    
+
                                     {/* Value - Given wider width to prevent edge touching */}
                                     <p className="text-sm font-bold text-gray-900 shrink-0 w-28 text-right">LKR {item.value.toLocaleString()}</p>
                                   </div>
@@ -596,10 +595,50 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                           </div>
 
                         </div>
-                        
+
                         {/* Footer */}
                         <div className="p-5 border-t border-gray-200 bg-white flex items-center gap-3 shrink-0 rounded-b-2xl">
-                          <button className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm">
+                          <button
+                            onClick={() => {
+                              // 1. Create the Mock AI Plan based on your images
+                              const aiDraft = {
+                                title: title || "New Tech Event", // Uses manual title state if available
+                                date: date,
+                                headcount: aiHeadcount,
+                                totalBudget: aiBudget,
+                                category: category || "Workshop",
+                                venue: "SLIIT - Computing Faculty", // Mock recommended venue
+                                theme: {
+                                  name: "Synergy Spectrum",
+                                  primary: "#007AFF",
+                                  secondary: "#F0A040",
+                                  accent: "#34C759"
+                                },
+                                budgetAllocation: [
+                                  { name: 'Venue', value: aiBudget * 0.25, percentage: '25.0%' },
+                                  { name: 'Speakers', value: aiBudget * 0.30, percentage: '30.0%' },
+                                  { name: 'Food', value: aiBudget * 0.10, percentage: '10.0%' },
+                                  { name: 'AV', value: aiBudget * 0.15, percentage: '15.0%' },
+                                  { name: 'Marketing', value: aiBudget * 0.05, percentage: '5.0%' },
+                                  { name: 'Equipment', value: aiBudget * 0.15, percentage: '15.0%' },
+                                ],
+                                plan: [
+                                  "Confirm Venue & Logistics (Week 1-2)",
+                                  "Develop Detailed Agenda & Content (Week 2-3)",
+                                  "Finalize Attendee Registration (Week 3-5)",
+                                  "Procure Necessary Materials (Week 5-6)"
+                                ]
+                              };
+
+                              // 2. Store it in browser memory
+                              localStorage.setItem("aiDraft", JSON.stringify(aiDraft));
+
+                              // 3. Close modal and redirect
+                              setIsCreateModalOpen(false);
+                              window.location.href = "/ai-recommendations";
+                            }}
+                            className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm"
+                          >
                             Preview and Confirm
                           </button>
                           <button onClick={() => setIsCreateModalOpen(false)} className="bg-white border border-transparent text-gray-500 px-4 py-2.5 rounded-lg font-medium hover:bg-gray-50 hover:text-gray-700 transition text-sm ml-auto">
