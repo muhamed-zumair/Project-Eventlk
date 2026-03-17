@@ -248,57 +248,43 @@ export default function DashboardHome() {
     };
   }, []);
 
-  //Quick API test
-  const testConnection = async () => {
-    try {
-      const response = await fetchAPI('/events', {
-        method: 'GET',
-      });
-      console.log('API Connection Successful:', response);
-    } catch (error) {
-      console.error('API Connection Failed:', error);
-    }
-  };
-  testConnection();
+  
 
-  // FIX 2: Removed stray bracket and moved logic securely
-  const storedUser = localStorage.getItem('user');
-  const isNewUser = localStorage.getItem('isNewUser');
+// --- Replace your loose localStorage logic with this safe useEffect ---
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      const isNewUser = localStorage.getItem('isNewUser');
 
-  if (storedUser && storedUser !== "undefined") {
-    try {
-      const userObj = JSON.parse(storedUser);
-      const name = userObj.firstName || "User";
+      if (storedUser && storedUser !== "undefined") {
+        try {
+          const userObj = JSON.parse(storedUser);
+          const name = userObj.firstName || "User";
 
-      if (isNewUser === 'true') {
-        if (greetingPrefix !== "Welcome to EventLK,") {
-          setGreetingPrefix(`Welcome to EventLK,`);
-          setUserName(name);
-          setTimeout(() => localStorage.removeItem('isNewUser'), 1000);
+          if (isNewUser === 'true') {
+            setGreetingPrefix("Welcome to EventLK,");
+            setUserName(name);
+            setTimeout(() => localStorage.removeItem('isNewUser'), 1000);
+          } else {
+            setGreetingPrefix("Welcome back,");
+            setUserName(name);
+          }
+        } catch (error) {
+          setGreetingPrefix("Welcome back,");
+          setUserName("User");
         }
       } else {
-        if (greetingPrefix !== "Welcome back,") {
-          setGreetingPrefix(`Welcome back,`);
-          setUserName(name);
-        }
-      }
-    } catch (error) {
-      if (greetingPrefix !== "Welcome back,") {
         setGreetingPrefix("Welcome back,");
         setUserName("User");
       }
     }
-  } else {
-    if (greetingPrefix !== "Welcome back,") {
-      setGreetingPrefix("Welcome back,");
-      setUserName("User");
-    }
-  }
+  }, []); // The empty [] ensures this ONLY runs once when the page loads!
+  // ---------------------------------------------------------------------
 
   // FIX 3: Safely calculate dates only if an event actually exists
   let eventStatus = "In Progress";
   let diffDays = 0;
-
+  // ... (keep the rest of your code exactly the same below this)
   if (eventDetails?.date) {
     const eventDateObj = new Date(eventDetails.date + "T00:00:00");
     const today = new Date();

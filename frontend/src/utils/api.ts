@@ -1,8 +1,13 @@
-const  BASE_URL= "http://localhost:5000/api";
+const BASE_URL = "http://localhost:5000/api";
 
 export const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
-    // Get the token from localStorage (or any other storage mechanism you use)
-    const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+    // 1. Create a safe variable for the token
+    let token = null;
+
+    // 2. Only check localStorage if we are running in the user's browser!
+    if (typeof window !== 'undefined') {
+        token = localStorage.getItem('token'); 
+    }
 
     // Set up headers, including the Authorization header if the token exists
     const headers = {

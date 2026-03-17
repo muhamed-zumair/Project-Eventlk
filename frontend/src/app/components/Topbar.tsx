@@ -293,7 +293,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         <Tag size={16} className="text-gray-500" /> Event Category *
                       </label>
                       <select
-                        defaultValue=""
+                        
                         className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 bg-white"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
@@ -434,7 +434,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         
                         <div>
                           <label className="block text-sm text-gray-700 mb-1.5">Event Category</label>
-                          <select defaultValue="" className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
+                          <select  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
                             <option value="" disabled>Select a category</option>
                             <option value="Workshops & Training">Workshops & Training</option>
                             <option value="Competitions & Hackathons">Competitions & Hackathons</option>
