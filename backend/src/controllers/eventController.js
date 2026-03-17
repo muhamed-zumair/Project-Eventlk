@@ -372,6 +372,43 @@ const getPostEventReport = async (req, res) => {
         });
     }
 };
+const deleteEvent = async (req, res) => {
+    const eventId = req.params.id;
+    const userId = req.user.userId;
+
+    try {
+        // 1. Verify the user has permission to delete this event
+        const checkTeam = await pool.query(`
+            SELECT role FROM "Event_Team" 
+            WHERE event_id = $1 AND user_id = $2;`, [eventId, userId]);
+
+        if (checkTeam.rows.length === 0) {
+            return res.status(403).json({ success: false, message: 'Access denied.' });
+        }
+
+        await pool.query('BEGIN');
+
+        // 2. Delete child records first to prevent Foreign Key errors
+        await pool.query('DELETE FROM "Agenda" WHERE event_id = $1;', [eventId]);
+        await pool.query('DELETE FROM "Guest_Speakers" WHERE event_id = $1;', [eventId]);
+        await pool.query('DELETE FROM "Sponsors" WHERE event_id = $1;', [eventId]);
+        await pool.query('DELETE FROM "Event_Documents" WHERE event_id = $1;', [eventId]);
+        await pool.query('DELETE FROM "Expenses" WHERE event_id = $1;', [eventId]).catch(() => {}); // Catch in case table missing
+        await pool.query('DELETE FROM "Attendees" WHERE event_id = $1;', [eventId]).catch(() => {});
+        await pool.query('DELETE FROM "Event_Team" WHERE event_id = $1;', [eventId]);
+
+        // 3. Delete the main event
+        await pool.query('DELETE FROM "Events" WHERE id = $1;', [eventId]);
+
+        await pool.query('COMMIT');
+        return res.status(200).json({ success: true, message: 'Event deleted successfully' });
+
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Error deleting event:', error);
+        return res.status(500).json({ success: false, message: 'Failed to delete event' });
+    }
+};
 
 
 module.exports = {
@@ -380,6 +417,7 @@ module.exports = {
     updateEvent,
     getEventById,
     getPastEvents,
-    getPostEventReport
+    getPostEventReport,
+    deleteEvent
 
 };
