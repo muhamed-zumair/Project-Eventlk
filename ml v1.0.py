@@ -10,14 +10,14 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 st.set_page_config(page_title="EventLK Planner", page_icon="📅", layout="wide")
 
 @st.cache_resource
-def load_and_prep_data():
-    """Loads, cleans, and encodes the dataset in a single cached run."""
+def load_and_train_model():
     # Load Data
     file_path = "event_dataset_v2_distinct.csv"
     try:
         df = pd.read_csv(file_path)
     except FileNotFoundError:
-        return None, None, None, None, None, None
+        # Adjusted to return 5 Nones matching the new return signature
+        return None, None, None, None, None
 
     # Clean & Prep
     numeric_cols = ['headcount', 'budget']
@@ -59,10 +59,12 @@ def load_and_prep_data():
     rf_a = RandomForestRegressor(n_estimators=100, max_depth=15, random_state=42)
     rf_a.fit(X, y_alloc)
     
-    return X, y_venue, y_alloc, encoder, alloc_df.columns, df
+    # --- NEW IN COMMIT 25: Returning the trained models ---
+    return rf_v, rf_a, encoder, alloc_df.columns, df
 
-# Run the cached backend logic
-X_matrix, y_v, y_a, encoder_obj, alloc_cols, raw_df = load_and_prep_data()
+# --- NEW IN COMMIT 25: Unpacking the newly exported variables ---
+# Load the brain
+rf_venue, rf_alloc, encoder, alloc_cols, raw_df = load_and_train_model()
 
 # ==========================================
 # 2. SIDEBAR - USER INPUTS
@@ -115,7 +117,8 @@ with st.sidebar:
 st.title("🎉 EventLK: AI Event Planner")
 st.markdown("### Intelligent Venue & Budget Recommendation System")
 
-if X_matrix is not None:
-    st.success(f"✅ Data processing complete! Ready to train on {X_matrix.shape[0]} samples.")
+# --- NEW IN COMMIT 25: Updated success/error check ---
+if rf_venue is not None:
+    st.success(f"✅ Models trained successfully! Ready for predictions.")
 else:
     st.error("❌ Data file not found. Please ensure 'event_dataset_v2_distinct.csv' is in the folder.")
