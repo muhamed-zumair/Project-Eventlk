@@ -152,7 +152,7 @@ const updateEvent = async (req, res) => {
     if (date) {
         const inputDate = new Date(date);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); 
+        today.setHours(0, 0, 0, 0);
 
         if (inputDate < today) {
             return res.status(400).json({
@@ -393,8 +393,8 @@ const deleteEvent = async (req, res) => {
         await pool.query('DELETE FROM "Guest_Speakers" WHERE event_id = $1;', [eventId]);
         await pool.query('DELETE FROM "Sponsors" WHERE event_id = $1;', [eventId]);
         await pool.query('DELETE FROM "Event_Documents" WHERE event_id = $1;', [eventId]);
-        await pool.query('DELETE FROM "Expenses" WHERE event_id = $1;', [eventId]).catch(() => {}); // Catch in case table missing
-        await pool.query('DELETE FROM "Attendees" WHERE event_id = $1;', [eventId]).catch(() => {});
+        await pool.query('DELETE FROM "Expenses" WHERE event_id = $1;', [eventId]).catch(() => { }); // Catch in case table missing
+        await pool.query('DELETE FROM "Attendees" WHERE event_id = $1;', [eventId]).catch(() => { });
         await pool.query('DELETE FROM "Event_Team" WHERE event_id = $1;', [eventId]);
 
         // 3. Delete the main event
@@ -410,6 +410,97 @@ const deleteEvent = async (req, res) => {
     }
 };
 
+const inviteTeamMember = async (req, res) => {
+    const eventId = req.params.id;
+    const inviterId = req.user.userId;
+    const { email, role } = req.body;
+    //basic validations
+    if (!email || !role) {
+        return res.status(400).json({ success: false, message: 'Email and role are required' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ success: false, message: 'Invalid email format..Please provide a valid email address' });
+    }
+
+    try {
+        await pool.query('BEGIN');
+
+        // 1. Check if the inviter is part of the event team and has permission to invite others
+        const inviterCheck = await pool.query(`
+            SELECT role FROM "Event_Team" 
+            WHERE event_id = $1 AND user_id = $2;`, [eventId, inviterId]);
+
+        // Ensure the inviter is part of the event team before allowing them to invite others
+        if (inviterCheck.rows.length === 0) {
+            await pool.query('ROLLBACK');
+            return res.status(403).json({ success: false, message: 'Access denied..You are not part of this event team' });
+        }
+        // 2. getting the event title for the email content
+        const eventCheck = await pool.query(`SELECT title FROM "Events" WHERE id = $1;`, [eventId]);
+        if (eventCheck.rows.length === 0) {
+            await pool.query('ROLLBACK');
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+        const eventTitle = eventCheck.rows[0].title;
+        // 3. Check if the user with the provided email exists IN THE TEAM before sending an invite
+        const teamCheck = await pool.query(
+            `SELECT * FROM "Event_Team" et
+             JOIN "Users" u ON et.user_id = u.id
+             WHERE et.event_id = $1 AND u.email = $2;`,
+            [eventId, email]
+        );
+
+        if (teamCheck.rows.length > 0) {
+            await pool.query('ROLLBACK');
+            return res.status(400).json({ success: false, message: 'User is already part of the event team' });
+        }
+
+        const inviteCheck = await pool.query(
+            `SELECT * FROM "Event_Invitations" WHERE event_id = $1 AND email = $2;`,
+            [eventId, email]
+        );
+
+        if (inviteCheck.rows.length > 0) {
+
+            const invitedUserId = userCheck.rows[0].user_id;
+            await pool.query(`
+                INSERT INTO "Event_Team" (event_id, user_id, role)
+                VALUES ($1, $2, $3);`, [eventId, invitedUserId, role]
+            );
+
+            // TODO: Trigger Nodemailer here for Existing User
+            // sendEmail(email, "You've been added to a team!", `You are now a ${role} for ${eventTitle}. Login to EventLK to view your dashboard.`);
+
+            await pool.query('COMMIT');
+            return res.status(200).json({ success: true, message: 'User added to the team successfully!' });
+
+        } else {
+            // --- SCENARIO B: NEW USER ---
+            await pool.query(
+                `INSERT INTO "Event_Invitations" (event_id, email, role) VALUES ($1, $2, $3)`,
+                [eventId, email, role]
+            );
+
+            // TODO: Trigger Nodemailer here for New User
+            // sendEmail(email, "You're invited to EventLK!", `You've been invited to be the ${role} for ${eventTitle}. Sign up to accept the invite!`);
+
+            await pool.query('COMMIT');
+            return res.status(200).json({ success: true, message: 'Invitation sent successfully!' });
+        }
+
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Error inviting team member:', error);
+        return res.status(500).json({ success: false, message: 'Failed to process invitation. Please try again later.' });
+    }
+};
+
+
+    
+
+
 
 module.exports = {
     createEvent,
@@ -418,6 +509,7 @@ module.exports = {
     getEventById,
     getPastEvents,
     getPostEventReport,
-    deleteEvent
+    deleteEvent,
+    inviteTeamMember
 
 };
