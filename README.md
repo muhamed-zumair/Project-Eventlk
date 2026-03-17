@@ -1,49 +1,55 @@
 <div align="center">
-  
-  <h1>⚙️ EventLK API (Backend Service)</h1>
-  <p><strong>The robust, secure, and scalable RESTful API powering the EventLK platform.</strong></p>
+  <h1>🎉 EventLK</h1>
+  <p><strong>The Next-Generation, AI-Powered Event Management Platform for Sri Lankan University Clubs</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-    <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
-    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-    <img src="https://img.shields.io/badge/JWT-Black?style=for-the-badge&logo=JSON%20web%20tokens" alt="JWT Security" />
+    <img src="https://img.shields.io/badge/Status-In%20Development-blue" alt="Status" />
+    <img src="https://img.shields.io/badge/Stack-PERN-purple" alt="Tech Stack" />
+    <img src="https://img.shields.io/badge/AI-Enabled-brightgreen" alt="AI Enabled" />
   </p>
-
 </div>
 
------
+---
 
-## 🧠 Overview
+## 📖 About The Project
 
-This repository contains the backend infrastructure for **EventLK**. It acts as the central hub, managing all business logic, database transactions, user authentication, and third-party AI integrations. 
+**EventLK** is a comprehensive, modern web platform designed to eliminate the chaos of university event planning. Built for student committees and club organizers, EventLK centralizes everything from budgeting and team collaboration to ticketing and day-of-event attendance tracking. 
 
-Built on a strict **MVC (Model-View-Controller)** architecture, this API is designed to be highly modular, making it easy for multiple developers to add features without causing merge conflicts.
+By integrating state-of-the-art AI, EventLK doesn't just record data—it actively assists organizers in making smarter financial and logistical decisions.
+
+### 🌟 Key Features
+
+* **🤖 AI-Powered Event Planning:** Intelligent venue suggestions and automated insights to streamline the planning phase.
+* **💰 Smart LKR Budget Tracking:** Track income, sponsorships, and expenses dynamically in Sri Lankan Rupees (LKR).
+* **🎫 QR Code Attendance System:** Frictionless, secure check-ins at the venue using auto-generated QR tickets.
+* **👥 Real-Time Team Collaboration:** Seamlessly work with your committee members in a unified workspace.
+* **🔒 Enterprise-Grade Security:** Robust JWT-based authentication, bcrypt password hashing, and strict input validation.
+* **🎨 Premium UI/UX:** A sleek, dark-themed, highly responsive interface optimized for both desktop and mobile.
 
 ---
 
-## 🛠️ Core Technologies
+## 🛠️ Technology Stack
 
-* **Runtime:** Node.js
-* **Framework:** Express.js
-* **Database:** PostgreSQL (with `pg` driver)
-* **Authentication:** JSON Web Tokens (JWT) & bcryptjs for password hashing
-* **Security & Middleware:** CORS, Express JSON parser, strict Regex input validation
+EventLK is built using the robust **PERN** stack, heavily separated into microservices for scalability.
+
+* **Frontend:** Next.js (React), Tailwind CSS
+* **Backend:** Node.js, Express.js, PostgreSQL
+* **Security:** JSON Web Tokens (JWT), bcryptjs
+* **AI/ML:** XGBoost (Machine Learning models for budget/venue predictions)
 
 ---
 
-## 📂 Architecture & Folder Structure
+## 📂 Repository Architecture
 
-We follow a professional separation of concerns to keep the codebase clean and maintainable.
+This project utilizes a Multi-Branch approach to maintain clean, isolated environments. 
 
 ```text
-Project-Eventlk-backend/
-├── src/
-│   ├── config/         # Database connections and environment setups
-│   ├── controllers/    # Core business logic and request validation (The "Chefs")
-│   ├── middleware/     # Custom JWT protection and error handling logic
-│   ├── models/         # PostgreSQL database schemas and queries
-│   └── routes/         # API endpoint definitions (The "Traffic Cops")
-├── .env                # Secret environment variables (Ignored by Git)
-├── package.json        # Project dependencies and scripts
-└── server.js           # Main application entry point
+EventLK/
+├── Project-Eventlk-frontend/   # Next.js User Interface (Branch: frontend)
+├── Project-Eventlk-backend/    # Node.js/Express API (Branch: backend)
+│   ├── src/
+│   │   ├── controllers/  # Core business logic (The "Chefs")
+│   │   ├── models/       # DB schemas and queries
+│   │   └── routes/       # API endpoint definitions (The "Traffic Cops")
+│   └── server.js         # API Entry point
+└── Project-Eventlk-ai-ml/      # Python ML Models (Branch: ai-ml)
