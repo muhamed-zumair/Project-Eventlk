@@ -21,6 +21,19 @@ const createEvent = async (req, res) => {
         });
     }
 
+    // --- NEW VALIDATION: Prevent Past Dates ---
+    const inputDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset today's time to midnight for a fair comparison
+
+    if (inputDate < today) {
+        return res.status(400).json({
+            success: false,
+            message: 'Cannot create events in the past. Please select a future date.'
+        });
+    }
+    // ------------------------------------------
+
     try {
         await pool.query('BEGIN');
 
@@ -135,6 +148,19 @@ const updateEvent = async (req, res) => {
     const userId = req.user.userId;
 
     const { title, date, expectedAttendees, budget, description, agenda, speakers, sponsors, startTime, endTime, venue, venueAddress, organizerRole } = req.body;
+
+    if (date) {
+        const inputDate = new Date(date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); 
+
+        if (inputDate < today) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot update event to a past date. Please select a future date.'
+            });
+        }
+    }
 
     try {
         await pool.query('BEGIN');
