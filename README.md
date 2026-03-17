@@ -1,5 +1,4 @@
 <div align="center">
-  
   <h1>🎉 EventLK</h1>
   <p><strong>The Next-Generation, AI-Powered Event Management Platform for Sri Lankan University Clubs</strong></p>
 
@@ -8,7 +7,6 @@
     <img src="https://img.shields.io/badge/Stack-PERN-purple" alt="Tech Stack" />
     <img src="https://img.shields.io/badge/AI-Enabled-brightgreen" alt="AI Enabled" />
   </p>
-
 </div>
 
 ---
@@ -34,29 +32,24 @@ By integrating state-of-the-art AI, EventLK doesn't just record data—it active
 
 EventLK is built using the robust **PERN** stack, heavily separated into microservices for scalability.
 
-### **Frontend**
-* **Framework:** [Next.js](https://nextjs.org/) (React)
-* **Styling:** Modern CSS / Tailwind CSS (Dark Mode UI)
-
-
-### **Backend**
-* **Environment:** [Node.js](https://nodejs.org/)
-* **Framework:** Express.js
-* **Security:** JSON Web Tokens (JWT), bcryptjs, CORS
-* **Architecture:** MVC (Model-View-Controller)
-
-### **Database & AI**
-* **Database:** PostgreSQL (Relational Data Modeling)
+* **Frontend:** Next.js (React), Tailwind CSS
+* **Backend:** Node.js, Express.js, PostgreSQL
+* **Security:** JSON Web Tokens (JWT), bcryptjs
 * **AI/ML:** XGBoost (Machine Learning models for budget/venue predictions)
 
 ---
 
 ## 📂 Repository Architecture
 
-This project utilizes a Git Worktree / Multi-Branch approach to maintain clean, isolated environments.
+This project utilizes a Multi-Branch approach to maintain clean, isolated environments. 
 
 ```text
 EventLK/
 ├── Project-Eventlk-frontend/   # Next.js User Interface (Branch: frontend)
 ├── Project-Eventlk-backend/    # Node.js/Express API (Branch: backend)
-└── Project-Eventlk-ai-ml/      # Python Machine Learning Models (Branch: ai-ml)
+│   ├── src/
+│   │   ├── controllers/  # Core business logic (The "Chefs")
+│   │   ├── models/       # DB schemas and queries
+│   │   └── routes/       # API endpoint definitions (The "Traffic Cops")
+│   └── server.js         # API Entry point
+└── Project-Eventlk-ai-ml/      # Python ML Models (Branch: ai-ml)
