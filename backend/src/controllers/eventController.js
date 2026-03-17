@@ -116,7 +116,11 @@ const updateEvent = async (req, res) => {
             WHERE id = $9
             RETURNING *;`;
 
-        await pool.query(updateEventQuery, [title, date, expectedAttendees, budget, description, startTime, endTime, venueId, eventId]);
+        // Safely convert empty strings to NULL so PostgreSQL doesn't panic
+        const safeStartTime = startTime === "" ? null : startTime;
+        const safeEndTime = endTime === "" ? null : endTime;
+
+        await pool.query(updateEventQuery, [title, date, expectedAttendees, budget, description, safeStartTime, safeEndTime, venueId, eventId]);
 
         await pool.query('DELETE FROM "Agenda" WHERE event_id = $1;', [eventId]);
         await pool.query('DELETE FROM "Guest_Speakers" WHERE event_id = $1;', [eventId]);
