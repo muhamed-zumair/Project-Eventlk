@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createEvent,getEvents,updateEvent, getEventById } = require('../controllers/eventController');
+const { createEvent,getEvents,updateEvent, getEventById , getPastEvents} = require('../controllers/eventController');
 const { protect } = require('../middleware/authMiddleware');// Import the protect middleware to secure the route
 
 // Route to create a new event (protected route)
@@ -12,5 +12,7 @@ router.get('/', protect, getEvents);
 router.put('/:id', protect, updateEvent);
 
 router.get('/:id', protect, getEventById);
+
+router.get('/past', protect, getPastEvents);
 
 module.exports = router;

@@ -5,10 +5,12 @@ const { v4: uuidv4 } = require('uuid');
 // @route   POST /api/events
 // @access  Private(requires authentication)
 
-// This function creates a new event in the database. It expects the request body to contain the event details such as title, date, category, expected attendees, budget, and description. The user ID of the creator is obtained from the authenticated user (assuming you have authentication middleware that sets req.user). The function uses a transaction to ensure that both the event creation and team assignment are successful. If any part of the process fails, it rolls back the transaction and returns an error response.
 const createEvent = async (req, res) => {
-    const { title, date, category, expectedAttendees, budget, description } = req.body;
-    const userId = req.user.userId; // Assuming you have authentication middleware that sets req.user
+    // 1. Ensure all these fields are captured from req.body
+    const { title, date, category, expectedAttendees, budget, description, venue, venueAddress } = req.body;
+    const userId = req.user.userId;
+
+    console.log("Creating event with payload:", req.body);
 
     if (!title || !date || !category || !expectedAttendees || !budget) {
         return res.status(400).json({
@@ -16,45 +18,55 @@ const createEvent = async (req, res) => {
             message: 'Please provide all required fields'
         });
     }
-    // Additional validation can be added here (e.g., check if date is valid, budget is a number, etc.)
+
     try {
         await pool.query('BEGIN');
+
+        const safeHeadcount = Number(expectedAttendees) || 0; // Default to 0 if not a valid number
+        const safeBudget = Number(budget) || 0; // Default to 0 if not a valid number
+        
+        // 2. Handle Venue creation if AI provided one
+        let venueId = null;
+        if (venue) {
+            venueId = uuidv4();
+            await pool.query(
+                `INSERT INTO "Venues" (id, name, address) VALUES ($1, $2, $3)`,
+                [venueId, venue, venueAddress || '']
+            );
+        }
+
         const eventId = uuidv4();
         const insertEventQuery = `
-            INSERT INTO "Events" (id, title, start_date, type, expected_headcount, total_budget, description, created_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO "Events" (id, title, start_date, type, expected_headcount, total_budget, description, created_by, venue_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *;`;
 
-        const eventValues = [eventId, title, date, category, expectedAttendees, budget, description, userId];
-        const newEvent = await pool.query(insertEventQuery, eventValues);
+        await pool.query(insertEventQuery, [eventId, title, date, category, expectedAttendees, budget, description, userId, venueId]);
 
-        // Insert the creator into the Event_Team with the role of 'President'
-        const insertTeamQuery = `
-            INSERT INTO "Event_Team" ( event_id, user_id, role)
-            VALUES ($1, $2, 'President');`;
-        await pool.query(insertTeamQuery, [eventId, userId]);
+        // 3. Keep the team assignment
+        await pool.query(`INSERT INTO "Event_Team" (event_id, user_id, role) VALUES ($1, $2, 'President')`, [eventId, userId]);
 
         await pool.query('COMMIT');
-        res.status(201).json({
-            success: true,
-            message: 'Event created successfully',
-            data: newEvent.rows[0]
-        });
-    }catch (error) {
+        res.status(201).json({ success: true, message: 'Event created successfully', eventId });
+    } catch (error) {
         await pool.query('ROLLBACK');
         console.error('Error creating event:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to create event..Please try again later'
-        });
+        res.status(500).json({ success: false, message: 'Failed to create event' });
     }
-
 };
 
 const getEvents = async (req, res) => {
     const userId = req.user.userId; // Assuming you have authentication middleware that sets req.user
 
+
     try {
+    
+        await pool.query(`
+            UPDATE "Events" 
+            SET status = 'Done'
+            WHERE start_date < CURRENT_DATE AND status != 'In Progress'
+            AND id IN (SELECT event_id FROM "Event_Team" WHERE user_id = $1);` [userId]
+        );
        const fetchEventsQuery = `
             SELECT 
                 e.id, e.title, e.type, e.status, e.start_date, e.expected_headcount, e.total_budget, e.description,
@@ -62,7 +74,7 @@ const getEvents = async (req, res) => {
             FROM "Events" e
             INNER JOIN "Event_Team" t ON e.id = t.event_id
             LEFT JOIN "Venues" v ON e.venue_id = v.id
-            WHERE t.user_id = $1
+            WHERE t.user_id = $1 AND e.status ='In Progress'
             ORDER BY e.start_date ASC;`;
 
             const result = await pool.query(fetchEventsQuery, [userId]);
@@ -241,10 +253,34 @@ const getEventById = async (req, res) => {
     }
 };
 
+const getPastEvents = async (req, res) => {
+    const userId = req.user.userId;
+
+    try{
+        const fetchPastEventsQuery = `
+            SELECT
+             e.* , v.name as venue_name
+            FROM "Events" e
+            INNER JOIN "Event_Team" t ON e.id = t.event_id
+            LEFT JOIN "Venues" v ON e.venue_id = v.id
+            WHERE t.user_id = $1 AND e.status='Done'
+            ORDER BY e.start_date DESC;`;
+
+            const result = await pool.query(fetchPastEventsQuery, [userId]);
+    }catch (error) {
+        console.error('Error fetching past events:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch past events..Please try again later'
+        });
+    }
+}
+
 
 module.exports = {
     createEvent,
     getEvents,
     updateEvent,
-    getEventById
+    getEventById,
+    getPastEvents
 };
