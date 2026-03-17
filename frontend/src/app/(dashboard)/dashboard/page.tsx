@@ -40,6 +40,9 @@ export default function DashboardHome() {
   // NEW: State for the checkbox when uploading
   const [isUploadConfidential, setIsUploadConfidential] = useState(false);
 
+  const [editErrorMessage, setEditErrorMessage] = useState(""); 
+  const todayString = new Date().toISOString().split('T')[0];
+
 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -212,6 +215,16 @@ export default function DashboardHome() {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleUpdateEvent = async () => {
+    setEditErrorMessage("");
+    if(editForm.date){
+      const inputDate = new Date(editForm.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (inputDate < today) {
+        setEditErrorMessage("Event date cannot be rescheduled in the past.");
+        return;
+      }
+    }
     setIsSaving(true);
     try {
       const payload = {
@@ -721,7 +734,15 @@ export default function DashboardHome() {
             </div>
 
             <div className="p-8 overflow-y-auto flex-1 space-y-8 custom-scrollbar">
-
+              {editErrorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                  <AlertCircle size={20} className="text-red-500 shrink-0" />
+                  <p className="text-sm font-medium">{editErrorMessage}</p>
+                  <button onClick={() => setEditErrorMessage("")} className="ml-auto text-red-400 hover:text-red-600">
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
               <section>
                 <h3 className="text-lg text-gray-800 mb-4 font-medium">Basic Information</h3>
                 <div className="space-y-4">

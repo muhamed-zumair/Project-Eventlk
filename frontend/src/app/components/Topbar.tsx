@@ -39,7 +39,9 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [aiHeadcount, setAiHeadcount] = useState<number>(400);
   const [aiBudget, setAiBudget] = useState<number>(200000);
 
-  
+
+
+
 
   //state to capture the details in the manual creation form
   const [title, setTitle] = useState("");
@@ -49,6 +51,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [budget, setBudget] = useState(0);
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const handleOpenCreateModal = () => {
@@ -76,10 +80,21 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const todayString = new Date().toISOString().split('T')[0];
   const handleCreateManualEvent = async () => {
 
+    setErrorMessage("");
     if (!title || !date || !category || expectedAttendees <= 0 || budget <= 0) {
-      alert("Please fill in all required fields with valid values.");
+      setErrorMessage("Please fill in all required fields with valid values.");
       return;
     }
+
+    const inputDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to midnight for accurate comparison
+    if (inputDate < today) {
+      setErrorMessage("You cannot select a past date for the event..Please select a valid date.");
+      return;
+    }
+    setIsSubmitting(true);
+
 
     try {
       await fetchAPI("/events", {
@@ -264,8 +279,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                 <button
                   onClick={() => setCreateMode('manual')}
                   className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-medium transition-colors ${createMode === 'manual'
-                      ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50'
-                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                 >
                   <SlidersHorizontal size={18} /> Manual Creation
@@ -273,8 +288,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                 <button
                   onClick={() => setCreateMode('ai')}
                   className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-medium transition-colors ${createMode === 'ai'
-                      ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50'
-                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    ? 'border-indigo-600 text-indigo-700 bg-indigo-50/50'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                 >
                   <Sparkles size={18} /> AI Assisted
@@ -284,6 +299,19 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
               {/* === MANUAL CREATION VIEW === */}
               {createMode === 'manual' && (
                 <div className="space-y-6 max-w-3xl mx-auto w-full pb-4">
+                  {/* BEAUTIFUL ERROR MESSAGE BOX */}
+                  {errorMessage && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                      <AlertCircle size={20} className="text-red-500 shrink-0" />
+                      <p className="text-sm font-medium">{errorMessage}</p>
+                      <button
+                        onClick={() => setErrorMessage("")}
+                        className="ml-auto text-red-400 hover:text-red-600"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  )}
                   {/* Event Title */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>

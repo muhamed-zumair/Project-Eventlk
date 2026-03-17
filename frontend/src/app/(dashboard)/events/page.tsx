@@ -1,7 +1,7 @@
 "use client";
 import { fetchAPI } from '../../../utils/api';
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, FileText, CheckCircle, ArrowRight, X } from "lucide-react";
+import { Calendar, MapPin, Users, FileText, CheckCircle, ArrowRight, X, DollarSign } from "lucide-react";
 
 export default function MyEvents() {
   const [pastEvents, setPastEvents] = useState<any[]>([]);
@@ -79,67 +79,163 @@ export default function MyEvents() {
         </div>
       )}
       {isModalOpen && selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl">
-            {/* Header */}
-            <div className="bg-slate-900 p-8 text-white flex justify-between items-start sticky top-0 z-10">
-              <div>
-                <span className="px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold uppercase mb-3 inline-block">Event Completed</span>
-                <h2 className="text-3xl font-bold">{selectedReport.title}</h2>
-                <p className="opacity-70 mt-1">{new Date(selectedReport.start_date).toDateString()} • {selectedReport.venue_name}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+
+            {/* --- HEADER --- */}
+            <div className="bg-slate-900 p-8 text-white relative shrink-0">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle size={14} /> Event Completed
+                </span>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full"><X size={24} /></button>
+
+              <h2 className="text-3xl font-bold mb-2">{selectedReport.title}</h2>
+              <div className="flex items-center gap-4 text-slate-400 text-sm font-medium">
+                <span className="flex items-center gap-1.5"><Calendar size={16} /> {new Date(selectedReport.start_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5"><MapPin size={16} /> {selectedReport.venue_name || "Venue TBA"}</span>
+              </div>
             </div>
 
-            <div className="p-8 space-y-10">
-              {/* Analytics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="border border-gray-100 rounded-2xl p-6 bg-gray-50/50">
-                  <div className="flex justify-between items-end mb-4">
-                    <h4 className="font-bold text-gray-700">Final Attendance</h4>
-                    <span className="text-2xl font-black text-indigo-600">{selectedReport.attendanceRate}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                    <div className="bg-indigo-600 h-full transition-all" style={{ width: `${selectedReport.attendanceRate}%` }}></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-3">{selectedReport.finalAttendance} Attended / {selectedReport.expected_headcount} Expected</p>
-                </div>
+            {/* --- SCROLLABLE BODY --- */}
+            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/50 space-y-8">
 
-                <div className="border border-gray-100 rounded-2xl p-6 bg-gray-50/50">
-                  <div className="flex justify-between items-end mb-4">
-                    <h4 className="font-bold text-gray-700">Budget Utilization</h4>
-                    <span className="text-2xl font-black text-green-600">{selectedReport.budgetUtilization}%</span>
+              {/* Analytics Section */}
+              <section>
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                  Post-Event Analytics
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Attendance Card */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex justify-between items-end mb-4">
+                      <span className="text-sm font-semibold text-slate-500">Final Attendance</span>
+                      <span className="text-3xl font-black text-slate-900">{selectedReport.attendanceRate}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-3">
+                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${selectedReport.attendanceRate}%` }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs font-medium text-slate-500">
+                      <span>{selectedReport.finalAttendance} Attended</span>
+                      <span>{selectedReport.expected_headcount} Expected</span>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full transition-all" style={{ width: `${selectedReport.budgetUtilization}%` }}></div>
+
+                  {/* Budget Card */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex justify-between items-end mb-4">
+                      <span className="text-sm font-semibold text-slate-500">Budget Utilization</span>
+                      <span className="text-3xl font-black text-slate-900">{selectedReport.budgetUtilization}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-3">
+                      <div className={`h-full rounded-full transition-all duration-1000 ease-out ${selectedReport.budgetUtilization > 100 ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(selectedReport.budgetUtilization, 100)}%` }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs font-medium text-slate-500">
+                      <span>LKR {selectedReport.totalSpent?.toLocaleString()} Spent</span>
+                      <span>LKR {selectedReport.total_budget?.toLocaleString()} Allocated</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-3">LKR {selectedReport.totalSpent.toLocaleString()} Spent / LKR {selectedReport.total_budget.toLocaleString()} Allocated</p>
                 </div>
+              </section>
+
+              {/* Details Grid (Speakers & Sponsors) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                {/* Speakers */}
+                <section>
+                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <Users size={20} className="text-indigo-500" /> Guest Speakers
+                  </h3>
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    {selectedReport.speakers?.length > 0 ? (
+                      <div className="divide-y divide-slate-100">
+                        {selectedReport.speakers.map((speaker: any, i: number) => (
+                          <div key={i} className="p-4 flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                              {speaker.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-slate-900 text-sm">{speaker.name}</p>
+                              <p className="text-xs text-slate-500">{speaker.designation}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-sm text-slate-400 italic">No speakers recorded.</div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Sponsors */}
+                <section>
+                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <DollarSign size={20} className="text-indigo-500" /> Official Sponsors
+                  </h3>
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    {selectedReport.sponsors?.length > 0 ? (
+                      <div className="divide-y divide-slate-100">
+                        {selectedReport.sponsors.map((sponsor: any, i: number) => (
+                          <div key={i} className="p-4 flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-slate-900 text-sm mb-1">{sponsor.name}</p>
+                              <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase tracking-wider">
+                                {sponsor.tier}
+                              </span>
+                            </div>
+                            <span className="font-semibold text-slate-900 text-sm">
+                              LKR {Number(sponsor.contribution_amount).toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-sm text-slate-400 italic">No sponsors recorded.</div>
+                    )}
+                  </div>
+                </section>
               </div>
 
-              {/* Event Summary Section */}
+              {/* Documents Section */}
               <section>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><FileText size={22} className="text-indigo-500" /> Event Summary</h3>
-                <div className="bg-indigo-50/30 border border-indigo-100 rounded-2xl p-6 leading-relaxed text-gray-700">
-                  {selectedReport.post_event_summary || "No summary was provided for this event."}
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <FileText size={20} className="text-indigo-500" /> Archived Documents
+                </h3>
+                <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden p-2 space-y-2">
+                  {selectedReport.documents?.length > 0 ? (
+                    selectedReport.documents.map((doc: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-slate-100 text-slate-500 rounded-md group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+                            <FileText size={18} />
+                          </div>
+                          <div>
+                            <p className="font-medium text-slate-800 text-sm">{doc.file_name}</p>
+                            <p className="text-xs text-slate-400">Archived on {new Date(doc.uploaded_at || selectedReport.start_date).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <button className="text-indigo-600 font-semibold text-sm px-3 py-1.5 hover:bg-indigo-50 rounded-md transition-colors flex items-center gap-1.5">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                          Download
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-6 text-center text-sm text-slate-400 italic bg-white rounded-lg">No documents archived for this event.</div>
+                  )}
                 </div>
               </section>
 
-              {/* Documents */}
-              <section>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><FileText size={22} className="text-indigo-500" /> Archived Documents</h3>
-                <div className="space-y-3">
-                  {selectedReport.documents.map((doc: any) => (
-                    <div key={doc.id} className="flex items-center justify-between p-4 border rounded-xl hover:bg-gray-50 transition">
-                      <div className="flex items-center gap-3">
-                        <FileText className="text-gray-400" />
-                        <span className="font-medium text-gray-800">{doc.file_name}</span>
-                      </div>
-                      <button className="text-indigo-600 font-bold text-sm">Download</button>
-                    </div>
-                  ))}
-                </div>
-              </section>
             </div>
           </div>
         </div>
