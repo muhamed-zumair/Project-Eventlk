@@ -39,6 +39,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [aiHeadcount, setAiHeadcount] = useState<number>(400);
   const [aiBudget, setAiBudget] = useState<number>(200000);
 
+  
+
   //state to capture the details in the manual creation form
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
