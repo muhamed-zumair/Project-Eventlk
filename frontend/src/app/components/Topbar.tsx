@@ -1,6 +1,7 @@
 "use client";
 import { fetchAPI } from "../../utils/api"; 
 import React, { useState, useEffect } from "react";
+import { io } from "socket.io-client"; // <-- NEW: WEBSOCKET CLIENT
 import {
   Search, Plus, Bell, X, Calendar, Tag, Users,
   DollarSign, FileText, User, LogOut, Settings,
@@ -13,7 +14,6 @@ interface TopbarProps {
   toggleSidebar: () => void;
 }
 
-// Mock Data for AI Pie Chart
 const aiBudgetData = [
   { name: 'Venue', value: 50000, percentage: '25.0%' },
   { name: 'Speakers', value: 58600, percentage: '29.3%' },
@@ -29,15 +29,12 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // Modal States
   const [createMode, setCreateMode] = useState<'manual' | 'ai'>('manual');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
 
-  // AI Form States
   const [aiHeadcount, setAiHeadcount] = useState<number>(400);
   const [aiBudget, setAiBudget] = useState<number>(200000);
 
-  // Form States
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [category, setCategory] = useState("");
@@ -47,15 +44,15 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // --- NEW: INVITATION STATES ---
   const [invitations, setInvitations] = useState<any[]>([]);
+  
+  // --- NEW: WEBSOCKET ALERT STATE ---
+  const [socketAlert, setSocketAlert] = useState<{message: string, type: 'success'|'error'|'info'} | null>(null);
 
-  // --- NEW: FETCH INVITATIONS ON MOUNT ---
   const fetchInvitations = async () => {
     try {
       const response = await fetchAPI('/events/invitations/me');
       if (response.success) {
-        // CHANGED from response.invites to response.notifications
         setInvitations(response.notifications || []); 
       }
     } catch (error) {
@@ -66,18 +63,69 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   useEffect(() => {
     fetchInvitations();
     
-    // Setup modal listener
     const handleOpenCreateModal = () => {
       setIsCreateModalOpen(true);
       setCreateMode('manual');
     };
     window.addEventListener('openCreateModal', handleOpenCreateModal);
-    return () => window.removeEventListener('openCreateModal', handleOpenCreateModal);
+
+    // --- 🚀 NEW: WEBSOCKET CONNECTION AND LISTENERS ---
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    let userId = null;
+
+    // Decode the JWT token to secretly get the User ID
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        userId = payload.userId;
+      } catch (e) {
+        console.error("Could not parse token for socket");
+      }
+    }
+
+    let socket: any;
+
+    if (userId) {
+      socket = io('http://localhost:5000'); // Connect to your Node switchboard
+
+      socket.on('connect', () => {
+        socket.emit('register', userId); // Tell the server who we are!
+      });
+
+      // LISTENER 1: Instant Invite
+      socket.on('NEW_INVITE', (data: any) => {
+        fetchInvitations(); // Fetch the new invite immediately
+        setSocketAlert({ message: data.message, type: 'info' });
+        setTimeout(() => setSocketAlert(null), 6000);
+      });
+
+      // LISTENER 2: Instant Role Change
+      socket.on('ROLE_CHANGED', (data: any) => {
+        setSocketAlert({ message: data.message, type: 'success' });
+        window.dispatchEvent(new Event("eventCreated")); // Triggers Team page to refresh data
+        setTimeout(() => setSocketAlert(null), 6000);
+      });
+
+      // LISTENER 3: Instant Removal (Kicks them out)
+      socket.on('MEMBER_REMOVED', (data: any) => {
+        setSocketAlert({ message: data.message, type: 'error' });
+        window.dispatchEvent(new Event("eventCreated"));
+        
+        // Give them 4 seconds to read the bad news, then boot them to the main dashboard
+        setTimeout(() => {
+          setSocketAlert(null);
+          window.location.href = '/dashboard'; 
+        }, 4000);
+      });
+    }
+
+    return () => {
+      window.removeEventListener('openCreateModal', handleOpenCreateModal);
+      if (socket) socket.disconnect(); // Hang up the phone when they leave
+    };
   }, []);
 
-  // --- NEW: HANDLE ACCEPT / DECLINE ---
   const handleInvitationResponse = async (inviteId: string, action: 'accept' | 'decline') => {
-    // Optimistically remove the notification from the UI instantly
     setInvitations(prev => prev.filter(inv => inv.notification_id !== inviteId));
 
     try {
@@ -87,16 +135,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       });
 
       if (response.success && action === 'accept') {
-        // Trigger a refresh so the dashboard/team page updates instantly!
         window.dispatchEvent(new Event("eventCreated"));
       }
     } catch (error) {
-      console.error(`Error trying to ${action} invitation:`, error);
-      fetchInvitations(); // Refresh data if it failed
+      fetchInvitations();
     }
   };
   
-  // --- NEW: HANDLE DISMISSING ORGANIZER ALERTS ---
   const handleDismissAlert = async (notificationId: string) => {
     setInvitations(prev => prev.filter(inv => inv.notification_id !== notificationId));
     try {
@@ -104,10 +149,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
         method: 'POST',
         body: JSON.stringify({ notificationId })
       });
-      // Tell the Team Page to refresh so the red "Declined" card vanishes
       window.dispatchEvent(new Event("eventCreated"));
     } catch (error) {
-      console.error("Failed to dismiss alert:", error);
       fetchInvitations(); 
     }
   };
@@ -115,7 +158,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const toggleNotifications = () => {
     setIsNotificationOpen(!isNotificationOpen);
     setIsProfileOpen(false);
-    if (!isNotificationOpen) fetchInvitations(); // Fetch fresh data when opening
+    if (!isNotificationOpen) fetchInvitations();
   };
 
   const toggleProfile = () => {
@@ -155,7 +198,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
       setTitle(""); setDate(""); setCategory(""); setExpectedAttendees(0); setBudget(0); setDescription("");
     } catch (error) {
-      console.error("Error creating event:", error);
       setErrorMessage("Failed to create event. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -164,6 +206,30 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
   return (
     <>
+      {/* --- 🚀 NEW: GLOBAL WEBSOCKET ALERT BANNER --- */}
+      {socketAlert && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-md animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border ${
+            socketAlert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+            socketAlert.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+            'bg-indigo-50 border-indigo-200 text-indigo-800'
+          }`}>
+            <div className={`p-2 rounded-full shrink-0 ${
+              socketAlert.type === 'error' ? 'bg-red-100' :
+              socketAlert.type === 'success' ? 'bg-green-100' : 'bg-indigo-100'
+            }`}>
+              {socketAlert.type === 'error' && <AlertCircle size={20} className="text-red-600" />}
+              {socketAlert.type === 'success' && <CheckCircle size={20} className="text-green-600" />}
+              {socketAlert.type === 'info' && <Bell size={20} className="text-indigo-600" />}
+            </div>
+            <p className="font-semibold text-sm leading-snug flex-1">{socketAlert.message}</p>
+            <button onClick={() => setSocketAlert(null)} className="opacity-50 hover:opacity-100 transition p-1">
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 relative z-40">
         <div className="flex items-center gap-3 flex-1">
           <button className="md:hidden p-1" onClick={toggleSidebar}>
@@ -181,11 +247,9 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
             <span className="hidden md:inline">Create New Event</span>
           </button>
 
-          {/* NOTIFICATIONS DROPDOWN */}
           <div className="relative">
             <button onClick={toggleNotifications} className="p-2 hover:bg-gray-100 rounded-full transition relative">
               <Bell className="text-gray-600" size={20} />
-              {/* Dynamic Red Dot */}
               {invitations.length > 0 && (
                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
               )}
@@ -204,7 +268,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                     invitations.map((notification) => (
                       <div key={notification.notification_id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition flex flex-col gap-3">
                         
-                        {/* --- UI FOR PENDING TEAM INVITATIONS --- */}
                         {notification.type === 'invite' && (
                           <>
                             <div className="flex gap-3">
@@ -235,7 +298,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                           </>
                         )}
 
-                        {/* --- UI FOR THE ORGANIZER'S DECLINED ALERT --- */}
                         {notification.type === 'declined_alert' && (
                           <>
                             <div className="flex gap-3">
@@ -290,7 +352,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
         </div>
       </header>
 
-      {/* Overlays */}
       {(isNotificationOpen || isProfileOpen) && (
         <div className="fixed inset-0 z-30" onClick={() => { setIsNotificationOpen(false); setIsProfileOpen(false); }} />
       )}
@@ -333,7 +394,6 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                 </div>
               )}
 
-              {/* === AI ASSISTED VIEW === (Unchanged) */}
               {createMode === 'ai' && (
                 <div className="flex flex-col lg:flex-row items-stretch gap-6 h-full min-h-[550px]">
                   <div className="w-full lg:w-[380px] shrink-0 space-y-6 flex flex-col">
