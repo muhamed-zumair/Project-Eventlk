@@ -1,5 +1,5 @@
 "use client";
-import { fetchAPI } from "../../utils/api"; 
+import { fetchAPI } from "../../utils/api";
 import React, { useState, useEffect } from "react";
 import { io } from "socket.io-client"; // <-- NEW: WEBSOCKET CLIENT
 import {
@@ -32,8 +32,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [createMode, setCreateMode] = useState<'manual' | 'ai'>('manual');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
 
+  // --- AI Planner States ---
   const [aiHeadcount, setAiHeadcount] = useState<number>(400);
   const [aiBudget, setAiBudget] = useState<number>(200000);
+  const [aiCategory, setAiCategory] = useState<string>("Workshop / Training");
+  const [aiVenueStyle, setAiVenueStyle] = useState<string>("Any");
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiResponseData, setAiResponseData] = useState<any>(null);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -45,15 +50,15 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [invitations, setInvitations] = useState<any[]>([]);
-  
+
   // --- NEW: WEBSOCKET ALERT STATE ---
-  const [socketAlert, setSocketAlert] = useState<{message: string, type: 'success'|'error'|'info'} | null>(null);
+  const [socketAlert, setSocketAlert] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
 
   const fetchInvitations = async () => {
     try {
       const response = await fetchAPI('/events/invitations/me');
       if (response.success) {
-        setInvitations(response.notifications || []); 
+        setInvitations(response.notifications || []);
       }
     } catch (error) {
       console.error("Failed to fetch invitations:", error);
@@ -62,7 +67,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
   useEffect(() => {
     fetchInvitations();
-    
+
     const handleOpenCreateModal = () => {
       setIsCreateModalOpen(true);
       setCreateMode('manual');
@@ -110,11 +115,11 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       socket.on('MEMBER_REMOVED', (data: any) => {
         setSocketAlert({ message: data.message, type: 'error' });
         window.dispatchEvent(new Event("eventCreated"));
-        
+
         // Give them 4 seconds to read the bad news, then boot them to the main dashboard
         setTimeout(() => {
           setSocketAlert(null);
-          window.location.href = '/dashboard'; 
+          window.location.href = '/dashboard';
         }, 4000);
       });
 
@@ -148,7 +153,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       fetchInvitations();
     }
   };
-  
+
   const handleDismissAlert = async (notificationId: string) => {
     setInvitations(prev => prev.filter(inv => inv.notification_id !== notificationId));
     try {
@@ -158,7 +163,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       });
       window.dispatchEvent(new Event("eventCreated"));
     } catch (error) {
-      fetchInvitations(); 
+      fetchInvitations();
     }
   };
 
@@ -185,12 +190,12 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
     const inputDate = new Date(date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); 
+    today.setHours(0, 0, 0, 0);
     if (inputDate < today) {
       setErrorMessage("You cannot select a past date for the event..Please select a valid date.");
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
@@ -211,20 +216,59 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     }
   };
 
+  // --- NEW: CALL HUSSAIN'S AI API ---
+  const handleGenerateAIPlan = async () => {
+    setIsGeneratingAI(true);
+    setErrorMessage("");
+
+    // This perfectly matches the JSON format Hussain requested
+    const payload = {
+      headcount: aiHeadcount,
+      budget: aiBudget,
+      event_type_display: aiCategory,
+      venue_pref_display: aiVenueStyle
+    };
+
+    console.log("Sending payload to AI:", payload);
+
+    try {
+      const response = await fetch("https://hussainmuffallal-eventlk-ai-api.hf.space/api/generate-plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error("AI Backend failed to respond.");
+
+      const data = await response.json();
+      console.log("🔥 AI RESPONSE RECEIVED:", data);
+
+      // Save it and show the next screen!
+      setAiResponseData(data);
+      setIsAiGenerated(true);
+
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      setErrorMessage("Failed to generate AI plan. Check console.");
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   return (
     <>
       {/* --- 🚀 NEW: GLOBAL WEBSOCKET ALERT BANNER --- */}
       {socketAlert && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-md animate-in slide-in-from-top-4 fade-in duration-300">
-          <div className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border ${
-            socketAlert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+          <div className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border ${socketAlert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
             socketAlert.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
-            'bg-indigo-50 border-indigo-200 text-indigo-800'
-          }`}>
-            <div className={`p-2 rounded-full shrink-0 ${
-              socketAlert.type === 'error' ? 'bg-red-100' :
-              socketAlert.type === 'success' ? 'bg-green-100' : 'bg-indigo-100'
+              'bg-indigo-50 border-indigo-200 text-indigo-800'
             }`}>
+            <div className={`p-2 rounded-full shrink-0 ${socketAlert.type === 'error' ? 'bg-red-100' :
+              socketAlert.type === 'success' ? 'bg-green-100' : 'bg-indigo-100'
+              }`}>
               {socketAlert.type === 'error' && <AlertCircle size={20} className="text-red-600" />}
               {socketAlert.type === 'success' && <CheckCircle size={20} className="text-green-600" />}
               {socketAlert.type === 'info' && <Bell size={20} className="text-indigo-600" />}
@@ -267,14 +311,14 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                   <h3 className="font-semibold text-gray-800">Notifications</h3>
                 </div>
-                
+
                 <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
                   {invitations.length === 0 ? (
                     <div className="p-8 text-center text-sm text-gray-500">You're all caught up!</div>
                   ) : (
                     invitations.map((notification) => (
                       <div key={notification.notification_id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition flex flex-col gap-3">
-                        
+
                         {notification.type === 'invite' && (
                           <>
                             <div className="flex gap-3">
@@ -289,13 +333,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                               </div>
                             </div>
                             <div className="flex gap-2 pl-9 mt-1">
-                              <button 
+                              <button
                                 onClick={() => handleInvitationResponse(notification.notification_id, 'accept')}
                                 className="flex-1 bg-indigo-600 text-white py-1.5 rounded-md text-xs font-bold hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-1.5"
                               >
                                 <Check size={14} /> Accept
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleInvitationResponse(notification.notification_id, 'decline')}
                                 className="flex-1 bg-white border border-gray-200 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-50 transition flex items-center justify-center gap-1.5"
                               >
@@ -319,7 +363,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                               </div>
                             </div>
                             <div className="flex pl-9 mt-1">
-                              <button 
+                              <button
                                 onClick={() => handleDismissAlert(notification.notification_id)}
                                 className="w-full bg-gray-100 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1.5"
                               >
@@ -414,10 +458,46 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                     <div className="bg-gray-50/50 border border-gray-200 rounded-2xl p-5 flex-1 flex flex-col justify-between">
                       <div className="space-y-5">
                         <h3 className="font-semibold text-gray-900">Preferences</h3>
-                        <div><label className="block text-sm text-gray-700 mb-1.5">Event Category</label><select className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white"><option value="" disabled>Select a category</option><option value="Workshops & Training">Workshops & Training</option><option value="Competitions & Hackathons">Competitions & Hackathons</option><option value="Career & Networking">Career & Networking</option><option value="Conferences & Expos">Conferences & Expos</option><option value="Meetups & Community">Meetups & Community</option><option value="Talks & Panels">Talks & Panels</option><option value="Tech Experiences">Tech Experiences</option></select></div>
-                        <div><label className="block text-sm text-gray-700 mb-1.5">Venue Style</label><select className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white"><option>Any</option><option>Auditorium</option><option>Coworking Space</option><option>Exhibition Hall</option><option>Studio</option><option>Open Space</option></select></div>
+                        <div>
+                          <label className="block text-sm text-gray-700 mb-1.5">Event Category</label>
+                          <select
+                            value={aiCategory}
+                            onChange={(e) => setAiCategory(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white"
+                          >
+                            <option value="Workshop / Training">Workshops & Training</option>
+                            <option value="Competition / Hackathon">Competitions & Hackathons</option>
+                            <option value="Networking / Career">Career & Networking</option>
+                            <option value="Conference / Expo">Conferences & Expos</option>
+                            <option value="Meetup / Community">Meetups & Community</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-700 mb-1.5">Venue Style</label>
+                          <select
+                            value={aiVenueStyle}
+                            onChange={(e) => setAiVenueStyle(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white"
+                          >
+                            <option value="Any">Any</option>
+                            <option value="Auditorium">Auditorium</option>
+                            <option value="Coworking Space">Coworking Space</option>
+                            <option value="Exhibition Hall">Exhibition Hall</option>
+                            <option value="Studio">Studio</option>
+                            <option value="Open Space">Open Space</option>
+                          </select>
+                        </div>
                       </div>
-                      <div className="mt-6"><button onClick={() => setIsAiGenerated(true)} className="w-full bg-[#ef4444] text-white py-3.5 rounded-xl font-medium hover:bg-red-600 transition flex items-center justify-center gap-2"><Sparkles size={18} /> Generate Plan</button></div>
+                      <div className="mt-6">
+                        <button
+                          onClick={handleGenerateAIPlan}
+                          disabled={isGeneratingAI}
+                          className="w-full bg-[#ef4444] text-white py-3.5 rounded-xl font-medium hover:bg-red-600 transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait"
+                        >
+                          <Sparkles size={18} />
+                          {isGeneratingAI ? "AI is thinking..." : "Generate Plan"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <div className="flex-1 border border-gray-200 rounded-2xl bg-white overflow-hidden flex flex-col sticky top-0 h-full">
