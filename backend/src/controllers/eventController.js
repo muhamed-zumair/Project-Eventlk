@@ -476,8 +476,8 @@ const inviteTeamMember = async (req, res) => {
 
         if (userCheck.rows.length > 0) {
             // SCENARIO A: EXISTING USER (Now requires explicit consent)
+            const invitedUserId = userCheck.rows[0].id; // <-- Make sure this line is here!
             
-            // GOOD: Putting them in the pending invitations table
             await pool.query(
                 `INSERT INTO "Event_Invitations" (event_id, email, role) VALUES ($1, $2, $3)`,
                 [eventId, email, role]
@@ -485,6 +485,18 @@ const inviteTeamMember = async (req, res) => {
 
             await sendExistingUserInviteEmail(email, eventTitle, role, "Event organizer");
             
+            // --- 🚀 NEW: WEBSOCKET TRIGGER ---
+            const io = req.app.get('io');
+            const connectedUsers = req.app.get('connectedUsers');
+            const targetSocketId = connectedUsers.get(invitedUserId);
+
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('NEW_INVITE', {
+                    message: `You have been invited to join ${eventTitle}!`
+                });
+            }
+            // ---------------------------------
+
             await pool.query('COMMIT');
             return res.status(200).json({ success: true, message: 'Invitation sent successfully!' });
         } else {
@@ -619,7 +631,6 @@ const removeTeamMember = async (req, res) => {
     const adminId = req.user.userId;
 
     try {
-        // Authorization: Only the President can remove members
         const adminCheck = await pool.query(
             `SELECT role FROM "Event_Team" WHERE event_id = $1 AND user_id = $2`,
             [eventId, adminId]
@@ -629,14 +640,12 @@ const removeTeamMember = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Only the President can remove members.' });
         }
 
-        // Prevent removing yourself
         if (adminId === targetUserId) {
             return res.status(400).json({ success: false, message: 'You cannot remove yourself.' });
         }
 
         await pool.query('BEGIN');
         
-        // Get details for email before deleting
         const details = await pool.query(
             `SELECT u.email, e.title FROM "Users" u, "Events" e WHERE u.id = $1 AND e.id = $2`,
             [targetUserId, eventId]
@@ -644,14 +653,27 @@ const removeTeamMember = async (req, res) => {
 
         await pool.query(`DELETE FROM "Event_Team" WHERE event_id = $1 AND user_id = $2`, [eventId, targetUserId]);
         
-        // TODO: Add sendRemovalEmail(details.rows[0].email, details.rows[0].title) in emailService.js
         const { sendRemovalEmail } = require('../utils/emailService');
         await sendRemovalEmail(details.rows[0].email, details.rows[0].title);
         
+        // --- 🚀 NEW: WEBSOCKET TRIGGER ---
+        const io = req.app.get('io');
+        const connectedUsers = req.app.get('connectedUsers');
+        const targetSocketId = connectedUsers.get(targetUserId);
+
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('MEMBER_REMOVED', {
+                message: `You have been removed from the organizing team for ${details.rows[0].title}.`,
+                eventId: eventId
+            });
+        }
+        // ---------------------------------
+
         await pool.query('COMMIT');
         res.status(200).json({ success: true, message: 'Member removed successfully.' });
     } catch (error) {
         await pool.query('ROLLBACK');
+        console.error("Error removing member:", error);
         res.status(500).json({ success: false, message: 'Failed to remove member.' });
     }
 };
@@ -663,21 +685,35 @@ const changeMemberRole = async (req, res) => {
     const adminId = req.user.userId;
 
     try {
+        // Get the event title for a beautiful notification message
+        const eventCheck = await pool.query(`SELECT title FROM "Events" WHERE id = $1`, [eventId]);
+        const eventTitle = eventCheck.rows[0]?.title || 'an event';
+
         await pool.query(
             `UPDATE "Event_Team" SET role = $1 WHERE event_id = $2 AND user_id = $3`,
             [newRole, eventId, targetUserId]
         );
         
-        // Logic for in-app notification: Since we don't have a notifications table, 
-        // the user will see their new role updated instantly upon their next dashboard refresh.
+        // --- 🚀 NEW: WEBSOCKET TRIGGER ---
+        const io = req.app.get('io');
+        const connectedUsers = req.app.get('connectedUsers');
+        const targetSocketId = connectedUsers.get(targetUserId);
+
+        // If the member is currently online, send them the alert instantly!
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('ROLE_CHANGED', {
+                message: `Your role for ${eventTitle} was changed to ${newRole}.`,
+                eventId: eventId
+            });
+        }
+        // ---------------------------------
         
         res.status(200).json({ success: true, message: 'Role updated successfully.' });
     } catch (error) {
+        console.error("Error changing role:", error);
         res.status(500).json({ success: false, message: 'Failed to update role.' });
     }
 };
-
-
 
 module.exports = {
     createEvent,
