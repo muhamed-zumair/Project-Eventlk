@@ -645,6 +645,8 @@ const removeTeamMember = async (req, res) => {
         await pool.query(`DELETE FROM "Event_Team" WHERE event_id = $1 AND user_id = $2`, [eventId, targetUserId]);
         
         // TODO: Add sendRemovalEmail(details.rows[0].email, details.rows[0].title) in emailService.js
+        const { sendRemovalEmail } = require('../utils/emailService');
+        await sendRemovalEmail(details.rows[0].email, details.rows[0].title);
         
         await pool.query('COMMIT');
         res.status(200).json({ success: true, message: 'Member removed successfully.' });
