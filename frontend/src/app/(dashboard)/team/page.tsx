@@ -99,7 +99,7 @@ export default function TeamPage() {
             name: m.first_name ? `${m.first_name} ${m.last_name || ''}` : "TBA",
             email: m.email,
             role: m.role,
-            status: 'Active' // We will wire up 'Pending' when invitations API is updated
+            status: m.status
           }));
           setMembers(formattedTeam);
         }
@@ -347,7 +347,7 @@ export default function TeamPage() {
                   <option value="President">President</option>
                   <option value="Secretary">Secretary</option>
                   <option value="Treasurer">Treasurer</option>
-                  <option value="Team Lead">Team Lead</option>
+                  <option value="Team_Lead">Team Lead</option>
                   <option value="Volunteer">Volunteer</option>
                 </select>
               </div>
