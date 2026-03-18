@@ -65,6 +65,7 @@ export default function TeamPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // --- Fetch Initial Events ---
   useEffect(() => {
@@ -115,7 +116,19 @@ export default function TeamPage() {
       }
     };
     loadTeam();
-  }, [selectedEventId]);
+  }, [selectedEventId, refreshTrigger]);
+  // --- NEW: Listen for Global WebSocket Refreshes ---
+  useEffect(() => {
+    const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
+    
+    window.addEventListener("teamRefresh", handleRefresh);
+    window.addEventListener("eventCreated", handleRefresh); 
+    
+    return () => {
+      window.removeEventListener("teamRefresh", handleRefresh);
+      window.removeEventListener("eventCreated", handleRefresh);
+    };
+  }, []);
 
   // --- Handle Invite Submission ---
   const handleSendInvite = async () => {

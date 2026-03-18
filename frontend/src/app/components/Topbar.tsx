@@ -117,6 +117,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
           window.location.href = '/dashboard'; 
         }, 4000);
       });
+
+      // LISTENER 4: Organizer gets notified when someone accepts/declines
+      socket.on('TEAM_UPDATED', (data: any) => {
+        setSocketAlert({ message: data.message, type: 'info' });
+        window.dispatchEvent(new Event("teamRefresh")); // Yells at the Team Page to refresh!
+        setTimeout(() => setSocketAlert(null), 6000);
+      });
     }
 
     return () => {
