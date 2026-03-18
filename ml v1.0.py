@@ -117,8 +117,13 @@ with st.sidebar:
 st.title("🎉 EventLK: AI Event Planner")
 st.markdown("### Intelligent Venue & Budget Recommendation System")
 
-# --- NEW IN COMMIT 25: Updated success/error check ---
-if rf_venue is not None:
-    st.success(f"✅ Models trained successfully! Ready for predictions.")
-else:
+# --- NEW IN COMMIT 26: Prediction Logic Setup ---
+if rf_venue is None:
     st.error("❌ Data file not found. Please ensure 'event_dataset_v2_distinct.csv' is in the folder.")
+else:
+    # Logic to run prediction
+    e_type, e_cat = type_map[event_type_display]
+    v_cat = venue_map[venue_pref_display]
+
+    # Temporary placeholder to show the extraction is working
+    st.success(f"Backend variables mapped! Type: {e_type}, Cat: {e_cat}, Venue: {v_cat}")
