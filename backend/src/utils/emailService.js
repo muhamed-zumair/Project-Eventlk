@@ -147,6 +147,26 @@ const sendDeclineNotificationEmail = async (organizerEmail, organizerName, event
   }
 };
 
+const sendRemovalEmail = async (userEmail, eventTitle) => {
+  const mailOptions = {
+    from: `"EventLK Team" <${process.env.EMAIL_USER}>`,
+    to: userEmail,
+    subject: `Access Revoked: ${eventTitle}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #fee2e2; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #991b1b;">Team Membership Update</h2>
+        <p>This is to inform you that you have been removed from the organizing team for <strong>${eventTitle}</strong>.</p>
+        <p style="color: #4b5563;">You will no longer have access to the dashboard or private documents for this event.</p>
+        <p style="margin-top: 25px; font-size: 12px; color: #9ca3af;">If you believe this was a mistake, please contact the Event President directly.</p>
+      </div>
+    `,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('Email error:', error);
+  }
+};
 
 
 // EXPORT ALL THREE FUNCTIONS
@@ -154,5 +174,6 @@ module.exports = {
   sendWelcomeEmail, 
   sendExistingUserInviteEmail, 
   sendNewUserInviteEmail,
-  sendDeclineNotificationEmail
+  sendDeclineNotificationEmail,
+  sendRemovalEmail
 };
