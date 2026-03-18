@@ -4,7 +4,7 @@ import { fetchAPI } from "../../../utils/api";
 import React, { useState, useEffect } from "react";
 import {
   Mail, X, CalendarDays, User, MoreVertical,
-  Shield, UserMinus, AlertCircle, CheckCircle, Rocket
+  Shield, UserMinus, AlertCircle, CheckCircle, Rocket, AlertTriangle
 } from "lucide-react";
 
 // --- Types ---
@@ -49,15 +49,22 @@ export default function TeamPage() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
 
+  // Invite Modal States
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("");
+
+  // --- NEW: Management Modal States ---
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [memberToManage, setMemberToManage] = useState<TeamMember | null>(null);
+  const [newSelectedRole, setNewSelectedRole] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null); // For the 3-dot menu
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   // --- Fetch Initial Events ---
   useEffect(() => {
@@ -90,10 +97,8 @@ export default function TeamPage() {
       if (!selectedEventId) return;
       setIsLoadingTeam(true);
       try {
-        // Fetch full event details which includes the team array
         const response = await fetchAPI(`/events/${selectedEventId}`, { method: 'GET' });
         if (response.success && response.event.team) {
-          // Map database response to our UI type. Assuming default 'Active' for now.
           const formattedTeam = response.event.team.map((m: any) => ({
             id: m.id,
             name: m.first_name ? `${m.first_name} ${m.last_name || ''}` : "TBA",
@@ -134,7 +139,6 @@ export default function TeamPage() {
         setInviteEmail("");
         setInviteRole("");
 
-        // Optimistically add pending member to UI
         setMembers([...members, {
           id: Date.now().toString(),
           email: inviteEmail,
@@ -142,7 +146,6 @@ export default function TeamPage() {
           status: 'Pending'
         }]);
 
-        // Close modal after 2 seconds so user sees the success message
         setTimeout(() => {
           setIsInviteModalOpen(false);
           setSuccessMessage("");
@@ -155,62 +158,85 @@ export default function TeamPage() {
     }
   };
 
-  const handleRemoveMember = async (targetUserId: string) => {
-    if (!window.confirm("Are you sure you want to remove this member? They will lose all access to the dashboard.")) return;
+  // --- NEW: Triggers for the beautiful Modals ---
+  const openRemoveModal = (member: TeamMember) => {
+    setMemberToManage(member);
+    setIsRemoveModalOpen(true);
+    setOpenMenuId(null);
+  };
+
+  const openRoleModal = (member: TeamMember) => {
+    setMemberToManage(member);
+    setNewSelectedRole(member.role); // Set the default to their current role
+    setIsRoleModalOpen(true);
+    setOpenMenuId(null);
+  };
+
+  // --- NEW: Actual API Handlers (Connected to Modals) ---
+  const confirmRemoveMember = async () => {
+    if (!memberToManage) return;
+    setIsSubmitting(true);
+    setErrorMessage("");
 
     try {
-      const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
+      const response = await fetchAPI(`/events/${selectedEventId}/team/${memberToManage.id}`, {
         method: 'DELETE'
       });
       if (response.success) {
-        // 1. Real-Time UI Update: Remove card instantly
-        setMembers(prev => prev.filter(m => m.id !== targetUserId));
-        setOpenMenuId(null);
-        
-        // 2. In-App Notification: Show success banner
-        setSuccessMessage("Member has been removed and notified via email.");
-        setTimeout(() => setSuccessMessage(""), 4000); // Hide after 4 seconds
+        setMembers(prev => prev.filter(m => m.id !== memberToManage.id));
+        setIsRemoveModalOpen(false);
+        setSuccessMessage(`${memberToManage.name || memberToManage.email} has been removed.`);
+        setTimeout(() => setSuccessMessage(""), 4000);
       }
     } catch (error) {
-      console.error("Removal failed", error);
-      setErrorMessage("Failed to remove member.");
-      setTimeout(() => setErrorMessage(""), 4000);
+      setErrorMessage("Failed to remove member. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleChangeRole = async (targetUserId: string, currentRole: string) => {
-    const roles = ['President', 'Secretary', 'Treasurer', 'Team_Lead', 'Volunteer'];
-    const newRole = window.prompt(`Enter new role (${roles.join(', ')}):`, currentRole);
+  const confirmChangeRole = async () => {
+    if (!memberToManage || !newSelectedRole || newSelectedRole === memberToManage.role) {
+      setIsRoleModalOpen(false);
+      return;
+    }
     
-    if (!newRole || !roles.includes(newRole) || newRole === currentRole) return;
+    setIsSubmitting(true);
+    setErrorMessage("");
 
     try {
-      const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
+      const response = await fetchAPI(`/events/${selectedEventId}/team/${memberToManage.id}`, {
         method: 'PUT',
-        body: JSON.stringify({ newRole })
+        body: JSON.stringify({ newRole: newSelectedRole })
       });
       if (response.success) {
-        // 1. Real-Time UI Update: Change the role text instantly
-        setMembers(prev => prev.map(m => m.id === targetUserId ? { ...m, role: newRole } : m));
-        setOpenMenuId(null);
-
-        // 2. In-App Notification: Show success banner
-        setSuccessMessage(`Role successfully updated to ${newRole}.`);
-        setTimeout(() => setSuccessMessage(""), 4000); // Hide after 4 seconds
+        setMembers(prev => prev.map(m => m.id === memberToManage.id ? { ...m, role: newSelectedRole } : m));
+        setIsRoleModalOpen(false);
+        setSuccessMessage(`Role successfully updated to ${newSelectedRole}.`);
+        setTimeout(() => setSuccessMessage(""), 4000);
       }
     } catch (error) {
-      console.error("Update failed", error);
-      setErrorMessage("Failed to update role.");
-      setTimeout(() => setErrorMessage(""), 4000);
+      setErrorMessage("Failed to update role. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Check if current selected event is a Past event (to hide invite button)
   const isSelectedEventPast = pastEvents.some(e => e.id === selectedEventId);
   const selectedEventName = [...activeEvents, ...pastEvents].find(e => e.id === selectedEventId)?.title;
 
   return (
     <div className="space-y-6">
+      
+      {/* --- SUCCESS BANNER (Global for actions outside of invite modal) --- */}
+      {successMessage && !isInviteModalOpen && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
+          <CheckCircle size={20} className="shrink-0" />
+          <p className="text-sm font-medium">{successMessage}</p>
+          <button onClick={() => setSuccessMessage("")} className="ml-auto text-green-500 hover:text-green-700"><X size={16} /></button>
+        </div>
+      )}
+
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -219,7 +245,6 @@ export default function TeamPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Smart Event Dropdown */}
           <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
             <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm">
               <CalendarDays size={18} />
@@ -242,7 +267,6 @@ export default function TeamPage() {
             </select>
           </div>
 
-          {/* Contextual Invite Button (Hides for Past Events) */}
           {!isSelectedEventPast && (
             <button
               onClick={() => {
@@ -277,14 +301,20 @@ export default function TeamPage() {
                   <MoreVertical size={20} />
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Dropdown Menu - WIRED TO BEAUTIFUL MODALS */}
                 {openMenuId === member.id && (
                   <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-in fade-in zoom-in-95">
-                    <button onClick={() => handleChangeRole(member.id, member.role)} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2">
+                    <button 
+                      onClick={() => openRoleModal(member)} 
+                      className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2"
+                    >
                       <Shield size={16} /> Change Role
                     </button>
                     {member.role !== 'President' ? (
-                      <button onClick={() => handleRemoveMember(member.id)} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50">
+                      <button 
+                        onClick={() => openRemoveModal(member)} 
+                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50"
+                      >
                         <UserMinus size={16} /> Remove Member
                       </button>
                     ) : (
@@ -300,7 +330,6 @@ export default function TeamPage() {
                   {getInitials(member.name || "", member.email)}
                 </div>
                 {member.status === 'Pending' && (
-                  // ADDED mr-8 HERE TO FIX THE OVERLAP
                   <span className="bg-orange-50 text-orange-600 border border-orange-200 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide mt-1 mr-8">
                     Pending
                   </span>
@@ -322,7 +351,6 @@ export default function TeamPage() {
             </div>
           ))}
 
-          {/* BEAUTIFUL EMPTY STATE: "Flying Solo" */}
           {members.length === 1 && (
             <div className="col-span-full py-20 px-4 text-center bg-indigo-50/40 rounded-3xl border border-dashed border-indigo-200 flex flex-col items-center">
               <div className="bg-indigo-100 p-4 rounded-full mb-5 text-indigo-500">
@@ -343,19 +371,15 @@ export default function TeamPage() {
         </div>
       )}
 
-      {/* Invite Modal */}
+      {/* --- 1. INVITE MODAL --- */}
       {isInviteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95">
-
             <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
               <h2 className="text-xl font-bold text-gray-900">Invite Team Member</h2>
               <button onClick={() => setIsInviteModalOpen(false)} className="text-gray-400 hover:text-gray-700 transition bg-gray-50 hover:bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
             </div>
-
             <div className="p-6 space-y-5">
-
-              {/* Beautiful Inline Alert Banners */}
               {errorMessage && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
                   <AlertCircle size={20} className="shrink-0 mt-0.5" />
@@ -368,31 +392,17 @@ export default function TeamPage() {
                   <p className="text-sm font-medium">{successMessage}</p>
                 </div>
               )}
-
               <div className="bg-indigo-50 border border-indigo-100 text-indigo-700 p-3.5 rounded-xl text-sm flex items-center gap-2.5 font-medium">
                 <CalendarDays size={18} className="opacity-70" />
                 Inviting to: {selectedEventName}
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address *</label>
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="e.g., student@university.edu"
-                  className="w-full border border-gray-300 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-shadow text-gray-900 placeholder-gray-400"
-                  autoFocus
-                />
+                <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="e.g., student@university.edu" className="w-full border border-gray-300 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-shadow text-gray-900 placeholder-gray-400" autoFocus />
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Assign Role *</label>
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-shadow text-gray-900 bg-white appearance-none"
-                >
+                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="w-full border border-gray-300 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-shadow text-gray-900 bg-white appearance-none">
                   <option value="" disabled>Select a role...</option>
                   <option value="President">President</option>
                   <option value="Secretary">Secretary</option>
@@ -402,23 +412,90 @@ export default function TeamPage() {
                 </select>
               </div>
             </div>
-
             <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50 shrink-0">
-              <button
-                onClick={handleSendInvite}
-                disabled={isSubmitting}
-                className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-sm disabled:opacity-70 disabled:cursor-wait flex justify-center items-center gap-2"
-              >
+              <button onClick={handleSendInvite} disabled={isSubmitting} className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-sm disabled:opacity-70 disabled:cursor-wait flex justify-center items-center gap-2">
                 {isSubmitting ? "Sending..." : "Send Invite"}
               </button>
-              <button
-                onClick={() => setIsInviteModalOpen(false)}
-                className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 transition"
-              >
+              <button onClick={() => setIsInviteModalOpen(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 transition">
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
 
+      {/* --- 2. BEAUTIFUL REMOVE MEMBER MODAL --- */}
+      {isRemoveModalOpen && memberToManage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95">
+            <div className="p-6 text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-2">
+                <AlertTriangle size={32} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Remove Member?</h2>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Are you sure you want to remove <strong>{memberToManage.name === "TBA" ? memberToManage.email : memberToManage.name}</strong> from <strong>{selectedEventName}</strong>? They will instantly lose access to the dashboard.
+              </p>
+              
+              {errorMessage && <p className="text-sm text-red-600 font-medium">{errorMessage}</p>}
+            </div>
+            <div className="p-4 border-t border-gray-100 flex items-center gap-3 bg-gray-50 shrink-0">
+              <button onClick={() => setIsRemoveModalOpen(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition">
+                Cancel
+              </button>
+              <button onClick={confirmRemoveMember} disabled={isSubmitting} className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-red-700 transition shadow-sm disabled:opacity-70 disabled:cursor-wait">
+                {isSubmitting ? "Removing..." : "Yes, Remove"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- 3. BEAUTIFUL CHANGE ROLE MODAL --- */}
+      {isRoleModalOpen && memberToManage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 shrink-0">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Shield size={20} className="text-indigo-600" /> Change Role
+              </h2>
+              <button onClick={() => setIsRoleModalOpen(false)} className="text-gray-400 hover:text-gray-700 transition bg-gray-50 hover:bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm ${getColorClass(memberToManage.email)}`}>
+                  {getInitials(memberToManage.name || "", memberToManage.email)}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-900 leading-tight">
+                    {memberToManage.name === "TBA" ? memberToManage.email.split('@')[0] : memberToManage.name}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate w-48">{memberToManage.email}</p>
+                </div>
+              </div>
+
+              {errorMessage && <p className="text-sm text-red-600 font-medium bg-red-50 p-2 rounded-lg">{errorMessage}</p>}
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">New Role</label>
+                <select
+                  value={newSelectedRole}
+                  onChange={(e) => setNewSelectedRole(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-shadow text-gray-900 bg-white appearance-none"
+                >
+                  <option value="President">President</option>
+                  <option value="Secretary">Secretary</option>
+                  <option value="Treasurer">Treasurer</option>
+                  <option value="Team_Lead">Team Lead</option>
+                  <option value="Volunteer">Volunteer</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-5 border-t border-gray-100 flex items-center gap-3 bg-gray-50 shrink-0">
+              <button onClick={confirmChangeRole} disabled={isSubmitting || newSelectedRole === memberToManage.role} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           </div>
         </div>
       )}
