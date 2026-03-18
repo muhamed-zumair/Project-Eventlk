@@ -149,7 +149,7 @@ const updateEvent = async (req, res) => {
     const userId = req.user.userId;
 
     const { title, date, expectedAttendees, budget, description, agenda, speakers, sponsors, startTime, endTime, venue, venueAddress, organizerRole } = req.body;
-
+    
     if (date) {
         const inputDate = new Date(date);
         const today = new Date();
@@ -161,8 +161,7 @@ const updateEvent = async (req, res) => {
                 message: 'Cannot update event to a past date. Please select a future date.'
             });
         }
-    }
-
+    } 
     try {
         await pool.query('BEGIN');
         let venueId = null;
@@ -282,16 +281,22 @@ const getEventById = async (req, res) => {
 
         const eventData = eventResult.rows[0];
 
+        // --- UPDATED QUERY FOR THE TEAM ARRAY ---
         const [agendaRes, speakersRes, sponsorsRes, docRes, teamRes] = await Promise.all([
             pool.query('SELECT * FROM "Agenda" WHERE event_id = $1 ORDER BY start_time ASC', [eventId]),
             pool.query('SELECT * FROM "Guest_Speakers" WHERE event_id = $1', [eventId]),
             pool.query('SELECT * FROM "Sponsors" WHERE event_id = $1', [eventId]),
             pool.query('SELECT * FROM "Event_Documents" WHERE event_id = $1', [eventId]),
             pool.query(`
-                SELECT u.id, u.first_name, u.last_name,u.email, t.role
+                SELECT u.id::varchar, u.first_name, u.last_name, u.email, t.role, 'Active' as status
                 FROM "Event_Team" t
                 JOIN "Users" u ON t.user_id = u.id
-                WHERE t.event_id = $1;`, [eventId])
+                WHERE t.event_id = $1
+                UNION ALL
+                SELECT id::varchar, NULL::varchar as first_name, NULL::varchar as last_name, email, role, status::varchar
+                FROM "Event_Invitations"
+                WHERE event_id = $1 AND status IN ('Pending', 'Declined');
+            `, [eventId])
         ]);
 
         const fullEventDetails = {
@@ -300,7 +305,7 @@ const getEventById = async (req, res) => {
             speakers: speakersRes.rows,
             sponsors: sponsorsRes.rows,
             documents: docRes.rows,
-            team: teamRes.rows
+            team: teamRes.rows // Now contains both Active and Pending users!
         };
 
         return res.status(200).json({
@@ -415,7 +420,7 @@ const inviteTeamMember = async (req, res) => {
     const eventId = req.params.id;
     const inviterId = req.user.userId;
     const { email, role } = req.body;
-    //basic validations
+
     if (!email || !role) {
         return res.status(400).json({ success: false, message: 'Email and role are required' });
     }
@@ -428,24 +433,22 @@ const inviteTeamMember = async (req, res) => {
     try {
         await pool.query('BEGIN');
 
-        // 1. Check if the inviter is part of the event team and has permission to invite others
         const inviterCheck = await pool.query(`
             SELECT role FROM "Event_Team" 
             WHERE event_id = $1 AND user_id = $2;`, [eventId, inviterId]);
 
-        // Ensure the inviter is part of the event team before allowing them to invite others
         if (inviterCheck.rows.length === 0) {
             await pool.query('ROLLBACK');
             return res.status(403).json({ success: false, message: 'Access denied..You are not part of this event team' });
         }
-        // 2. getting the event title for the email content
+
         const eventCheck = await pool.query(`SELECT title FROM "Events" WHERE id = $1;`, [eventId]);
         if (eventCheck.rows.length === 0) {
             await pool.query('ROLLBACK');
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
         const eventTitle = eventCheck.rows[0].title;
-        // 3. Check if the user with the provided email exists IN THE TEAM before sending an invite
+
         const teamCheck = await pool.query(
             `SELECT * FROM "Event_Team" et
              JOIN "Users" u ON et.user_id = u.id
@@ -464,31 +467,34 @@ const inviteTeamMember = async (req, res) => {
         );
 
         if (inviteCheck.rows.length > 0) {
+            await pool.query('ROLLBACK');
+            return res.status(400).json({ success: false, message: 'An invitation has already been sent to this email.' });
+        }
 
-            const invitedUserId = userCheck.rows[0].user_id;
-            await pool.query(`
-                INSERT INTO "Event_Team" (event_id, user_id, role)
-                VALUES ($1, $2, $3);`, [eventId, invitedUserId, role]
-            );
+        // --- THE MISSING CHECK WAS RESTORED HERE ---
+        const userCheck = await pool.query(`SELECT id, first_name FROM "Users" WHERE email = $1`, [email]);
 
-            // TODO: Trigger Nodemailer here for Existing User
-            // sendEmail(email, "You've been added to a team!", `You are now a ${role} for ${eventTitle}. Login to EventLK to view your dashboard.`);
-            await sendExistingUserInviteEmail(email, eventTitle, role, "Event organizer");
-
-            await pool.query('COMMIT');
-            return res.status(200).json({ success: true, message: 'User added to the team successfully!' });
-
-        } else {
-            // --- SCENARIO B: NEW USER ---
+        if (userCheck.rows.length > 0) {
+            // SCENARIO A: EXISTING USER (Now requires explicit consent)
+            
+            // GOOD: Putting them in the pending invitations table
             await pool.query(
                 `INSERT INTO "Event_Invitations" (event_id, email, role) VALUES ($1, $2, $3)`,
                 [eventId, email, role]
             );
 
-            // TODO: Trigger Nodemailer here for New User
-            // sendEmail(email, "You're invited to EventLK!", `You've been invited to be the ${role} for ${eventTitle}. Sign up to accept the invite!`);
-            await sendNewUserInviteEmail(email, eventTitle, role, "Event organizer");
+            await sendExistingUserInviteEmail(email, eventTitle, role, "Event organizer");
+            
+            await pool.query('COMMIT');
+            return res.status(200).json({ success: true, message: 'Invitation sent successfully!' });
+        } else {
+            // SCENARIO B: NEW USER
+            await pool.query(
+                `INSERT INTO "Event_Invitations" (event_id, email, role) VALUES ($1, $2, $3)`,
+                [eventId, email, role]
+            );
 
+            await sendNewUserInviteEmail(email, eventTitle, role, "Event organizer");
             await pool.query('COMMIT');
             return res.status(200).json({ success: true, message: 'Invitation sent successfully!' });
         }
@@ -500,8 +506,112 @@ const inviteTeamMember = async (req, res) => {
     }
 };
 
+// --- 1. Fetch ALL Notifications (Pending Invites & Declined Alerts) ---
+const getUserInvitations = async (req, res) => {
+    const userId = req.user.userId; 
 
-    
+    try {
+        const userCheck = await pool.query(`SELECT email FROM "Users" WHERE id = $1`, [userId]);
+        if (userCheck.rows.length === 0) return res.status(404).json({ success: false, message: 'User not found.' });
+        const userEmail = userCheck.rows[0].email;
+
+        // Query A: Invites waiting for ME to accept
+        const myInvitesQuery = `
+            SELECT i.id as notification_id, i.role, e.title as event_title, 'invite' as type, i.email as target_email
+            FROM "Event_Invitations" i
+            JOIN "Events" e ON i.event_id = e.id
+            WHERE i.email = $1 AND i.status = 'Pending';
+        `;
+        
+        // Query B: Invites I sent that were DECLINED by someone else
+        const myDeclinedAlertsQuery = `
+            SELECT i.id as notification_id, i.role, e.title as event_title, 'declined_alert' as type, i.email as target_email
+            FROM "Event_Invitations" i
+            JOIN "Events" e ON i.event_id = e.id
+            WHERE e.created_by = $1 AND i.status = 'Declined';
+        `;
+
+        const [invitesRes, declinedRes] = await Promise.all([
+            pool.query(myInvitesQuery, [userEmail]),
+            pool.query(myDeclinedAlertsQuery, [userId])
+        ]);
+
+        // Combine both into one notifications array for the Topbar
+        const allNotifications = [...invitesRes.rows, ...declinedRes.rows];
+
+        return res.status(200).json({ success: true, notifications: allNotifications });
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return res.status(500).json({ success: false, message: 'Failed to fetch notifications.' });
+    }
+};
+
+// --- 2. Process Accept or Decline ---
+const respondToInvitation = async (req, res) => {
+    const userId = req.user.userId;
+    const { inviteId, action } = req.body; 
+
+    if (!['accept', 'decline'].includes(action)) return res.status(400).json({ success: false, message: 'Invalid action.' });
+
+    try {
+        await pool.query('BEGIN');
+
+        const userCheck = await pool.query(`SELECT email FROM "Users" WHERE id = $1`, [userId]);
+        const userEmail = userCheck.rows[0].email;
+
+        const inviteCheck = await pool.query(`
+            SELECT i.*, e.title as event_title, u.email as organizer_email, u.first_name as organizer_name
+            FROM "Event_Invitations" i
+            JOIN "Events" e ON i.event_id = e.id
+            JOIN "Users" u ON e.created_by = u.id
+            WHERE i.id = $1 AND i.email = $2;
+        `, [inviteId, userEmail]);
+
+        if (inviteCheck.rows.length === 0) {
+            await pool.query('ROLLBACK');
+            return res.status(404).json({ success: false, message: 'Invitation not found.' });
+        }
+
+        const invite = inviteCheck.rows[0];
+
+        if (action === 'accept') {
+            // Move to team and delete invite
+            await pool.query(`INSERT INTO "Event_Team" (event_id, user_id, role) VALUES ($1, $2, $3)`, [invite.event_id, userId, invite.role]);
+            await pool.query(`DELETE FROM "Event_Invitations" WHERE id = $1`, [inviteId]);
+            await pool.query('COMMIT');
+            return res.status(200).json({ success: true, message: 'Welcome to the team!' });
+
+        } else if (action === 'decline') {
+            // INSTEAD OF DELETING, UPDATE STATUS TO 'Declined'
+            await pool.query(`UPDATE "Event_Invitations" SET status = 'Declined' WHERE id = $1`, [inviteId]);
+            
+            // Still send the email as a backup
+            const { sendDeclineNotificationEmail } = require('../utils/emailService');
+            await sendDeclineNotificationEmail(invite.organizer_email, invite.organizer_name, invite.event_title, userEmail);
+
+            await pool.query('COMMIT');
+            return res.status(200).json({ success: true, message: 'Invitation declined.' });
+        }
+
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Error processing invitation:', error);
+        return res.status(500).json({ success: false, message: 'Failed to process invitation.' });
+    }
+};
+
+// --- 3. New Function: Organizer dismisses the decline alert ---
+const dismissNotification = async (req, res) => {
+    const { notificationId } = req.body;
+    try {
+        // This finally deletes the row, removing it from the Team Page!
+        await pool.query(`DELETE FROM "Event_Invitations" WHERE id = $1`, [notificationId]);
+        return res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('Error dismissing notification:', error);
+        return res.status(500).json({ success: false });
+    }
+};
 
 
 
@@ -513,6 +623,8 @@ module.exports = {
     getPastEvents,
     getPostEventReport,
     deleteEvent,
-    inviteTeamMember
-
+    inviteTeamMember,
+    getUserInvitations,
+    respondToInvitation,
+    dismissNotification
 };

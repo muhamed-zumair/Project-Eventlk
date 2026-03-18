@@ -123,9 +123,36 @@ const sendNewUserInviteEmail = async (userEmail, eventTitle, role, inviterName =
   }
 };
 
+const sendDeclineNotificationEmail = async (organizerEmail, organizerName, eventTitle, declinedEmail) => {
+  const mailOptions = {
+    from: `"EventLK Team" <${process.env.EMAIL_USER}>`,
+    to: organizerEmail,
+    subject: `Invitation Declined: ${eventTitle} 🛑`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #111827;">Invitation Declined</h2>
+        <p>Hi ${organizerName},</p>
+        <p>We wanted to let you know that <strong>${declinedEmail}</strong> has declined your invitation to join the organizing team for <strong>${eventTitle}</strong>.</p>
+        <p>You can head back to your Team Dashboard to invite someone else to fill their role.</p>
+        <a href="http://localhost:3000/team" style="display: inline-block; background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">Go to Team Dashboard</a>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Decline notification sent to organizer: ${organizerEmail}`);
+  } catch (error) {
+    console.error('Email error:', error);
+  }
+};
+
+
+
 // EXPORT ALL THREE FUNCTIONS
 module.exports = { 
   sendWelcomeEmail, 
   sendExistingUserInviteEmail, 
-  sendNewUserInviteEmail 
+  sendNewUserInviteEmail,
+  sendDeclineNotificationEmail
 };
