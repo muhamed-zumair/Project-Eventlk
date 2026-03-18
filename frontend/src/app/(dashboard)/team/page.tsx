@@ -155,6 +155,42 @@ export default function TeamPage() {
     }
   };
 
+  const handleRemoveMember = async (targetUserId: string) => {
+  if (!window.confirm("Are you sure you want to remove this member? They will lose all access to the dashboard.")) return;
+
+  try {
+    const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
+      method: 'DELETE'
+    });
+    if (response.success) {
+      setMembers(prev => prev.filter(m => m.id !== targetUserId));
+      setOpenMenuId(null);
+    }
+  } catch (error) {
+    console.error("Removal failed", error);
+  }
+};
+
+const handleChangeRole = async (targetUserId: string, currentRole: string) => {
+  const roles = ['President', 'Secretary', 'Treasurer', 'Team_Lead', 'Volunteer'];
+  const newRole = window.prompt(`Enter new role (${roles.join(', ')}):`, currentRole);
+  
+  if (!newRole || !roles.includes(newRole)) return;
+
+  try {
+    const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ newRole })
+    });
+    if (response.success) {
+      setMembers(prev => prev.map(m => m.id === targetUserId ? { ...m, role: newRole } : m));
+      setOpenMenuId(null);
+    }
+  } catch (error) {
+    console.error("Update failed", error);
+  }
+};
+
   // Check if current selected event is a Past event (to hide invite button)
   const isSelectedEventPast = pastEvents.some(e => e.id === selectedEventId);
   const selectedEventName = [...activeEvents, ...pastEvents].find(e => e.id === selectedEventId)?.title;
@@ -230,11 +266,11 @@ export default function TeamPage() {
                 {/* Dropdown Menu */}
                 {openMenuId === member.id && (
                   <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-in fade-in zoom-in-95">
-                    <button className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2">
+                    <button onClick={() => handleChangeRole(member.id, member.role)} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2">
                       <Shield size={16} /> Change Role
                     </button>
                     {member.role !== 'President' ? (
-                      <button className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50">
+                      <button onClick={() => handleRemoveMember(member.id)} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50">
                         <UserMinus size={16} /> Remove Member
                       </button>
                     ) : (
