@@ -613,6 +613,68 @@ const dismissNotification = async (req, res) => {
     }
 };
 
+// 1. Remove a member from the team
+const removeTeamMember = async (req, res) => {
+    const { id: eventId, userId: targetUserId } = req.params;
+    const adminId = req.user.userId;
+
+    try {
+        // Authorization: Only the President can remove members
+        const adminCheck = await pool.query(
+            `SELECT role FROM "Event_Team" WHERE event_id = $1 AND user_id = $2`,
+            [eventId, adminId]
+        );
+
+        if (!adminCheck.rows.length || adminCheck.rows[0].role !== 'President') {
+            return res.status(403).json({ success: false, message: 'Only the President can remove members.' });
+        }
+
+        // Prevent removing yourself
+        if (adminId === targetUserId) {
+            return res.status(400).json({ success: false, message: 'You cannot remove yourself.' });
+        }
+
+        await pool.query('BEGIN');
+        
+        // Get details for email before deleting
+        const details = await pool.query(
+            `SELECT u.email, e.title FROM "Users" u, "Events" e WHERE u.id = $1 AND e.id = $2`,
+            [targetUserId, eventId]
+        );
+
+        await pool.query(`DELETE FROM "Event_Team" WHERE event_id = $1 AND user_id = $2`, [eventId, targetUserId]);
+        
+        // TODO: Add sendRemovalEmail(details.rows[0].email, details.rows[0].title) in emailService.js
+        
+        await pool.query('COMMIT');
+        res.status(200).json({ success: true, message: 'Member removed successfully.' });
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        res.status(500).json({ success: false, message: 'Failed to remove member.' });
+    }
+};
+
+// 2. Change a member's role
+const changeMemberRole = async (req, res) => {
+    const { id: eventId, userId: targetUserId } = req.params;
+    const { newRole } = req.body;
+    const adminId = req.user.userId;
+
+    try {
+        await pool.query(
+            `UPDATE "Event_Team" SET role = $1 WHERE event_id = $2 AND user_id = $3`,
+            [newRole, eventId, targetUserId]
+        );
+        
+        // Logic for in-app notification: Since we don't have a notifications table, 
+        // the user will see their new role updated instantly upon their next dashboard refresh.
+        
+        res.status(200).json({ success: true, message: 'Role updated successfully.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update role.' });
+    }
+};
+
 
 
 module.exports = {
@@ -626,5 +688,7 @@ module.exports = {
     inviteTeamMember,
     getUserInvitations,
     respondToInvitation,
-    dismissNotification
+    dismissNotification,
+    changeMemberRole,
+    removeTeamMember
 };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createEvent,getEvents,updateEvent, getEventById , getPastEvents,getPostEventReport,deleteEvent,inviteTeamMember , getUserInvitations, respondToInvitation,dismissNotification} = require('../controllers/eventController');
+const { createEvent,getEvents,updateEvent, getEventById , getPastEvents,getPostEventReport,deleteEvent,inviteTeamMember , getUserInvitations, respondToInvitation,dismissNotification,removeTeamMember , changeMemberRole} = require('../controllers/eventController');
 const { protect } = require('../middleware/authMiddleware');// Import the protect middleware to secure the route
 
 
@@ -18,12 +18,17 @@ router.get('/:id', protect, getEventById);
 
 router.delete('/:id', protect, deleteEvent);
 
+
+
 router.post('/:id/invite', protect, inviteTeamMember);
 
 // Routes for managing invitations
 router.get('/invitations/me', protect, getUserInvitations);
 router.post('/invitations/respond', protect, respondToInvitation);
 router.post('/notifications/dismiss', protect, dismissNotification);
+
+router.delete('/:id/team/:userId', protect, removeTeamMember);
+router.put('/:id/team/:userId', protect, changeMemberRole);
 
 
 module.exports = router;
