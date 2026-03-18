@@ -484,6 +484,8 @@ const inviteTeamMember = async (req, res) => {
             );
 
             await sendExistingUserInviteEmail(email, eventTitle, role, "Event organizer");
+
+            await pool.query('COMMIT');
             
             // --- 🚀 NEW: WEBSOCKET TRIGGER ---
             const io = req.app.get('io');
@@ -497,7 +499,7 @@ const inviteTeamMember = async (req, res) => {
             }
             // ---------------------------------
 
-            await pool.query('COMMIT');
+            
             return res.status(200).json({ success: true, message: 'Invitation sent successfully!' });
         } else {
             // SCENARIO B: NEW USER
@@ -656,6 +658,8 @@ const removeTeamMember = async (req, res) => {
         const { sendRemovalEmail } = require('../utils/emailService');
         await sendRemovalEmail(details.rows[0].email, details.rows[0].title);
         
+        await pool.query('COMMIT');
+        
         // --- 🚀 NEW: WEBSOCKET TRIGGER ---
         const io = req.app.get('io');
         const connectedUsers = req.app.get('connectedUsers');
@@ -669,7 +673,7 @@ const removeTeamMember = async (req, res) => {
         }
         // ---------------------------------
 
-        await pool.query('COMMIT');
+        
         res.status(200).json({ success: true, message: 'Member removed successfully.' });
     } catch (error) {
         await pool.query('ROLLBACK');
