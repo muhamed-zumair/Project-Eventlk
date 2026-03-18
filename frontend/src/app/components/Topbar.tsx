@@ -55,7 +55,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     try {
       const response = await fetchAPI('/events/invitations/me');
       if (response.success) {
-        setInvitations(response.invites || []);
+        // CHANGED from response.invites to response.notifications
+        setInvitations(response.notifications || []); 
       }
     } catch (error) {
       console.error("Failed to fetch invitations:", error);
@@ -77,7 +78,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   // --- NEW: HANDLE ACCEPT / DECLINE ---
   const handleInvitationResponse = async (inviteId: string, action: 'accept' | 'decline') => {
     // Optimistically remove the notification from the UI instantly
-    setInvitations(prev => prev.filter(inv => inv.invite_id !== inviteId));
+    setInvitations(prev => prev.filter(inv => inv.notification_id !== inviteId));
 
     try {
       const response = await fetchAPI('/events/invitations/respond', {
@@ -94,7 +95,22 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       fetchInvitations(); // Refresh data if it failed
     }
   };
-
+  
+  // --- NEW: HANDLE DISMISSING ORGANIZER ALERTS ---
+  const handleDismissAlert = async (notificationId: string) => {
+    setInvitations(prev => prev.filter(inv => inv.notification_id !== notificationId));
+    try {
+      await fetchAPI('/events/notifications/dismiss', {
+        method: 'POST',
+        body: JSON.stringify({ notificationId })
+      });
+      // Tell the Team Page to refresh so the red "Declined" card vanishes
+      window.dispatchEvent(new Event("eventCreated"));
+    } catch (error) {
+      console.error("Failed to dismiss alert:", error);
+      fetchInvitations(); 
+    }
+  };
 
   const toggleNotifications = () => {
     setIsNotificationOpen(!isNotificationOpen);
@@ -185,34 +201,65 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                   {invitations.length === 0 ? (
                     <div className="p-8 text-center text-sm text-gray-500">You're all caught up!</div>
                   ) : (
-                    invitations.map((invite) => (
-                      <div key={invite.invite_id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition flex flex-col gap-3">
-                        <div className="flex gap-3">
-                          <div className="mt-0.5 text-indigo-600 bg-indigo-50 p-1.5 rounded-full shrink-0 h-fit">
-                            <Users size={16} />
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-800 font-medium">Team Invitation</p>
-                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                              You've been invited to join <strong>{invite.event_title}</strong> as a <strong>{invite.role}</strong>.
-                            </p>
-                          </div>
-                        </div>
-                        {/* Accept / Decline Buttons */}
-                        <div className="flex gap-2 pl-9 mt-1">
-                          <button 
-                            onClick={() => handleInvitationResponse(invite.invite_id, 'accept')}
-                            className="flex-1 bg-indigo-600 text-white py-1.5 rounded-md text-xs font-bold hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-1.5"
-                          >
-                            <Check size={14} /> Accept
-                          </button>
-                          <button 
-                            onClick={() => handleInvitationResponse(invite.invite_id, 'decline')}
-                            className="flex-1 bg-white border border-gray-200 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-50 transition flex items-center justify-center gap-1.5"
-                          >
-                            <X size={14} /> Decline
-                          </button>
-                        </div>
+                    invitations.map((notification) => (
+                      <div key={notification.notification_id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition flex flex-col gap-3">
+                        
+                        {/* --- UI FOR PENDING TEAM INVITATIONS --- */}
+                        {notification.type === 'invite' && (
+                          <>
+                            <div className="flex gap-3">
+                              <div className="mt-0.5 text-indigo-600 bg-indigo-50 p-1.5 rounded-full shrink-0 h-fit">
+                                <Users size={16} />
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-800 font-medium">Team Invitation</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                                  You've been invited to join <strong>{notification.event_title}</strong> as a <strong>{notification.role}</strong>.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 pl-9 mt-1">
+                              <button 
+                                onClick={() => handleInvitationResponse(notification.notification_id, 'accept')}
+                                className="flex-1 bg-indigo-600 text-white py-1.5 rounded-md text-xs font-bold hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-1.5"
+                              >
+                                <Check size={14} /> Accept
+                              </button>
+                              <button 
+                                onClick={() => handleInvitationResponse(notification.notification_id, 'decline')}
+                                className="flex-1 bg-white border border-gray-200 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-50 transition flex items-center justify-center gap-1.5"
+                              >
+                                <X size={14} /> Decline
+                              </button>
+                            </div>
+                          </>
+                        )}
+
+                        {/* --- UI FOR THE ORGANIZER'S DECLINED ALERT --- */}
+                        {notification.type === 'declined_alert' && (
+                          <>
+                            <div className="flex gap-3">
+                              <div className="mt-0.5 text-red-600 bg-red-50 p-1.5 rounded-full shrink-0 h-fit">
+                                <AlertCircle size={16} />
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-800 font-medium">Invitation Declined</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                                  <strong>{notification.target_email}</strong> has declined to join <strong>{notification.event_title}</strong>.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex pl-9 mt-1">
+                              <button 
+                                onClick={() => handleDismissAlert(notification.notification_id)}
+                                className="w-full bg-gray-100 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1.5"
+                              >
+                                Dismiss
+                              </button>
+                            </div>
+                          </>
+                        )}
+
                       </div>
                     ))
                   )}
