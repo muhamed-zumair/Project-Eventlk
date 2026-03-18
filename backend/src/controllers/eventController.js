@@ -573,8 +573,9 @@ const respondToInvitation = async (req, res) => {
         const userCheck = await pool.query(`SELECT email FROM "Users" WHERE id = $1`, [userId]);
         const userEmail = userCheck.rows[0].email;
 
+        // NEW: We added e.created_by here so we can find the Organizer's socket!
         const inviteCheck = await pool.query(`
-            SELECT i.*, e.title as event_title, u.email as organizer_email, u.first_name as organizer_name
+            SELECT i.*, e.title as event_title, e.created_by, u.email as organizer_email, u.first_name as organizer_name
             FROM "Event_Invitations" i
             JOIN "Events" e ON i.event_id = e.id
             JOIN "Users" u ON e.created_by = u.id
@@ -589,21 +590,41 @@ const respondToInvitation = async (req, res) => {
         const invite = inviteCheck.rows[0];
 
         if (action === 'accept') {
-            // Move to team and delete invite
             await pool.query(`INSERT INTO "Event_Team" (event_id, user_id, role) VALUES ($1, $2, $3)`, [invite.event_id, userId, invite.role]);
             await pool.query(`DELETE FROM "Event_Invitations" WHERE id = $1`, [inviteId]);
             await pool.query('COMMIT');
+
+            // --- 🚀 NEW: SEND SIGNAL BACK TO ORGANIZER ---
+            const io = req.app.get('io');
+            const connectedUsers = req.app.get('connectedUsers');
+            const organizerSocket = connectedUsers.get(invite.created_by);
+            
+            if (organizerSocket) {
+                io.to(organizerSocket).emit('TEAM_UPDATED', {
+                    message: `${userEmail} has accepted your invite to ${invite.event_title}!`
+                });
+            }
+
             return res.status(200).json({ success: true, message: 'Welcome to the team!' });
 
         } else if (action === 'decline') {
-            // INSTEAD OF DELETING, UPDATE STATUS TO 'Declined'
             await pool.query(`UPDATE "Event_Invitations" SET status = 'Declined' WHERE id = $1`, [inviteId]);
             
-            // Still send the email as a backup
             const { sendDeclineNotificationEmail } = require('../utils/emailService');
             await sendDeclineNotificationEmail(invite.organizer_email, invite.organizer_name, invite.event_title, userEmail);
-
             await pool.query('COMMIT');
+
+            // --- 🚀 NEW: SEND SIGNAL BACK TO ORGANIZER ---
+            const io = req.app.get('io');
+            const connectedUsers = req.app.get('connectedUsers');
+            const organizerSocket = connectedUsers.get(invite.created_by);
+            
+            if (organizerSocket) {
+                io.to(organizerSocket).emit('TEAM_UPDATED', {
+                    message: `${userEmail} declined the invite to ${invite.event_title}.`
+                });
+            }
+
             return res.status(200).json({ success: true, message: 'Invitation declined.' });
         }
 
