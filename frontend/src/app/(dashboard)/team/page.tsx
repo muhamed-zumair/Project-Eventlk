@@ -1,189 +1,347 @@
 "use client";
 
-import { useState } from "react";
-import { Mail, X, CalendarDays, User } from "lucide-react";
+import { fetchAPI } from "../../../utils/api";
+import React, { useState, useEffect } from "react";
+import {
+  Mail, X, CalendarDays, User, MoreVertical,
+  Shield, UserMinus, AlertCircle, CheckCircle, Rocket
+} from "lucide-react";
 
 // --- Types ---
-// Notice how clean this is now! This perfectly matches what the database will send.
-interface TeamMember {
+interface EventItem {
   id: string;
-  eventId: string;
-  name: string;
-  role: string;
-  email: string;
+  title: string;
+  status: string;
 }
 
-// --- Mock Events ---
-const myEvents = [
-  { id: 'evt_1', name: "Annual Tech Summit 2026" },
-  { id: 'evt_2', name: "Spring Conference" },
-];
-
-// --- Mock Data ---
-const initialTeamMembers: TeamMember[] = [
-  { id: "1", eventId: "evt_1", name: "Sarah Mitchell", role: "President", email: "sarah.mitchell@eventlk.com" },
-  { id: "2", eventId: "evt_1", name: "John Davis", role: "Secretary", email: "john.davis@eventlk.com" },
-  { id: "3", eventId: "evt_1", name: "Emily Chen", role: "Treasurer", email: "emily.chen@eventlk.com" },
-  { id: "4", eventId: "evt_1", name: "Michael Brown", role: "Team Lead", email: "michael.brown@eventlk.com" },
-  
-  { id: "5", eventId: "evt_2", name: "Sarah Mitchell", role: "Volunteer", email: "sarah.mitchell@eventlk.com" },
-  { id: "6", eventId: "evt_2", name: "Lisa Anderson", role: "President", email: "lisa.anderson@eventlk.com" },
-  { id: "7", eventId: "evt_2", name: "David Wilson", role: "Team Lead", email: "david.wilson@eventlk.com" },
-];
+interface TeamMember {
+  id: string; // user_id or invite_id
+  name?: string; // Might be null if pending
+  email: string;
+  role: string;
+  status: 'Active' | 'Pending';
+}
 
 // --- Helper Functions ---
-// 1. Automatically grab the first letters of their names
-const getInitials = (name: string) => {
-  const parts = name.split(' ');
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
+const getInitials = (name: string, email: string) => {
+  if (name && name !== "TBA") {
+    const parts = name.split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
+  // Fallback to first letter of email if no name
+  return email.substring(0, 2).toUpperCase();
 };
 
-// 2. Automatically assign a consistent color based on their email
 const getColorClass = (email: string) => {
-  const colors = [
-    'bg-indigo-600', 'bg-blue-600', 'bg-purple-600', 
-    'bg-green-600', 'bg-pink-600', 'bg-orange-600', 'bg-teal-600'
-  ];
+  const colors = ['bg-indigo-600', 'bg-blue-600', 'bg-purple-600', 'bg-green-600', 'bg-pink-600', 'bg-orange-600', 'bg-teal-600'];
   let hash = 0;
-  for (let i = 0; i < email.length; i++) {
-    hash = email.charCodeAt(i) + ((hash << 5) - hash);
-  }
+  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash);
   return colors[Math.abs(hash) % colors.length];
 };
 
 export default function TeamPage() {
-  const [selectedEventId, setSelectedEventId] = useState<string>(myEvents[0].id);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [members, setMembers] = useState<TeamMember[]>(initialTeamMembers);
+  // --- States ---
+  const [activeEvents, setActiveEvents] = useState<EventItem[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
 
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
+
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("");
 
-  const currentEventTeam = members.filter(m => m.eventId === selectedEventId);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleSendInvite = () => {
-    if (!inviteEmail || !inviteRole) return;
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null); // For the 3-dot menu
 
-    const newMember: TeamMember = {
-      id: Date.now().toString(),
-      eventId: selectedEventId,
-      name: inviteEmail.split('@')[0].replace('.', ' '), // Temporary fake name until they sign up
-      role: inviteRole,
-      email: inviteEmail,
+  // --- Fetch Initial Events ---
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const [activeRes, pastRes] = await Promise.all([
+          fetchAPI('/events', { method: 'GET' }),
+          fetchAPI('/events/past', { method: 'GET' })
+        ]);
+
+        if (activeRes.success) setActiveEvents(activeRes.events || []);
+        if (pastRes.success) setPastEvents(pastRes.events || []);
+
+        // Default to the first active event if available
+        if (activeRes.events && activeRes.events.length > 0) {
+          setSelectedEventId(activeRes.events[0].id);
+        } else if (pastRes.events && pastRes.events.length > 0) {
+          setSelectedEventId(pastRes.events[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load events for team page", error);
+      }
     };
+    loadEvents();
+  }, []);
 
-    setMembers([...members, newMember]);
-    setIsInviteModalOpen(false);
-    setInviteEmail("");
-    setInviteRole("");
+  // --- Fetch Team Members when Event changes ---
+  useEffect(() => {
+    const loadTeam = async () => {
+      if (!selectedEventId) return;
+      setIsLoadingTeam(true);
+      try {
+        // Fetch full event details which includes the team array
+        const response = await fetchAPI(`/events/${selectedEventId}`, { method: 'GET' });
+        if (response.success && response.event.team) {
+          // Map database response to our UI type. Assuming default 'Active' for now.
+          const formattedTeam = response.event.team.map((m: any) => ({
+            id: m.id,
+            name: m.first_name ? `${m.first_name} ${m.last_name || ''}` : "TBA",
+            email: m.email,
+            role: m.role,
+            status: 'Active' // We will wire up 'Pending' when invitations API is updated
+          }));
+          setMembers(formattedTeam);
+        }
+      } catch (error) {
+        console.error("Failed to load team members", error);
+      } finally {
+        setIsLoadingTeam(false);
+      }
+    };
+    loadTeam();
+  }, [selectedEventId]);
+
+  // --- Handle Invite Submission ---
+  const handleSendInvite = async () => {
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (!inviteEmail || !inviteRole) {
+      setErrorMessage("Please provide both an email address and a role.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetchAPI(`/events/${selectedEventId}/invite`, {
+        method: 'POST',
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole })
+      });
+
+      if (response.success) {
+        setSuccessMessage("Invitation sent successfully!");
+        setInviteEmail("");
+        setInviteRole("");
+
+        // Optimistically add pending member to UI
+        setMembers([...members, {
+          id: Date.now().toString(),
+          email: inviteEmail,
+          role: inviteRole,
+          status: 'Pending'
+        }]);
+
+        // Close modal after 2 seconds so user sees the success message
+        setTimeout(() => {
+          setIsInviteModalOpen(false);
+          setSuccessMessage("");
+        }, 2000);
+      }
+    } catch (error: any) {
+      setErrorMessage(error.message || "Failed to send invite. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Check if current selected event is a Past event (to hide invite button)
+  const isSelectedEventPast = pastEvents.some(e => e.id === selectedEventId);
+  const selectedEventName = [...activeEvents, ...pastEvents].find(e => e.id === selectedEventId)?.title;
 
   return (
     <div className="space-y-6">
+      {/* Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Team</h2>
-          <p className="text-gray-500 text-sm mt-1">Manage your event planning team</p>
+          <h2 className="text-2xl font-bold text-gray-800">Team Management</h2>
+          <p className="text-gray-500 text-sm mt-1">Build and manage your event organizing committee</p>
         </div>
-        
+
         <div className="flex items-center gap-4">
+          {/* Smart Event Dropdown */}
           <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
             <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm">
               <CalendarDays size={18} />
             </div>
-            <select 
+            <select
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
               className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer"
             >
-              {myEvents.map(evt => (
-                <option key={evt.id} value={evt.id}>{evt.name}</option>
-              ))}
+              {activeEvents.length > 0 && (
+                <optgroup label="Active Events">
+                  {activeEvents.map(evt => <option key={evt.id} value={evt.id}>{evt.title}</option>)}
+                </optgroup>
+              )}
+              {pastEvents.length > 0 && (
+                <optgroup label="Past Events">
+                  {pastEvents.map(evt => <option key={evt.id} value={evt.id}>{evt.title}</option>)}
+                </optgroup>
+              )}
             </select>
           </div>
 
-          <button 
-            onClick={() => setIsInviteModalOpen(true)}
-            className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm whitespace-nowrap"
-          >
-            Invite Member
-          </button>
+          {/* Contextual Invite Button (Hides for Past Events) */}
+          {!isSelectedEventPast && (
+            <button
+              onClick={() => {
+                setErrorMessage("");
+                setSuccessMessage("");
+                setIsInviteModalOpen(true);
+              }}
+              className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm whitespace-nowrap"
+            >
+              Invite Member
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {currentEventTeam.map((member) => (
-          <div key={member.id} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm ${getColorClass(member.email)}`}>
-                {getInitials(member.name)}
+      {/* Main Content Area */}
+      {isLoadingTeam ? (
+        <div className="py-20 text-center text-indigo-500 font-medium animate-pulse">Loading team data...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+
+          {/* Team Cards */}
+          {members.map((member) => (
+            <div key={member.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 relative group">
+
+              {/* 3-Dot Management Menu */}
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
+                  className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
+                >
+                  <MoreVertical size={20} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {openMenuId === member.id && (
+                  <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-in fade-in zoom-in-95">
+                    <button className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2">
+                      <Shield size={16} /> Change Role
+                    </button>
+                    {member.role !== 'President' ? (
+                      <button className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50">
+                        <UserMinus size={16} /> Remove Member
+                      </button>
+                    ) : (
+                      <div className="px-4 py-2 text-xs text-gray-400 border-t border-gray-50 bg-gray-50 italic">Creator cannot be removed</div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
 
-            <div className="mb-2">
-              <h3 className="text-lg font-bold text-gray-800 capitalize">{member.name}</h3>
-              <p className="text-sm font-medium text-indigo-600 mb-4">{member.role}</p>
+              {/* Card Header: Avatar & Badge */}
+              <div className="flex justify-between items-start mb-5">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-sm ${getColorClass(member.email)}`}>
+                  {getInitials(member.name || "", member.email)}
+                </div>
+                {member.status === 'Pending' && (
+                  // ADDED mr-8 HERE TO FIX THE OVERLAP
+                  <span className="bg-orange-50 text-orange-600 border border-orange-200 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide mt-1 mr-8">
+                    Pending
+                  </span>
+                )}
+              </div>
 
-              <div className="space-y-2 pt-4 border-t border-gray-50">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Mail size={16} className="text-gray-400" />
+              {/* Card Body */}
+              <div className="mb-2">
+                <h3 className="text-lg font-bold text-gray-900 capitalize truncate">
+                  {member.status === 'Pending' ? member.email.split('@')[0] : member.name}
+                </h3>
+                <p className="text-sm font-semibold text-indigo-600 mb-4">{member.role}</p>
+
+                <div className="pt-4 border-t border-gray-100 flex items-center gap-3 text-sm text-gray-500">
+                  <Mail size={16} className="text-gray-400 shrink-0" />
                   <span className="truncate">{member.email}</span>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-        
-        {currentEventTeam.length === 0 && (
-          <div className="col-span-full py-12 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
-            <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-3">
-               <User size={32} />
-            </div>
-            <p className="text-gray-500 font-medium">No team members assigned to this event yet.</p>
-            <button 
-              onClick={() => setIsInviteModalOpen(true)}
-              className="mt-2 text-indigo-600 hover:text-indigo-800 font-medium text-sm"
-            >
-              Click here to invite someone
-            </button>
-          </div>
-        )}
-      </div>
+          ))}
 
+          {/* BEAUTIFUL EMPTY STATE: "Flying Solo" */}
+          {members.length === 1 && (
+            <div className="col-span-full py-20 px-4 text-center bg-indigo-50/40 rounded-3xl border border-dashed border-indigo-200 flex flex-col items-center">
+              <div className="bg-indigo-100 p-4 rounded-full mb-5 text-indigo-500">
+                <Rocket size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">You're flying solo!</h3>
+              <p className="text-gray-500 max-w-sm mx-auto mb-6">Building an amazing event takes a village. Invite members to your committee to share the workload.</p>
+              {!isSelectedEventPast && (
+                <button
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-sm"
+                >
+                  Build Your Dream Team
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Invite Modal */}
       {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
-            
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95">
+
             <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
-              <h2 className="text-xl font-medium text-gray-800">Invite Team Member</h2>
-              <button onClick={() => setIsInviteModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition"><X size={24} /></button>
+              <h2 className="text-xl font-bold text-gray-900">Invite Team Member</h2>
+              <button onClick={() => setIsInviteModalOpen(false)} className="text-gray-400 hover:text-gray-700 transition bg-gray-50 hover:bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
             </div>
 
             <div className="p-6 space-y-5">
-              <div className="bg-indigo-50 text-indigo-700 p-3 rounded-lg text-sm flex items-center gap-2 font-medium">
-                <CalendarDays size={16} />
-                Inviting to: {myEvents.find(e => e.id === selectedEventId)?.name}
+
+              {/* Beautiful Inline Alert Banners */}
+              {errorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                  <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium leading-relaxed">{errorMessage}</p>
+                </div>
+              )}
+              {successMessage && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                  <CheckCircle size={20} className="shrink-0" />
+                  <p className="text-sm font-medium">{successMessage}</p>
+                </div>
+              )}
+
+              <div className="bg-indigo-50 border border-indigo-100 text-indigo-700 p-3.5 rounded-xl text-sm flex items-center gap-2.5 font-medium">
+                <CalendarDays size={18} className="opacity-70" />
+                Inviting to: {selectedEventName}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address *</label>
-                <input 
-                  type="email" 
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address *</label>
+                <input
+                  type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="e.g., student@university.edu"
-                  className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900"
+                  className="w-full border border-gray-300 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-shadow text-gray-900 placeholder-gray-400"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Assign Role *</label>
-                <select 
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Assign Role *</label>
+                <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 bg-white"
+                  className="w-full border border-gray-300 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-shadow text-gray-900 bg-white appearance-none"
                 >
                   <option value="" disabled>Select a role...</option>
                   <option value="President">President</option>
@@ -195,9 +353,20 @@ export default function TeamPage() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50 shrink-0">
-              <button onClick={handleSendInvite} disabled={!inviteEmail || !inviteRole} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Send Invite</button>
-              <button onClick={() => setIsInviteModalOpen(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
+            <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50 shrink-0">
+              <button
+                onClick={handleSendInvite}
+                disabled={isSubmitting}
+                className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-sm disabled:opacity-70 disabled:cursor-wait flex justify-center items-center gap-2"
+              >
+                {isSubmitting ? "Sending..." : "Send Invite"}
+              </button>
+              <button
+                onClick={() => setIsInviteModalOpen(false)}
+                className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
             </div>
 
           </div>
