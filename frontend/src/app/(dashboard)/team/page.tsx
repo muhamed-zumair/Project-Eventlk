@@ -156,40 +156,54 @@ export default function TeamPage() {
   };
 
   const handleRemoveMember = async (targetUserId: string) => {
-  if (!window.confirm("Are you sure you want to remove this member? They will lose all access to the dashboard.")) return;
+    if (!window.confirm("Are you sure you want to remove this member? They will lose all access to the dashboard.")) return;
 
-  try {
-    const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
-      method: 'DELETE'
-    });
-    if (response.success) {
-      setMembers(prev => prev.filter(m => m.id !== targetUserId));
-      setOpenMenuId(null);
+    try {
+      const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
+        method: 'DELETE'
+      });
+      if (response.success) {
+        // 1. Real-Time UI Update: Remove card instantly
+        setMembers(prev => prev.filter(m => m.id !== targetUserId));
+        setOpenMenuId(null);
+        
+        // 2. In-App Notification: Show success banner
+        setSuccessMessage("Member has been removed and notified via email.");
+        setTimeout(() => setSuccessMessage(""), 4000); // Hide after 4 seconds
+      }
+    } catch (error) {
+      console.error("Removal failed", error);
+      setErrorMessage("Failed to remove member.");
+      setTimeout(() => setErrorMessage(""), 4000);
     }
-  } catch (error) {
-    console.error("Removal failed", error);
-  }
-};
+  };
 
-const handleChangeRole = async (targetUserId: string, currentRole: string) => {
-  const roles = ['President', 'Secretary', 'Treasurer', 'Team_Lead', 'Volunteer'];
-  const newRole = window.prompt(`Enter new role (${roles.join(', ')}):`, currentRole);
-  
-  if (!newRole || !roles.includes(newRole)) return;
+  const handleChangeRole = async (targetUserId: string, currentRole: string) => {
+    const roles = ['President', 'Secretary', 'Treasurer', 'Team_Lead', 'Volunteer'];
+    const newRole = window.prompt(`Enter new role (${roles.join(', ')}):`, currentRole);
+    
+    if (!newRole || !roles.includes(newRole) || newRole === currentRole) return;
 
-  try {
-    const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ newRole })
-    });
-    if (response.success) {
-      setMembers(prev => prev.map(m => m.id === targetUserId ? { ...m, role: newRole } : m));
-      setOpenMenuId(null);
+    try {
+      const response = await fetchAPI(`/events/${selectedEventId}/team/${targetUserId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ newRole })
+      });
+      if (response.success) {
+        // 1. Real-Time UI Update: Change the role text instantly
+        setMembers(prev => prev.map(m => m.id === targetUserId ? { ...m, role: newRole } : m));
+        setOpenMenuId(null);
+
+        // 2. In-App Notification: Show success banner
+        setSuccessMessage(`Role successfully updated to ${newRole}.`);
+        setTimeout(() => setSuccessMessage(""), 4000); // Hide after 4 seconds
+      }
+    } catch (error) {
+      console.error("Update failed", error);
+      setErrorMessage("Failed to update role.");
+      setTimeout(() => setErrorMessage(""), 4000);
     }
-  } catch (error) {
-    console.error("Update failed", error);
-  }
-};
+  };
 
   // Check if current selected event is a Past event (to hide invite button)
   const isSelectedEventPast = pastEvents.some(e => e.id === selectedEventId);
