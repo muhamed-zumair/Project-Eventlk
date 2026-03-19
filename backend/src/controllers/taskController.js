@@ -64,17 +64,57 @@ const createTask = async (req, res) => {
 const updateTask = async (req, res) => {
     const { taskId } = req.params;
     const { title, status, priority, assigneeId } = req.body;
+    const assignerId = req.user.userId;
 
     try {
+        // 1. Fetch current task to compare changes and get the Event Name
+        const currentTaskRes = await pool.query(`
+            SELECT t.*, e.title as event_title
+            FROM "Tasks" t
+            JOIN "Events" e ON t.event_id = e.id
+            WHERE t.id = $1
+        `, [taskId]);
+
+        if (currentTaskRes.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Task not found' });
+        }
+        
+        const currentTask = currentTaskRes.rows[0];
+
+        // 2. Safely apply only the fields that were passed in the request
+        const newTitle = title !== undefined ? title : currentTask.title;
+        const newStatus = status !== undefined ? status : currentTask.status;
+        const newPriority = priority !== undefined ? priority : currentTask.priority;
+        const newAssigneeId = assigneeId !== undefined ? (assigneeId === "" ? null : assigneeId) : currentTask.assignee_id;
+
+        // 3. Update the database
         await pool.query(
-            `UPDATE "Tasks" 
-             SET title = COALESCE($1, title), 
-                 status = COALESCE($2, status), 
-                 priority = COALESCE($3, priority), 
-                 assignee_id = $4
+            `UPDATE "Tasks"
+             SET title = $1, status = $2, priority = $3, assignee_id = $4
              WHERE id = $5`,
-            [title, status, priority, assigneeId || null, taskId]
+            [newTitle, newStatus, newPriority, newAssigneeId, taskId]
         );
+
+        // 4. 🚀 THE NOTIFICATION LOGIC
+        // Only trigger if assignee changed, it's a real person, and they didn't just assign it to themselves
+        if (newAssigneeId && newAssigneeId !== currentTask.assignee_id && newAssigneeId !== assignerId) {
+            
+            const msg = `You have been assigned a task: "${newTitle || 'Untitled Task'}" for ${currentTask.event_title}.`;
+
+            // Save to persistent Notifications table
+            await pool.query(
+                `INSERT INTO "Notifications" (id, user_id, event_id, message, type) VALUES ($1, $2, $3, $4, 'task_assigned')`,
+                [uuidv4(), newAssigneeId, currentTask.event_id, msg]
+            );
+
+            // Fire the Live WebSocket Alert!
+            const io = req.app.get('io');
+            const targetSocket = req.app.get('connectedUsers').get(newAssigneeId);
+            
+            if (targetSocket) {
+                io.to(targetSocket).emit('TASK_ASSIGNED', { message: msg });
+            }
+        }
 
         res.status(200).json({ success: true, message: "Task updated." });
     } catch (error) {
