@@ -122,6 +122,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
         window.dispatchEvent(new Event("teamRefresh"));
         setTimeout(() => setSocketAlert(null), 6000);
       });
+
+      // --- 🚀 NEW: Listen for Live Task Assignments ---
+      socket.on('TASK_ASSIGNED', (data: any) => {
+        fetchInvitations(); // Refreshes the red bell instantly!
+        setSocketAlert({ message: data.message, type: 'info' });
+        setTimeout(() => setSocketAlert(null), 6000);
+      });
     }
 
     return () => {
