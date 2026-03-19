@@ -71,10 +71,12 @@ require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const contactRoutes = require('./src/routes/contactRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
+const budgetRoutes = require('./src/routes/budgetRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api', contactRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/budgets', budgetRoutes);
 
 const PORT = 5000;
 
