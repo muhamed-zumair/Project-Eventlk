@@ -32,14 +32,19 @@ export default function AIRecommendationsPage() {
           category: draft.category || "Workshops & Training", 
           expectedAttendees: Number(draft.headcount) || 100,
           budget: Number(draft.totalBudget) || 50000,
-          description: draft.plan ? `AI Plan: ${draft.plan.join(", ")}` : "AI Generated Strategy",
+          description: "This event is managed by the EventLK Intelligence Engine.",
           venue: draft.venue || "Recommended Venue",
-          venueAddress: "Recommended by EventLK AI"
+          venueAddress: "Recommended by EventLK AI Engine",
+          
+          // --- 🚀 THE MAGIC BRIDGE: SENDING THE AI DATA TO YOUR BACKEND ---
+          isAiAssisted: true,
+          theme: draft.theme,
+          plan: draft.plan,
+          budgetAllocation: draft.budgetAllocation
         })
       });
 
       if (response.success) {
-        alert("AI Event Created Successfully!");
         localStorage.removeItem("aiDraft"); 
         window.location.href = "/dashboard"; 
       }

@@ -1,13 +1,11 @@
 "use client";
 import { fetchAPI } from '../../../utils/api';
-
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, Calendar, MapPin, Users, DollarSign,
   CheckCircle, Clock, AlertCircle, Pencil, X, Trash2, Plus,
-  FileText, Mail, Phone, User, Check, Lock
+  FileText, Mail, User, Check, Lock, Palette, ListChecks, ShieldAlert
 } from "lucide-react";
-import { start } from 'repl';
 
 export default function DashboardHome() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -17,57 +15,44 @@ export default function DashboardHome() {
   const [userName, setUserName] = useState("");
 
   const [eventsList, setEventsList] = useState<any[]>([]);
-  // Placeholder for event details - in a real app, this would come from an API
   const [eventDetails, setEventDetails] = useState<any>(null);
 
-
   const [isLoading, setIsLoading] = useState(true);
-
   const [editForm, setEditForm] = useState(eventDetails);
 
   const [agendaItems, setAgendaItems] = useState<any[]>([]);
   const [speakers, setSpeakers] = useState<any[]>([]);
-
   const [sponsors, setSponsors] = useState<any[]>([]);
 
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
-  // --- UPDATED: Event Files State to include confidentiality ---
+  
   const [eventFiles, setEventFiles] = useState([
     { id: '1', name: "Venue_Contract_Final.pdf", size: "2.4 MB", date: "Oct 12, 2024", isConfidential: true },
     { id: '2', name: "Sponsor_Packages_v2.pdf", size: "1.1 MB", date: "Oct 15, 2024", isConfidential: false }
   ]);
 
-  // NEW: State for the checkbox when uploading
   const [isUploadConfidential, setIsUploadConfidential] = useState(false);
-
   const [editErrorMessage, setEditErrorMessage] = useState(""); 
-  const todayString = new Date().toISOString().split('T')[0];
-
-
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  // --- UPDATED: Attach the checkbox state to the new file ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const selectedFile = files[0];
       const sizeInMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
-
       const newFile = {
         id: Date.now().toString(),
         name: selectedFile.name,
         size: `${sizeInMB} MB`,
         date: "Just now",
-        isConfidential: isUploadConfidential // Uses the checkbox value
+        isConfidential: isUploadConfidential 
       };
-
       setEventFiles([newFile, ...eventFiles]);
-      setIsUploadConfidential(false); // Reset checkbox after upload
+      setIsUploadConfidential(false); 
     }
   };
 
@@ -79,22 +64,17 @@ export default function DashboardHome() {
     window.print();
   };
 
-  // FIX 1: Safely format date only if eventDetails is not null
   const formattedDate = eventDetails?.date ? new Date(eventDetails.date + "T00:00:00").toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   }) : "";
 
-
-
   const fetchMyEvents = async () => {
     setIsLoading(true);
     try {
       const response = await fetchAPI('/events/', { method: 'GET' });
       if (response.success && response.events.length > 0) {
-
-        // Map ALL events from the database into our list
         const allEvents = response.events.map((dbEvent: any) => {
           let eventStatus = "In Progress";
           let diffDays = 0;
@@ -102,19 +82,14 @@ export default function DashboardHome() {
           let formattedDate = "";
 
           if (dbEvent.start_date) {
-            // 1. Let Javascript automatically convert the UTC date back to your local Sri Lanka time!
             const dateObj = new Date(dbEvent.start_date);
-
-            // 2. Format it safely for the UI (e.g., "March 18, 2026")
             formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-            // 3. Extract the exact local YYYY-MM-DD for the Edit Modal to read
+            
             const year = dateObj.getFullYear();
             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
             const day = String(dateObj.getDate()).padStart(2, '0');
             cleanDate = `${year}-${month}-${day}`;
 
-            // 4. Do the countdown math safely
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const mathDate = new Date(dateObj);
@@ -136,10 +111,9 @@ export default function DashboardHome() {
             expectedAttendees: dbEvent.expected_headcount,
             budget: Number(dbEvent.total_budget),
             description: dbEvent.description,
+            isAiAssisted: dbEvent.is_ai_assisted // <-- GRABBING THE FLAG
           };
         });
-
-
         setEventsList(allEvents);
       } else {
         setEventsList([]);
@@ -168,11 +142,10 @@ export default function DashboardHome() {
           cleanDate = `${year}-${month}-${day}`;
         }
 
-        // Bundle everything up for the modals!
         const fullEventData = {
           id: fullEvent.id,
           title: fullEvent.title,
-          date: cleanDate, // Safely use the local timezone date here!
+          date: cleanDate, 
           startTime: fullEvent.start_time ? String(fullEvent.start_time).substring(0, 5) : "",
           endTime: fullEvent.end_time ? String(fullEvent.end_time).substring(0, 5) : "",
           venue: fullEvent.venue || "",
@@ -183,7 +156,11 @@ export default function DashboardHome() {
           organizerName: fullEvent.team[0]?.first_name ? fullEvent.team[0].first_name + " " + fullEvent.team[0].last_name : "Sahan Perera",
           organizerRole: fullEvent.my_role,
           organizerEmail: fullEvent.team[0]?.email || "example@example.com",
-
+          
+          // --- 🚀 GRABBING THE NEW AI DATA ---
+          isAiAssisted: fullEvent.is_ai_assisted,
+          theme: fullEvent.theme_colors,
+          plan: fullEvent.ai_recommended_plan
         };
 
         setEventDetails(fullEventData);
@@ -243,7 +220,6 @@ export default function DashboardHome() {
         sponsors: sponsors.map(sponsor => ({ name: sponsor.name || "TBA", tier: sponsor.tier || "Standard", amount: Number(sponsor.amount) || 0 }))
       };
 
-      // USE editForm.id SO IT UPDATES THE CORRECT EVENT!
       const response = await fetchAPI(`/events/${editForm.id}`, {
         method: 'PUT',
         body: JSON.stringify(payload)
@@ -260,19 +236,14 @@ export default function DashboardHome() {
       setIsSaving(false);
     }
   };
+
   const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
-    // Standard browser confirmation - prevents accidental clicks!
     const confirmDelete = window.confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`);
-    
     if (!confirmDelete) return;
 
     try {
-      const response = await fetchAPI(`/events/${eventId}`, {
-        method: 'DELETE'
-      });
-
+      const response = await fetchAPI(`/events/${eventId}`, { method: 'DELETE' });
       if (response.success) {
-        // Re-fetch events to update the dashboard instantly
         fetchMyEvents();
       }
     } catch (error) {
@@ -281,34 +252,18 @@ export default function DashboardHome() {
     }
   };
 
-
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const isNewUser = localStorage.getItem('isNewUser');
-    const storedUser = localStorage.getItem('user');
-
     if (!token || token === "undefined") {
       window.location.href = '/signin';
       return;
     }
-
-    fetchMyEvents(); // Fetch event details when the component mounts
-
-    const handleEventCreated = (event: any) => {
-      console.log('Walkie Talkie Event Received! Fetcching event!!!');
-      fetchMyEvents();
-    };
-
+    fetchMyEvents(); 
+    const handleEventCreated = () => fetchMyEvents();
     window.addEventListener('eventCreated', handleEventCreated);
-
-    return () => {
-      window.removeEventListener('eventCreated', handleEventCreated);
-    };
+    return () => window.removeEventListener('eventCreated', handleEventCreated);
   }, []);
 
-  
-
-// --- Replace your loose localStorage logic with this safe useEffect ---
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
@@ -336,26 +291,8 @@ export default function DashboardHome() {
         setUserName("User");
       }
     }
-  }, []); // The empty [] ensures this ONLY runs once when the page loads!
-  // ---------------------------------------------------------------------
+  }, []);
 
-  // FIX 3: Safely calculate dates only if an event actually exists
-  let eventStatus = "In Progress";
-  let diffDays = 0;
-  // ... (keep the rest of your code exactly the same below this)
-
-  if (eventDetails?.date) {
-    const eventDateObj = new Date(eventDetails.date + "T00:00:00");
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    eventDateObj.setHours(0, 0, 0, 0);
-
-    eventStatus = eventDateObj < today ? "Done" : "In Progress";
-    const diffTime = eventDateObj.getTime() - today.getTime();
-    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  }
-
-  // FIX 4: Cleaned up the nested ternary rendering and removed duplicated UI code
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight flex items-center gap-2">
@@ -388,27 +325,38 @@ export default function DashboardHome() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* MAP THROUGH ALL EVENTS HERE */}
           {eventsList.map((event) => (
-            <div key={event.id} className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+            <div key={event.id} className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+              
               <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex gap-2 mb-2">
+                <div> 
+                  {/* Both badges live happily next to each other now! */}
+                  <div className="flex gap-2 mb-2 items-center">
                     <span className="px-3 py-1 rounded-full text-xs font-medium border bg-green-500/20 text-green-300 border-green-500/30">
                       {event.eventStatus}
                     </span>
+                    
+                    {event.isAiAssisted && (
+                      <span className="flex items-center gap-1.5 bg-indigo-500/40 border border-indigo-400/50 px-3 py-1 rounded-full text-xs font-bold text-indigo-50 backdrop-blur-sm shadow-inner">
+                        <Sparkles size={14} className="text-indigo-200" /> AI Assisted
+                      </span>
+                    )}
                   </div>
+                  
                   <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
                   <p className="text-indigo-200 text-sm max-w-2xl line-clamp-2">
                     {event.description}
                   </p>
                 </div>
-                <div className="bg-indigo-700/50 p-4 rounded-xl text-center min-w-[100px]">
+                
+                {/* Days to go box (Fixed spacing) */}
+                <div className="bg-indigo-700/50 p-4 rounded-xl text-center min-w-[100px] shrink-0 ml-4">
                   <span className="block text-3xl font-bold">{event.diffDays > 0 ? event.diffDays : 0}</span>
                   <span className="text-xs text-indigo-200">Days to go</span>
                 </div>
               </div>
 
+              {/* ... The rest of the card (grid grid-cols-1 md:grid-cols-4...) stays exactly the same! */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
                   <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs">
@@ -493,7 +441,6 @@ export default function DashboardHome() {
                 >
                   <Pencil size={20} />
                 </button>
-                {/* --- NEW DELETE BUTTON --- */}
                 <button
                   onClick={() => handleDeleteEvent(event.id, event.title)}
                   className="bg-red-500/20 border border-red-400/30 text-red-100 p-2.5 rounded-lg hover:bg-red-500/40 hover:text-white transition-colors flex items-center justify-center ml-auto"
@@ -512,9 +459,14 @@ export default function DashboardHome() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
-            <div className="bg-[#4f46e5] p-6 text-white flex justify-between items-start shrink-0">
+            <div className={`p-6 text-white flex justify-between items-start shrink-0 ${eventDetails?.isAiAssisted ? 'bg-gradient-to-r from-indigo-900 to-purple-900' : 'bg-[#4f46e5]'}`}>
               <div>
                 <h2 className="text-2xl font-medium mb-2">{eventDetails.title}</h2>
+                {eventDetails?.isAiAssisted && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-100 text-xs font-semibold backdrop-blur-sm">
+                    <Sparkles size={14} /> AI Generated Strategy
+                  </div>
+                )}
               </div>
               <button onClick={() => setIsDetailsModalOpen(false)} className="text-white hover:bg-white/20 p-1.5 rounded-full transition">
                 <X size={24} />
@@ -589,6 +541,62 @@ export default function DashboardHome() {
                 </div>
               </section>
 
+              {/* --- 🚀 NEW: CONDITIONAL AI SECTIONS --- */}
+              {eventDetails?.isAiAssisted && eventDetails?.plan && (
+                <>
+                  <section>
+                    <h3 className="text-lg text-gray-800 mb-4 font-medium flex items-center gap-2">
+                      <Palette className="text-orange-500" size={20} /> Brand Intelligence
+                    </h3>
+                    <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+                      <p className="font-bold text-gray-800 mb-5">{eventDetails.theme?.name || "Event Theme"}</p>
+                      <div className="flex gap-5">
+                        {[eventDetails.theme?.primary, eventDetails.theme?.secondary, eventDetails.theme?.accent].map((color, i) => (
+                          <div key={i} className="flex flex-col items-center gap-2 group cursor-pointer">
+                            <div 
+                              className="w-12 h-12 rounded-full shadow-md border-4 border-white ring-1 ring-gray-100 group-hover:scale-110 transition-transform duration-300" 
+                              style={{backgroundColor: color || '#ccc'}}
+                            ></div>
+                            <span className="text-xs font-mono font-bold text-gray-400 group-hover:text-indigo-600 transition-colors uppercase">{color || 'N/A'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg text-gray-800 mb-4 font-medium flex items-center gap-2">
+                      <ListChecks className="text-purple-500" size={20} /> AI Execution Roadmap
+                    </h3>
+                    <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+                      <div className="relative ml-4 md:ml-6 space-y-8 pb-4">
+                        <div className="absolute top-2 bottom-2 left-0 w-0.5 border-l-2 border-dashed border-indigo-200"></div>
+
+                        {eventDetails.plan.map((step: string, i: number) => {
+                          if (i === 0 && !step.includes(':') && !step.match(/^\d/)) return null;
+
+                          const splitIndex = step.indexOf(':');
+                          const hasTitle = splitIndex !== -1 && splitIndex < 100; 
+                          let title = hasTitle ? step.substring(0, splitIndex).trim() : `Phase ${i + 1}`;
+                          let desc = hasTitle ? step.substring(splitIndex + 1).trim() : step;
+                          title = title.replace(/^\d+\.\s*/, '');
+
+                          return (
+                            <div key={i} className="relative pl-10 group">
+                              <div className="absolute -left-[9px] top-1.5 w-5 h-5 rounded-full bg-white border-4 border-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.0)] group-hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-shadow duration-300 z-10"></div>
+                              <div className="bg-gray-50 hover:bg-indigo-50/40 transition-colors duration-300 border border-gray-100 rounded-2xl p-5 shadow-sm">
+                                <h4 className="text-base font-extrabold text-gray-900 mb-1">{title}</h4>
+                                <p className="text-gray-600 leading-relaxed text-sm">{desc}</p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </section>
+                </>
+              )}
+
               <section>
                 <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Organizer</h3>
                 <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-5 flex items-start gap-4">
@@ -596,13 +604,11 @@ export default function DashboardHome() {
                     <User size={24} />
                   </div>
                   <div className="space-y-1">
-                    {/* Dynamically showing real DB data! */}
                     <h4 className="font-medium text-gray-900 text-lg">{eventDetails.organizerName}</h4>
                     <p className="text-gray-500 text-sm">{eventDetails.organizerRole ? eventDetails.organizerRole.replace('_', ' ') : "Organizer"}</p>
                     <div className="flex items-center gap-2 text-gray-600 text-sm mt-2">
                       <Mail size={14} /> {eventDetails.organizerEmail}
                     </div>
-                    {/* Phone number row completely removed based on your schema! */}
                   </div>
                 </div>
               </section>
@@ -655,12 +661,9 @@ export default function DashboardHome() {
                 </div>
               </section>
 
-              {/* --- UPDATED: Event Documents Section --- */}
               <section>
                 <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Documents</h3>
                 <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-6">
-
-                  {/* Checkbox added above the dropzone */}
                   <div className="flex items-center gap-2 mb-4">
                     <input
                       type="checkbox"
@@ -678,14 +681,7 @@ export default function DashboardHome() {
                     onClick={handleUploadClick}
                     className="border-2 border-dashed border-indigo-200 bg-white rounded-xl p-8 text-center hover:bg-indigo-50/50 transition cursor-pointer mb-4"
                   >
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      className="hidden"
-                      multiple
-                      accept=".pdf,.docx,.xlsx"
-                    />
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" multiple accept=".pdf,.docx,.xlsx" />
                     <div className="mx-auto w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-3">
                       <Plus size={24} />
                     </div>
@@ -697,13 +693,10 @@ export default function DashboardHome() {
                     {eventFiles.map((file) => (
                       <div key={file.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                            <FileText size={16} />
-                          </div>
+                          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><FileText size={16} /></div>
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-medium text-gray-800">{file.name}</p>
-                              {/* Render badge if file is restricted */}
                               {file.isConfidential && (
                                 <span className="flex items-center gap-1 text-[10px] bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 rounded-full font-bold">
                                   <Lock size={10} /> Restricted
@@ -714,18 +707,8 @@ export default function DashboardHome() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <button
-                            className="text-sm text-gray-400 cursor-not-allowed font-medium transition"
-                          >
-                            Download
-                          </button>
-                          <button
-                            onClick={() => handleDeleteFile(file.id)}
-                            className="text-gray-400 hover:text-red-600 transition"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <button className="text-sm text-gray-400 cursor-not-allowed font-medium transition">Download</button>
+                          <button onClick={() => handleDeleteFile(file.id)} className="text-gray-400 hover:text-red-600 transition" title="Delete"><Trash2 size={16} /></button>
                         </div>
                       </div>
                     ))}
@@ -735,12 +718,8 @@ export default function DashboardHome() {
             </div>
 
             <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
-              <button onClick={handlePrint} className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm">
-                Download PDF
-              </button>
-              <button onClick={handlePrint} className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm">
-                Print
-              </button>
+              <button onClick={handlePrint} className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm">Download PDF</button>
+              <button onClick={handlePrint} className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm">Print</button>
             </div>
           </div>
         </div>
@@ -762,15 +741,26 @@ export default function DashboardHome() {
             </div>
 
             <div className="p-8 overflow-y-auto flex-1 space-y-8 custom-scrollbar">
-              {editErrorMessage && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                  <AlertCircle size={20} className="text-red-500 shrink-0" />
-                  <p className="text-sm font-medium">{editErrorMessage}</p>
-                  <button onClick={() => setEditErrorMessage("")} className="ml-auto text-red-400 hover:text-red-600">
-                    <X size={16} />
-                  </button>
+              
+              {/* --- 🚀 NEW: AI LOCK WARNING BANNER --- */}
+              {editForm.isAiAssisted && (
+                <div className="bg-indigo-50 border border-indigo-200 text-indigo-800 px-4 py-4 rounded-xl flex items-start gap-3">
+                  <ShieldAlert size={20} className="text-indigo-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold">AI Managed Event</p>
+                    <p className="text-xs mt-1 text-indigo-600/80">Core metrics (Headcount, Budget, and Venue) are locked by the EventLK Intelligence Engine to maintain mathematical and strategic integrity.</p>
+                  </div>
                 </div>
               )}
+
+              {editErrorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+                  <AlertCircle size={20} className="text-red-500 shrink-0" />
+                  <p className="text-sm font-medium">{editErrorMessage}</p>
+                  <button onClick={() => setEditErrorMessage("")} className="ml-auto text-red-400 hover:text-red-600"><X size={16} /></button>
+                </div>
+              )}
+
               <section>
                 <h3 className="text-lg text-gray-800 mb-4 font-medium">Basic Information</h3>
                 <div className="space-y-4">
@@ -794,24 +784,58 @@ export default function DashboardHome() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Venue</label>
-                    <input type="text" value={editForm.venue} onChange={(e) => setEditForm({ ...editForm, venue: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Venue Address</label>
-                    <input type="text" value={editForm.venueAddress} onChange={(e) => setEditForm({ ...editForm, venueAddress: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                  {/* --- 🚀 NEW: CONDITIONAL AI LOCKS --- */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        Venue {editForm.isAiAssisted && <Lock size={12} className="text-indigo-400" />}
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editForm.venue} 
+                        onChange={(e) => setEditForm({ ...editForm, venue: e.target.value })} 
+                        disabled={editForm.isAiAssisted}
+                        className={`w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900 ${editForm.isAiAssisted ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`} 
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        Venue Address {editForm.isAiAssisted && <Lock size={12} className="text-indigo-400" />}
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editForm.venueAddress} 
+                        onChange={(e) => setEditForm({ ...editForm, venueAddress: e.target.value })} 
+                        disabled={editForm.isAiAssisted}
+                        className={`w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900 ${editForm.isAiAssisted ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`} 
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Expected Attendees</label>
-                      <input type="number" value={editForm.expectedAttendees} onChange={(e) => setEditForm({ ...editForm, expectedAttendees: Number(e.target.value) })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <label className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        Expected Attendees {editForm.isAiAssisted && <Lock size={12} className="text-indigo-400" />}
+                      </label>
+                      <input 
+                        type="number" 
+                        value={editForm.expectedAttendees} 
+                        onChange={(e) => setEditForm({ ...editForm, expectedAttendees: Number(e.target.value) })} 
+                        disabled={editForm.isAiAssisted}
+                        className={`w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900 ${editForm.isAiAssisted ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`} 
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Budget ($)</label>
-                      <input type="number" value={editForm.budget} onChange={(e) => setEditForm({ ...editForm, budget: Number(e.target.value) })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <label className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        Budget (LKR) {editForm.isAiAssisted && <Lock size={12} className="text-indigo-400" />}
+                      </label>
+                      <input 
+                        type="number" 
+                        value={editForm.budget} 
+                        onChange={(e) => setEditForm({ ...editForm, budget: Number(e.target.value) })} 
+                        disabled={editForm.isAiAssisted}
+                        className={`w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900 ${editForm.isAiAssisted ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`} 
+                      />
                     </div>
                   </div>
 
@@ -829,17 +853,11 @@ export default function DashboardHome() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Organizer Name</label>
-                    {/* Read-only because it's their real account name */}
                     <input type="text" value={editForm.organizerName} readOnly className="w-full border border-gray-200 bg-gray-50 rounded-lg p-2.5 outline-none text-gray-500 cursor-not-allowed" />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Your Event Role</label>
-                    {/* Dropdown mapping perfectly to your Database Enums! */}
-                    <select
-                      value={editForm.organizerRole}
-                      onChange={(e) => setEditForm({ ...editForm, organizerRole: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900 bg-white"
-                    >
+                    <select value={editForm.organizerRole} onChange={(e) => setEditForm({ ...editForm, organizerRole: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900 bg-white">
                       <option value="President">President</option>
                       <option value="Secretary">Secretary</option>
                       <option value="Treasurer">Treasurer</option>
@@ -849,13 +867,13 @@ export default function DashboardHome() {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm text-gray-600 mb-1">Email</label>
-                    {/* Read-only account email */}
                     <input type="email" value={editForm.organizerEmail} readOnly className="w-full border border-gray-200 bg-gray-50 rounded-lg p-2.5 outline-none text-gray-500 cursor-not-allowed" />
                   </div>
                 </div>
               </section>
 
               <hr className="border-gray-100" />
+              
               <section>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg text-gray-800 font-medium">Event Agenda</h3>
@@ -866,44 +884,15 @@ export default function DashboardHome() {
                 <div className="space-y-3">
                   {agendaItems.map((item, idx) => (
                     <div key={idx} className="flex gap-4 items-center">
-                      <input
-                        type="time"
-                        value={item.startTime || ""}
-                        onChange={(e) => {
-                          const newArr = [...agendaItems];
-                          newArr[idx] = { ...newArr[idx], startTime: e.target.value };
-                          setAgendaItems(newArr);
-                        }}
-                        className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900"
-                      />
-                      <input
-                        type="time"
-                        value={item.endTime || ""}
-                        onChange={(e) => {
-                          const newArr = [...agendaItems];
-                          newArr[idx] = { ...newArr[idx], endTime: e.target.value };
-                          setAgendaItems(newArr);
-                        }}
-                        className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Session Title"
-                        value={item.title || ""}
-                        onChange={(e) => {
-                          const newArr = [...agendaItems];
-                          newArr[idx] = { ...newArr[idx], title: e.target.value };
-                          setAgendaItems(newArr);
-                        }}
-                        className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900"
-                      />
-                      <button onClick={() => setAgendaItems(agendaItems.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2">
-                        <Trash2 size={20} />
-                      </button>
+                      <input type="time" value={item.startTime || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx] = { ...newArr[idx], startTime: e.target.value }; setAgendaItems(newArr); }} className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <input type="time" value={item.endTime || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx] = { ...newArr[idx], endTime: e.target.value }; setAgendaItems(newArr); }} className="w-1/4 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <input type="text" placeholder="Session Title" value={item.title || ""} onChange={(e) => { const newArr = [...agendaItems]; newArr[idx] = { ...newArr[idx], title: e.target.value }; setAgendaItems(newArr); }} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
+                      <button onClick={() => setAgendaItems(agendaItems.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2"><Trash2 size={20} /></button>
                     </div>
                   ))}
                 </div>
               </section>
+
               <section>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg text-gray-800 font-medium">Speakers</h3>
@@ -916,9 +905,7 @@ export default function DashboardHome() {
                     <div key={idx} className="flex gap-4 items-center">
                       <input type="text" placeholder="Name" value={item.name || ""} onChange={(e) => { const newArr = [...speakers]; newArr[idx].name = e.target.value; setSpeakers(newArr); }} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       <input type="text" placeholder="Role/Designation" value={item.role || ""} onChange={(e) => { const newArr = [...speakers]; newArr[idx].role = e.target.value; setSpeakers(newArr); }} className="w-1/2 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                      <button onClick={() => setSpeakers(speakers.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2">
-                        <Trash2 size={20} />
-                      </button>
+                      <button onClick={() => setSpeakers(speakers.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2"><Trash2 size={20} /></button>
                     </div>
                   ))}
                 </div>
@@ -937,9 +924,7 @@ export default function DashboardHome() {
                       <input type="text" placeholder="Company Name" value={item.name || ""} onChange={(e) => { const newArr = [...sponsors]; newArr[idx].name = e.target.value; setSponsors(newArr); }} className="flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       <input type="text" placeholder="Tier (e.g. Gold)" value={item.tier || ""} onChange={(e) => { const newArr = [...sponsors]; newArr[idx].tier = e.target.value; setSponsors(newArr); }} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
                       <input type="number" placeholder="Amount" value={item.amount || ""} onChange={(e) => { const newArr = [...sponsors]; newArr[idx].amount = e.target.value; setSponsors(newArr); }} className="w-32 border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#4f46e5] text-gray-900" />
-                      <button onClick={() => setSponsors(sponsors.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2">
-                        <Trash2 size={20} />
-                      </button>
+                      <button onClick={() => setSponsors(sponsors.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700 p-2"><Trash2 size={20} /></button>
                     </div>
                   ))}
                 </div>
@@ -948,7 +933,6 @@ export default function DashboardHome() {
             </div>
 
             <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
-              {/* NEW: Connect the handleUpdateEvent function here */}
               <button
                 onClick={handleUpdateEvent}
                 disabled={isSaving}
@@ -956,10 +940,7 @@ export default function DashboardHome() {
               >
                 {isSaving ? "Saving..." : "Save Changes"}
               </button>
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm"
-              >
+              <button onClick={() => setIsEditModalOpen(false)} className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm">
                 Cancel
               </button>
             </div>

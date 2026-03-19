@@ -27,7 +27,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   // AI Form States
   const [aiHeadcount, setAiHeadcount] = useState<number>(400);
   const [aiBudget, setAiBudget] = useState<number>(200000);
-  const [aiCategory, setAiCategory] = useState<string>("Workshop / Training");
+  const [aiCategory, setAiCategory] = useState<string>("Workshops & Training");
   const [aiVenueStyle, setAiVenueStyle] = useState<string>("Coworking Space");
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiResponseData, setAiResponseData] = useState<any>(null);
@@ -174,6 +174,17 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     setIsGeneratingAI(true);
     setErrorMessage("");
 
+    // Converts your Database ENUMs into Hussain's AI-friendly format!
+    const aiCategoryMapping: { [key: string]: string } = {
+      "Workshops & Training": "Workshop / Training",
+      "Competitions & Hackathons": "Competition / Hackathon",
+      "Career & Networking": "Networking / Career",
+      "Conferences & Expos": "Conference / Expo",
+      "Meetups & Community": "Meetup / Community",
+      "Talks & Panels": "Talk / Panel",
+      "Tech Experiences": "Tech Experience"
+    };
+
     const payload = {
       headcount: aiHeadcount,
       budget: aiBudget,
@@ -240,11 +251,11 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
       {socketAlert && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-md animate-in slide-in-from-top-4 fade-in duration-300">
           <div className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border ${socketAlert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
-              socketAlert.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
-                'bg-indigo-50 border-indigo-200 text-indigo-800'
+            socketAlert.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+              'bg-indigo-50 border-indigo-200 text-indigo-800'
             }`}>
             <div className={`p-2 rounded-full shrink-0 ${socketAlert.type === 'error' ? 'bg-red-100' :
-                socketAlert.type === 'success' ? 'bg-green-100' : 'bg-indigo-100'
+              socketAlert.type === 'success' ? 'bg-green-100' : 'bg-indigo-100'
               }`}>
               {socketAlert.type === 'error' && <AlertCircle size={20} className="text-red-600" />}
               {socketAlert.type === 'success' && <CheckCircle size={20} className="text-green-600" />}
@@ -425,13 +436,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         <div>
                           <label className="block text-sm text-gray-700 mb-1.5">Event Category</label>
                           <select value={aiCategory} onChange={(e) => setAiCategory(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 text-sm text-gray-900 bg-white">
-                            <option value="Workshop / Training">Workshops & Training</option>
-                            <option value="Competition / Hackathon">Competitions & Hackathons</option>
-                            <option value="Networking / Career">Career & Networking</option>
-                            <option value="Conference / Expo">Conferences & Expos</option>
-                            <option value="Meetup / Community">Meetups & Community</option>
-                            <option value="Talk / Panel">Talks & Panels</option>
-  <option value="Tech Experience">Tech Experiences</option>
+                            <option value="Workshops & Training">Workshops & Training</option>
+                            <option value="Competitions & Hackathons">Competitions & Hackathons</option>
+                            <option value="Career & Networking">Career & Networking</option>
+                            <option value="Conferences & Expos">Conferences & Expos</option>
+                            <option value="Meetups & Community">Meetups & Community</option>
+                            <option value="Talks & Panels">Talks & Panels</option>
+                            <option value="Tech Experiences">Tech Experiences</option>
                           </select>
                         </div>
                         <div>
@@ -517,47 +528,47 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                           </div>
                         </div>
                         <div className="p-5 border-t border-gray-200 bg-white flex items-center gap-3 shrink-0 rounded-b-2xl">
-                          <button 
-  onClick={() => { 
-    // 1. CLEAN THE PLAN: Chop it into an array AND strip out the ugly ** asterisks
-    const formattedPlanArray = aiResponseData?.pre_event_plan 
-      ? aiResponseData.pre_event_plan
-          .split('\n')
-          .filter((step: string) => step.trim() !== '')
-          .map((step: string) => step.replace(/\*\*/g, '').trim()) // <-- Magic cleaner!
-      : ["No plan generated."];
+                          <button
+                            onClick={() => {
+                              // 1. CLEAN THE PLAN: Chop it into an array AND strip out the ugly ** asterisks
+                              const formattedPlanArray = aiResponseData?.pre_event_plan
+                                ? aiResponseData.pre_event_plan
+                                  .split('\n')
+                                  .filter((step: string) => step.trim() !== '')
+                                  .map((step: string) => step.replace(/\*\*/g, '').trim()) // <-- Magic cleaner!
+                                : ["No plan generated."];
 
-    // 2. EXTRACT THE COLORS: Hunt through the AI's paragraph to find the #HEX codes
-    const themeString = aiResponseData?.color_theme || "";
-    const foundHexes = themeString.match(/#[0-9a-fA-F]{6}/g) || ["#3b82f6", "#10b981", "#f59e0b"]; // Fallback colors if AI forgets them
-    
-    const formattedTheme = { 
-      name: "AI Generated Theme", 
-      primary: foundHexes[0] || "#3b82f6", 
-      secondary: foundHexes[1] || "#10b981", 
-      accent: foundHexes[2] || "#f59e0b" 
-    };
+                              // 2. EXTRACT THE COLORS: Hunt through the AI's paragraph to find the #HEX codes
+                              const themeString = aiResponseData?.color_theme || "";
+                              const foundHexes = themeString.match(/#[0-9a-fA-F]{6}/g) || ["#3b82f6", "#10b981", "#f59e0b"]; // Fallback colors if AI forgets them
 
-    // --- SAVE LIVE AI DATA TO LOCAL STORAGE ---
-    localStorage.setItem("aiDraft", JSON.stringify({ 
-      title: title || "New Event", 
-      date: date, 
-      headcount: Number(aiHeadcount), 
-      totalBudget: Number(aiBudget), 
-      category: aiCategory, 
-      venue: aiResponseData?.recommended_venue || "TBA", 
-      theme: formattedTheme, // <-- NOW PASSING THE PERFECT OBJECT!
-      budgetAllocation: dynamicBudgetData, 
-      plan: formattedPlanArray 
-    })); 
-    
-    setIsCreateModalOpen(false); 
-    window.location.href = "/ai-recommendations"; 
-  }} 
-  className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm"
->
-  Preview and Confirm
-</button>
+                              const formattedTheme = {
+                                name: "AI Generated Theme",
+                                primary: foundHexes[0] || "#3b82f6",
+                                secondary: foundHexes[1] || "#10b981",
+                                accent: foundHexes[2] || "#f59e0b"
+                              };
+
+                              // --- SAVE LIVE AI DATA TO LOCAL STORAGE ---
+                              localStorage.setItem("aiDraft", JSON.stringify({
+                                title: title || "New Event",
+                                date: date,
+                                headcount: Number(aiHeadcount),
+                                totalBudget: Number(aiBudget),
+                                category: aiCategory,
+                                venue: aiResponseData?.recommended_venue || "TBA",
+                                theme: formattedTheme, // <-- NOW PASSING THE PERFECT OBJECT!
+                                budgetAllocation: dynamicBudgetData,
+                                plan: formattedPlanArray
+                              }));
+
+                              setIsCreateModalOpen(false);
+                              window.location.href = "/ai-recommendations";
+                            }}
+                            className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm"
+                          >
+                            Preview and Confirm
+                          </button>
                           <button onClick={() => setIsCreateModalOpen(false)} className="bg-white border border-transparent text-gray-500 px-4 py-2.5 rounded-lg font-medium hover:bg-gray-50 hover:text-gray-700 transition text-sm ml-auto">Cancel</button>
                         </div>
                       </div>
