@@ -122,4 +122,7 @@ else:
     e_type, e_cat = type_map[event_type_display]
     v_cat = venue_map[venue_pref_display]
     
-    st.success("✅ Models trained and variables mapped! Ready for predictions.")
+    # 1. Prepare Input Vector
+    input_nums = np.array([[headcount, budget, bph]])
+    
+    st.success("✅ Numeric input array prepared! Ready to encode categories.")
