@@ -125,7 +125,9 @@ else:
     # 1. Prepare Input Vector
     input_nums = np.array([[headcount, budget, bph]])
 
-    # --- NEW IN COMMIT 29: Categorical DataFrame ---
     input_cats = pd.DataFrame([[e_type, e_cat, v_cat]], columns=['eventtype', 'eventcategory', 'venuecategory'])
+
+    # --- NEW IN COMMIT 30: Encode the categories ---
+    input_encoded = encoder.transform(input_cats)
     
-    st.success("✅ Numeric and Categorical input structures prepared!")
+    st.success("✅ Categories successfully one-hot encoded!")
