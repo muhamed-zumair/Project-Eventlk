@@ -125,8 +125,16 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
 
       // --- 🚀 NEW: Listen for Live Task Assignments ---
       socket.on('TASK_ASSIGNED', (data: any) => {
-        fetchInvitations(); // Refreshes the red bell instantly!
+        fetchInvitations(); 
         setSocketAlert({ message: data.message, type: 'info' });
+        window.dispatchEvent(new Event("taskBoardRefresh")); // <-- 🚀 AUTO-REFRESHES THE TASK BOARD!
+        setTimeout(() => setSocketAlert(null), 6000);
+      });
+
+      socket.on('TASK_DELETED', (data: any) => {
+        fetchInvitations(); 
+        setSocketAlert({ message: data.message, type: 'error' });
+        window.dispatchEvent(new Event("taskBoardRefresh")); // <-- 🚀 AUTO-REFRESHES THE TASK BOARD!
         setTimeout(() => setSocketAlert(null), 6000);
       });
     }
@@ -344,7 +352,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                         )}
 
                         {/* 3. 🚀 NEW: GENERAL PERSISTENT ALERTS (Tasks, Roles, Removals) */}
-                        {['role_change', 'removal', 'invite_accepted', 'task_assigned'].includes(notification.type) && (
+                        {['role_change', 'removal', 'invite_accepted', 'task_assigned', 'task_deleted'].includes(notification.type) && (
                           <>
                             <div className="flex gap-3">
                               <div className="mt-0.5 text-blue-600 bg-blue-50 p-1.5 rounded-full shrink-0 h-fit"><Bell size={16} /></div>
