@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle, Receipt, User, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { fetchAPI } from "../../../utils/api";
+import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle, Receipt, User, Clock, AlertTriangle, Sparkles } from "lucide-react";
 
 // --- Types ---
 interface BudgetCategory {
@@ -21,31 +22,12 @@ interface ExpenseTransaction {
   date: string;
 }
 
-// --- Mock Events ---
-const myEvents = [
-  { id: 'evt_1', name: "Annual Tech Summit 2026 (AI Generated)" },
-  { id: 'evt_2', name: "Spring Conference (AI Generated)" }
-];
-
-// --- Mock Data ---
-const initialBudgets: BudgetCategory[] = [
-  { id: '1', eventId: 'evt_1', name: 'Venue Rental', spent: 15000, total: 50000 },
-  { id: '2', eventId: 'evt_1', name: 'Catering', spent: 18500, total: 19800 },
-  { id: '3', eventId: 'evt_1', name: 'Marketing', spent: 6200, total: 9800 },
-  { id: '4', eventId: 'evt_1', name: 'Equipment', spent: 5500, total: 30600 },
-  
-  { id: '6', eventId: 'evt_2', name: 'Venue Rental', spent: 5000, total: 10000 },
-  { id: '7', eventId: 'evt_2', name: 'Catering', spent: 2000, total: 8000 },
-];
-
-const initialExpenses: ExpenseTransaction[] = [
-  { id: 'exp_1', categoryId: '1', amount: 5000, description: 'Advance Payment', loggedBy: 'Sarah Mitchell', date: '2026-02-15T10:30:00Z' },
-  { id: 'exp_2', categoryId: '1', amount: 10000, description: 'Second Installment', loggedBy: 'Sarah Mitchell', date: '2026-03-01T14:15:00Z' },
-  { id: 'exp_3', categoryId: '2', amount: 18500, description: 'Buffet Booking', loggedBy: 'David Lee', date: '2026-03-05T09:00:00Z' },
-  { id: 'exp_4', categoryId: '3', amount: 4000, description: 'Facebook Ads', loggedBy: 'Emily Chen', date: '2026-03-10T11:20:00Z' },
-  { id: 'exp_5', categoryId: '3', amount: 2200, description: 'Flyer Printing', loggedBy: 'Sarah Mitchell', date: '2026-03-12T16:45:00Z' },
-  { id: 'exp_6', categoryId: '4', amount: 5500, description: 'Projector Rental', loggedBy: 'Michael Brown', date: '2026-03-14T08:30:00Z' },
-];
+interface EventData {
+  id: string;
+  title: string;
+  budget: number;
+  isAiAssisted: boolean;
+}
 
 const StatusBadge = ({ spent, total }: { spent: number, total: number }) => {
   let status = "Not Started";
@@ -55,111 +37,197 @@ const StatusBadge = ({ spent, total }: { spent: number, total: number }) => {
     status = "Under Budget";
     badgeStyle = "bg-blue-100 text-blue-700 border border-blue-200";
   } else if (spent === total && total > 0) {
-    status = "Complete";
+    status = "On Track";
     badgeStyle = "bg-green-100 text-green-700 border border-green-200";
   } else if (spent > total) {
     status = "Over Budget";
     badgeStyle = "bg-red-100 text-red-700 border border-red-200";
   }
 
-  return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${badgeStyle}`}>
-      {status}
-    </span>
-  );
+  return <span className={`px-3 py-1 rounded-full text-xs font-medium ${badgeStyle}`}>{status}</span>;
 };
 
 export default function BudgetPage() {
-  const [selectedEventId, setSelectedEventId] = useState<string>(myEvents[0].id);
-  const [budgets, setBudgets] = useState<BudgetCategory[]>(initialBudgets);
-  const [expenses, setExpenses] = useState<ExpenseTransaction[]>(initialExpenses);
+  // --- LIVE DATA STATES ---
+  const [eventsList, setEventsList] = useState<EventData[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseTransaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Modals State
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
   const [viewDetailsCategory, setViewDetailsCategory] = useState<BudgetCategory | null>(null);
   
-  // Add Expense Inputs
+  // Inputs
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseDescription, setExpenseDescription] = useState("");
-
-  // Add Category Inputs
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryAmount, setNewCategoryAmount] = useState("");
 
-  const currentEventBudgets = budgets.filter(b => b.eventId === selectedEventId);
-  const totalBudget = currentEventBudgets.reduce((sum, cat) => sum + cat.total, 0);
-  const totalSpent = currentEventBudgets.reduce((sum, cat) => sum + cat.spent, 0);
-  const remaining = totalBudget - totalSpent;
-  const percentageUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  // --- API FETCHING LOGIC ---
+  useEffect(() => {
+    fetchMyEvents();
+  }, []);
 
-  // Add Expense Logic
+  useEffect(() => {
+    if (selectedEventId) {
+      fetchBudgetOverview(selectedEventId);
+    }
+  }, [selectedEventId]);
+
+  const fetchMyEvents = async () => {
+    try {
+      const response = await fetchAPI('/events', { method: 'GET' });
+      if (response.success && response.events) {
+        // We only want to show events that are currently "In Progress"
+        const activeEvents = response.events.map((evt: any) => ({
+          id: evt.id,
+          title: evt.title,
+          budget: Number(evt.total_budget),
+          isAiAssisted: evt.is_ai_assisted
+        }));
+        
+        setEventsList(activeEvents);
+        if (activeEvents.length > 0) {
+          setSelectedEventId(activeEvents[0].id);
+        } else {
+          setIsLoading(false); // No events found
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      setIsLoading(false);
+    }
+  };
+
+  const fetchBudgetOverview = async (eventId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetchAPI(`/budgets/${eventId}`, { method: 'GET' });
+      if (response.success) {
+        setBudgets(response.categories);
+        setExpenses(response.expenses);
+      }
+    } catch (error) {
+      console.error("Error fetching budget data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- ADD EXPENSE TO DATABASE ---
+  const handleAddExpense = async () => {
+    if (!selectedCategory || !expenseAmount || isSaving) return;
+    const parsedAmount = parseFloat(expenseAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        categoryId: selectedCategory.id,
+        amount: parsedAmount,
+        description: expenseDescription || 'Uncategorized Expense'
+      };
+
+      const response = await fetchAPI(`/budgets/${selectedEventId}/expense`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      if (response.success) {
+        await fetchBudgetOverview(selectedEventId); // Refresh live data!
+        handleCloseModal();
+      }
+    } catch (error) {
+      console.error("Error adding expense:", error);
+      alert("Failed to save expense.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // --- ADD CATEGORY TO DATABASE ---
+  const handleAddCategory = async () => {
+    if (!newCategoryName || !newCategoryAmount || isSaving) return;
+    const parsedAmount = parseFloat(newCategoryAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        name: newCategoryName,
+        amount: parsedAmount
+      };
+
+      const response = await fetchAPI(`/budgets/${selectedEventId}/category`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      if (response.success) {
+        await fetchBudgetOverview(selectedEventId); // Refresh live data!
+        setIsCategoryModalOpen(false);
+        setNewCategoryName("");
+        setNewCategoryAmount("");
+      }
+    } catch (error: any) {
+      console.error("Error adding category:", error);
+      alert(error.message || "Failed to create category.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleOpenModal = (category: BudgetCategory) => {
     setSelectedCategory(category);
     setIsDropdownOpen(false); 
   };
+  
   const handleCloseModal = () => {
     setSelectedCategory(null);
     setExpenseAmount(""); 
     setExpenseDescription("");
   };
-  const handleAddExpense = () => {
-    if (!selectedCategory || !expenseAmount) return;
-    const parsedAmount = parseFloat(expenseAmount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) return;
 
-    // 1. Update the total spent for the category
-    const updatedBudgets = budgets.map(cat => {
-      if (cat.id === selectedCategory.id) {
-        return { ...cat, spent: cat.spent + parsedAmount };
-      }
-      return cat;
-    });
-
-    // 2. Create the new transaction record
-    const newExpense: ExpenseTransaction = {
-      id: Date.now().toString(),
-      categoryId: selectedCategory.id,
-      amount: parsedAmount,
-      description: expenseDescription || 'Uncategorized Expense',
-      loggedBy: 'You', // In reality, this comes from the logged-in user's token
-      date: new Date().toISOString(),
-    };
-
-    setBudgets(updatedBudgets);
-    setExpenses([newExpense, ...expenses]); // Add to beginning of list
-    handleCloseModal();
-  };
-
-  // Add Category Logic
-  const handleAddCategory = () => {
-    if (!newCategoryName || !newCategoryAmount) return;
-    const parsedAmount = parseFloat(newCategoryAmount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) return;
-
-    const newCategory: BudgetCategory = {
-      id: Date.now().toString(),
-      eventId: selectedEventId,
-      name: newCategoryName,
-      spent: 0,
-      total: parsedAmount
-    };
-
-    setBudgets([...budgets, newCategory]);
-    setIsCategoryModalOpen(false);
-    setNewCategoryName("");
-    setNewCategoryAmount("");
-  };
-
-  // Helper to format date
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
+  // --- CALCULATIONS ---
+  const currentEvent = eventsList.find(e => e.id === selectedEventId);
+  const masterBudget = currentEvent?.budget || 0;
+  
+  const totalAllocatedToCategories = budgets.reduce((sum, cat) => sum + cat.total, 0);
+  const totalSpent = budgets.reduce((sum, cat) => sum + cat.spent, 0);
+  const overallRemaining = masterBudget - totalSpent;
+  const percentageUsed = masterBudget > 0 ? (totalSpent / masterBudget) * 100 : 0;
+
+  // The Soft Warning Logic
+  const isOverAllocated = totalAllocatedToCategories > masterBudget;
+  const overAllocatedAmount = totalAllocatedToCategories - masterBudget;
+
+  if (isLoading && eventsList.length === 0) {
+    return <div className="flex justify-center items-center h-full text-indigo-600 animate-pulse">Loading budget tracker...</div>;
+  }
+
+  if (eventsList.length === 0) {
+    return (
+      <div className="flex-1 bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center p-10 text-center shadow-sm">
+        <Banknote size={48} className="text-gray-300 mb-4" />
+        <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Events</h3>
+        <p className="text-gray-500 max-w-sm">You need an active event to track budgets. Go to the dashboard to create one!</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 relative h-full flex flex-col max-w-5xl mx-auto">
+    <div className="space-y-6 relative h-full flex flex-col max-w-5xl mx-auto pb-20">
+      
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
@@ -177,15 +245,17 @@ export default function BudgetPage() {
               onChange={(e) => setSelectedEventId(e.target.value)}
               className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer max-w-[250px] truncate"
             >
-              {myEvents.map(evt => (
-                <option key={evt.id} value={evt.id}>{evt.name}</option>
+              {eventsList.map(evt => (
+                <option key={evt.id} value={evt.id}>{evt.title}</option>
               ))}
             </select>
           </div>
         </div>
       </div>
 
-      {currentEventBudgets.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center h-48 text-indigo-600 animate-pulse font-medium">Fetching live financials...</div>
+      ) : budgets.length === 0 ? (
         /* EMPTY STATE FOR MANUAL EVENTS */
         <div className="flex-1 bg-white rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-10 text-center min-h-[400px]">
           <div className="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
@@ -205,14 +275,28 @@ export default function BudgetPage() {
       ) : (
         /* NORMAL DASHBOARD */
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start gap-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-lg"><Banknote size={24} /></div>
+          {/* THE SOFT WARNING UI */}
+          {isOverAllocated && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+              <AlertTriangle className="text-orange-500 shrink-0 mt-0.5" size={20} />
               <div>
-                <p className="text-sm text-gray-500 font-medium">Total Budget</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1">LKR {totalBudget.toLocaleString()}</h3>
+                <h4 className="text-sm font-bold text-orange-900">Over-Allocated Warning</h4>
+                <p className="text-sm text-orange-700 mt-0.5">
+                  You have assigned <strong>LKR {totalAllocatedToCategories.toLocaleString()}</strong> to your categories, which exceeds your Master Event Budget of <strong>LKR {masterBudget.toLocaleString()}</strong> by LKR {overAllocatedAmount.toLocaleString()}.
+                </p>
               </div>
             </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className={`p-6 rounded-xl border shadow-sm flex items-start gap-4 ${isOverAllocated ? 'bg-orange-50/50 border-orange-100' : 'bg-white border-gray-100'}`}>
+              <div className={`p-3 rounded-lg ${isOverAllocated ? 'bg-orange-100 text-orange-600' : 'bg-blue-50 text-blue-600'}`}><Banknote size={24} /></div>
+              <div>
+                <p className={`text-sm font-medium ${isOverAllocated ? 'text-orange-600/80' : 'text-gray-500'}`}>Master Event Budget</p>
+                <h3 className={`text-2xl font-bold mt-1 ${isOverAllocated ? 'text-orange-900' : 'text-gray-900'}`}>LKR {masterBudget.toLocaleString()}</h3>
+              </div>
+            </div>
+            
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start gap-4">
               <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg"><TrendingUp size={24} /></div>
               <div>
@@ -220,14 +304,15 @@ export default function BudgetPage() {
                 <h3 className="text-2xl font-bold text-gray-900 mt-1">LKR {totalSpent.toLocaleString()}</h3>
               </div>
             </div>
+            
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start gap-4">
-              <div className={`p-3 rounded-lg ${remaining < 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+              <div className={`p-3 rounded-lg ${overallRemaining < 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
                 <AlertCircle size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">{remaining < 0 ? 'Over Budget By' : 'Remaining'}</p>
-                <h3 className={`text-2xl font-bold mt-1 ${remaining < 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                  LKR {Math.abs(remaining).toLocaleString()}
+                <p className="text-sm text-gray-500 font-medium">{overallRemaining < 0 ? 'Over Master Budget By' : 'Remaining Event Funds'}</p>
+                <h3 className={`text-2xl font-bold mt-1 ${overallRemaining < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  LKR {Math.abs(overallRemaining).toLocaleString()}
                 </h3>
               </div>
             </div>
@@ -236,17 +321,23 @@ export default function BudgetPage() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex-1">
             <div className="flex justify-between items-start mb-2 relative">
               <div>
-                <h3 className="text-lg font-bold text-gray-800">Budget Overview</h3>
-                <p className="text-sm text-gray-500">{percentageUsed.toFixed(1)}% of total budget used</p>
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  Budget Overview
+                  {currentEvent?.isAiAssisted && <span className="bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider flex items-center gap-1"><Sparkles size={10}/> AI Managed</span>}
+                </h3>
+                <p className="text-sm text-gray-500">{percentageUsed.toFixed(1)}% of total budget utilized</p>
               </div>
               
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
-                >
-                  <PlusCircle size={16} /> Category
-                </button>
+                {/* --- HIDE THE ADD CATEGORY BUTTON FOR AI EVENTS --- */}
+                {!currentEvent?.isAiAssisted && (
+                  <button 
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    <PlusCircle size={16} /> Category
+                  </button>
+                )}
 
                 <div className="relative">
                   <button 
@@ -257,8 +348,8 @@ export default function BudgetPage() {
                   </button>
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 shadow-xl rounded-xl z-10 py-2 overflow-hidden">
-                      <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Select Category</div>
-                      {currentEventBudgets.map((category) => {
+                      <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Log Expense To...</div>
+                      {budgets.map((category) => {
                         const catRemaining = category.total - category.spent;
                         return (
                           <button 
@@ -284,7 +375,7 @@ export default function BudgetPage() {
             </div>
 
             <div className="space-y-8">
-              {currentEventBudgets.map((item) => {
+              {budgets.map((item) => {
                  const percent = item.total > 0 ? (item.spent / item.total) * 100 : 0;
                  const isOverBudget = item.spent > item.total;
                  const isComplete = item.spent === item.total && item.total > 0;
@@ -295,7 +386,6 @@ export default function BudgetPage() {
                     <div className="flex justify-between items-end mb-2">
                       <div className="flex items-center gap-3">
                         <h4 className="font-semibold text-gray-800">{item.name}</h4>
-                        {/* VIEW DETAILS BUTTON */}
                         <button 
                           onClick={() => setViewDetailsCategory(item)}
                           className="text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
@@ -344,7 +434,9 @@ export default function BudgetPage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50 shrink-0">
-              <button onClick={handleAddCategory} disabled={!newCategoryName || !newCategoryAmount || Number(newCategoryAmount) <= 0} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Create Category</button>
+              <button onClick={handleAddCategory} disabled={!newCategoryName || !newCategoryAmount || Number(newCategoryAmount) <= 0 || isSaving} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                {isSaving ? "Saving..." : "Create Category"}
+              </button>
               <button onClick={() => setIsCategoryModalOpen(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
             </div>
           </div>
@@ -356,7 +448,7 @@ export default function BudgetPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
-              <h2 className="text-xl font-medium text-gray-800">Add Expense</h2>
+              <h2 className="text-xl font-medium text-gray-800">Log an Expense</h2>
               <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition"><X size={24} /></button>
             </div>
             <div className="p-6 space-y-5">
@@ -382,12 +474,14 @@ export default function BudgetPage() {
                   value={expenseDescription}
                   onChange={(e) => setExpenseDescription(e.target.value)}
                   className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-900 resize-none"
-                  placeholder="What was this expense for?"
+                  placeholder="e.g. Caterer initial deposit"
                 />
               </div>
             </div>
             <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50 shrink-0">
-              <button onClick={handleAddExpense} disabled={!expenseAmount || Number(expenseAmount) <= 0} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Save Expense</button>
+              <button onClick={handleAddExpense} disabled={!expenseAmount || Number(expenseAmount) <= 0 || isSaving} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                {isSaving ? "Saving..." : "Save Expense"}
+              </button>
               <button onClick={handleCloseModal} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
             </div>
           </div>
