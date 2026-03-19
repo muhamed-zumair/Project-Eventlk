@@ -5,18 +5,18 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 # ==========================================
-# 1. SETUP & DATA PREP (Cached)
+# 1. SETUP & MODEL TRAINING (Cached)
 # ==========================================
 st.set_page_config(page_title="EventLK Planner", page_icon="📅", layout="wide")
 
 @st.cache_resource
-def load_and_train_model():
+def load_and_prep_data():
+    """Loads, cleans, encodes, and trains models in a single cached run."""
     # Load Data
     file_path = "event_dataset_v2_distinct.csv"
     try:
         df = pd.read_csv(file_path)
     except FileNotFoundError:
-        # Adjusted to return 5 Nones matching the new return signature
         return None, None, None, None, None
 
     # Clean & Prep
@@ -59,12 +59,10 @@ def load_and_train_model():
     rf_a = RandomForestRegressor(n_estimators=100, max_depth=15, random_state=42)
     rf_a.fit(X, y_alloc)
     
-    # --- NEW IN COMMIT 25: Returning the trained models ---
     return rf_v, rf_a, encoder, alloc_df.columns, df
 
-# --- NEW IN COMMIT 25: Unpacking the newly exported variables ---
-# Load the brain
-rf_venue, rf_alloc, encoder, alloc_cols, raw_df = load_and_train_model()
+# Run the cached backend logic and unpack models
+rf_venue, rf_alloc, encoder, alloc_cols, raw_df = load_and_prep_data()
 
 # ==========================================
 # 2. SIDEBAR - USER INPUTS
@@ -117,13 +115,11 @@ with st.sidebar:
 st.title("🎉 EventLK: AI Event Planner")
 st.markdown("### Intelligent Venue & Budget Recommendation System")
 
-# --- NEW IN COMMIT 26: Prediction Logic Setup ---
 if rf_venue is None:
     st.error("❌ Data file not found. Please ensure 'event_dataset_v2_distinct.csv' is in the folder.")
 else:
-    # Logic to run prediction
+    # Logic to map user selections to model categories
     e_type, e_cat = type_map[event_type_display]
     v_cat = venue_map[venue_pref_display]
-
-    # Temporary placeholder to show the extraction is working
-    st.success(f"Backend variables mapped! Type: {e_type}, Cat: {e_cat}, Venue: {v_cat}")
+    
+    st.success("✅ Models trained and variables mapped! Ready for predictions.")
