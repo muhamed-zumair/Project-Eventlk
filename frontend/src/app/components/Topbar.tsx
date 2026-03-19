@@ -302,6 +302,8 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                   ) : (
                     invitations.map((notification) => (
                       <div key={notification.notification_id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition flex flex-col gap-3">
+                        
+                        {/* 1. TEAM INVITATIONS */}
                         {notification.type === 'invite' && (
                           <>
                             <div className="flex gap-3">
@@ -318,6 +320,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                           </>
                         )}
 
+                        {/* 2. DECLINED ALERTS */}
                         {notification.type === 'declined_alert' && (
                           <>
                             <div className="flex gap-3">
@@ -332,6 +335,23 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                             </div>
                           </>
                         )}
+
+                        {/* 3. 🚀 NEW: GENERAL PERSISTENT ALERTS (Tasks, Roles, Removals) */}
+                        {['role_change', 'removal', 'invite_accepted', 'task_assigned'].includes(notification.type) && (
+                          <>
+                            <div className="flex gap-3">
+                              <div className="mt-0.5 text-blue-600 bg-blue-50 p-1.5 rounded-full shrink-0 h-fit"><Bell size={16} /></div>
+                              <div>
+                                <p className="text-sm text-gray-800 font-medium">New Update</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{notification.message}</p>
+                              </div>
+                            </div>
+                            <div className="flex pl-9 mt-1">
+                              <button onClick={() => handleDismissAlert(notification.notification_id)} className="w-full bg-gray-100 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1.5">Dismiss</button>
+                            </div>
+                          </>
+                        )}
+
                       </div>
                     ))
                   )}
