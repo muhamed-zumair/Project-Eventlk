@@ -13,7 +13,7 @@ interface Attendee {
   name: string;
   email: string;
   date: string;
-  status: 'Pending QR' | 'QR Sent' | 'Checked In';
+  status: 'Pending QR' | 'Sent' | 'Checked In';
 }
 
 export default function RegistrationsPage() {
@@ -107,6 +107,7 @@ export default function RegistrationsPage() {
       if (response.success) {
         // Because we fire a WebSocket event from the backend, we don't even need to 
         // manually update the state here. The useEffect listener will handle fetching the fresh data!
+        setAttendees(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, status: 'Sent' } : a));
         setSelectedIds([]);
         alert(`Successfully dispatched ${selectedIds.length} QR code tickets via email!`);
       }
@@ -119,7 +120,7 @@ export default function RegistrationsPage() {
   };
 
   const pendingCount = attendees.filter(a => a.status === "Pending QR").length;
-  const sentCount = attendees.filter(a => a.status === "QR Sent" || a.status === "Checked In").length;
+  const sentCount = attendees.filter(a => a.status === "Sent" || a.status === "Checked In").length;
 
   if (eventsList.length === 0) {
     return (
@@ -228,7 +229,7 @@ export default function RegistrationsPage() {
                       <td className="p-4 text-gray-500 text-sm">{attendee.email}</td>
                       <td className="p-4 text-gray-500 text-sm">{attendee.date}</td>
                       <td className="p-4">
-                        {attendee.status === "QR Sent" ? <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"><CheckCircle size={12} /> Ticket Sent</span> :
+                        {attendee.status === "Sent" ? <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"><CheckCircle size={12} /> Ticket Sent</span> :
                          attendee.status === "Checked In" ? <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100"><CheckCircle size={12} /> Checked In</span> :
                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100"><Clock size={12} /> Pending QR</span>}
                       </td>
