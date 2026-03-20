@@ -72,7 +72,8 @@ const getEvents = async (req, res) => {
             COALESCE((SELECT SUM(amount) FROM "Expenses" WHERE event_id = e.id), 0) as total_spent,
             (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id) as total_tasks,
             (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id AND status = 'Done') as completed_tasks,
-            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id AND priority = 'High' AND status != 'Done') as pending_high_tasks
+            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id AND priority = 'High' AND status != 'Done') as pending_high_tasks,
+            (SELECT COUNT(*) FROM "Attendees" WHERE event_id = e.id AND status = 'Checked In') as checked_in_count
         FROM "Events" e
         INNER JOIN "Event_Team" t ON e.id = t.event_id
         LEFT JOIN "Venues" v ON e.venue_id = v.id
