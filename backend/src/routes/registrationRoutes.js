@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { receiveWebhook, getEventAttendees, issueTickets } = require('../controllers/registrationContoller');
+const { receiveWebhook, getEventAttendees, issueTickets } = require('../controllers/registrationController');
 const { protect } = require('../middleware/authMiddleware');// Import the protect middleware to secure the route
 
 router.post('/webhooks/:eventId', receiveWebhook);
