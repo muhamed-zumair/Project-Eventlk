@@ -188,10 +188,13 @@ export default function CommunicationPage() {
     if (!chatInput.trim() && !internalAttachment) return;
     if (selectedRecipients.length === 0) { alert("Please select at least one recipient."); return; }
 
+    setIsSending(true); // <-- Start Loading
+
     const payload = {
       text: chatInput,
       recipients: selectedRecipients,
-      attachmentName: internalAttachment ? internalAttachment.name : null
+      attachmentName: internalAttachment ? internalAttachment.name : null,
+      senderId: currentUser.id // 🚀 Send explicit ID to fix "Unknown User"
     };
 
     try {
@@ -204,7 +207,11 @@ export default function CommunicationPage() {
         setChatInput("");
         setInternalAttachment(null);
       }
-    } catch (error) { console.error("Failed to send message", error); }
+    } catch (error) { 
+      console.error("Failed to send message", error); 
+    } finally {
+      setIsSending(false); // <-- Stop Loading
+    }
   };
 
   // ==========================================
