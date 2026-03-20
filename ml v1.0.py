@@ -132,8 +132,16 @@ else:
     
     # 2. Predict
     venue_pred = rf_venue.predict(final_input)[0]
-
-    # --- NEW IN COMMIT 33: Allocation Prediction ---
     alloc_pred = rf_alloc.predict(final_input)[0]
-    
-    st.success(f"✅ Both models executed! Ready to build the UI dashboard.")
+
+    # --- NEW IN COMMIT 34: Display Venue Result Layout ---
+    st.markdown("---")
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.subheader("📍 Recommended Venue")
+        st.write("*(Prediction will appear here)*")
+
+    with col2:
+        st.subheader("💵 Est. Total Cost")
+        st.write("*(Cost will appear here)*")
