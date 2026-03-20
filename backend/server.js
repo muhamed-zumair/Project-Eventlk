@@ -24,19 +24,14 @@ io.on('connection', (socket) => {
 
     // When a user's React app loads, it will send a 'register' event with their User ID
     socket.on('register', (userId) => {
-        connectedUsers.set(userId, socket.id);
-        console.log(`👤 User ${userId} is now online (Socket: ${socket.id})`);
+        // 🚀 FIX: Join a "Room" named after their User ID. 
+        // This allows them to have multiple tabs (Topbar + Chat Page) open at the same time!
+        socket.join(userId);
+        console.log(`👤 User ${userId} joined their personal notification room`);
     });
 
-    // When they close the tab or log out
     socket.on('disconnect', () => {
-        for (let [userId, socketId] of connectedUsers.entries()) {
-            if (socketId === socket.id) {
-                connectedUsers.delete(userId);
-                console.log(`❌ User ${userId} went offline`);
-                break;
-            }
-        }
+        console.log(`❌ A device disconnected: ${socket.id}`);
     });
 });
 
@@ -75,6 +70,7 @@ const budgetRoutes = require('./src/routes/budgetRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const registrationRoutes = require('./src/routes/registrationRoutes');
 const communicationRoutes = require('./src/routes/communicationRoutes');
+const emailRoutes = require('./src/routes/emailRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api', contactRoutes);
@@ -84,6 +80,7 @@ app.use('/api/registrations', registrationRoutes);
 app.use('/api/v1', registrationRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/communication', communicationRoutes);
+app.use('/api/emails', emailRoutes);
 
 const PORT = 5000;
 

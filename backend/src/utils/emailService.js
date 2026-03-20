@@ -218,14 +218,31 @@ const sendTicketEmail = async (userEmail, attendeeName, eventTitle, qrCodeDataUr
   }
 };
 
+// 4. Send Custom Bulk Emails (using BCC for privacy)
+const sendBulkEmail = async (senderName, subject, htmlBody, bccList, ccList = []) => {
+  const mailOptions = {
+    from: `"${senderName} via EventLK" <${process.env.EMAIL_USER}>`,
+    to: process.env.EMAIL_USER, // Send to the organizer, BCC everyone else!
+    bcc: bccList,
+    cc: ccList,
+    subject: subject,
+    html: htmlBody,
+    // Note: Physical attachments will be processed here once AWS S3 is integrated!
+  };
 
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Bulk email sent to ${bccList.length} recipients.`);
+    return true;
+  } catch (error) {
+    console.error('Bulk Email Error:', error);
+    throw error;
+  }
+};
 
-// EXPORT ALL THREE FUNCTIONS
+// Update your exports to include the new function!
 module.exports = { 
-  sendWelcomeEmail, 
-  sendExistingUserInviteEmail, 
-  sendNewUserInviteEmail,
-  sendDeclineNotificationEmail,
-  sendRemovalEmail,
-  sendTicketEmail
+  sendWelcomeEmail, sendExistingUserInviteEmail, sendNewUserInviteEmail,
+  sendDeclineNotificationEmail, sendRemovalEmail, sendTicketEmail,
+  sendBulkEmail // <-- NEW
 };

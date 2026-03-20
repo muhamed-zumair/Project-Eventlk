@@ -41,9 +41,15 @@ const getEventTeam = async (req, res) => {
 const getMessages = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const userId = req.user.id;
+        
+        // 🚀 FIX: Look for 'userId' first, which matches your JWT payload structure
+        const userId = req.user?.userId || req.user?.id;
 
-        // 🚀 FIX: Using CONCAT() here as well!
+        if (!userId) {
+            console.log("Error: Could not identify user from token.");
+            return res.status(400).json({ success: false, message: "Authentication error: User ID missing." });
+        }
+
         const result = await pool.query(`
             SELECT 
                 m.id as message_id, m.message_text as text, m.attachment_name, 
@@ -126,13 +132,12 @@ const sendMessage = async (req, res) => {
             isMe: false
         };
 
-        // 4. FIRE WEBSOCKETS
+        // 4. FIRE WEBSOCKETS (Using Rooms)
         const io = req.app.get('io');
-        const connectedUsers = req.app.get('connectedUsers');
 
         recipients.forEach(recipientId => {
-            const socketId = connectedUsers.get(recipientId);
-            if (socketId) io.to(socketId).emit('NEW_INTERNAL_MESSAGE', fullMessage);
+            // 🚀 Emits to EVERY open tab the recipient currently has!
+            io.to(recipientId).emit('NEW_INTERNAL_MESSAGE', fullMessage);
         });
 
         res.status(200).json({ success: true, message: { ...fullMessage, isMe: true } });
