@@ -92,6 +92,9 @@ export default function DashboardHome() {
             diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           }
 
+          const totalTasks = Number(dbEvent.total_tasks) || 0;
+          const completedTasks = Number(dbEvent.completed_tasks) || 0;
+
           return {
             id: dbEvent.id,
             title: dbEvent.title,
@@ -104,7 +107,12 @@ export default function DashboardHome() {
             budget: Number(dbEvent.total_budget),
             description: dbEvent.description,
             isAiAssisted: dbEvent.is_ai_assisted,
-            totalSpent: Number(dbEvent.total_spent) || 0 // <-- REALTIME BUDGET INJECTED HERE
+            totalSpent: Number(dbEvent.total_spent) || 0,
+            totalTasks: totalTasks,
+            completedTasks: completedTasks,
+            pendingHighTasks: Number(dbEvent.pending_high_tasks) || 0,
+            progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+            checkedInCount: Number(dbEvent.checked_in_count) || 0
           };
         });
         setEventsList(allEvents);
@@ -134,6 +142,9 @@ export default function DashboardHome() {
           cleanDate = `${year}-${month}-${day}`;
         }
 
+        const totalTasks = Number(fullEvent.total_tasks) || 0;
+        const completedTasks = Number(fullEvent.completed_tasks) || 0;
+
         const fullEventData = {
           id: fullEvent.id, title: fullEvent.title, date: cleanDate, 
           startTime: fullEvent.start_time ? String(fullEvent.start_time).substring(0, 5) : "",
@@ -144,7 +155,9 @@ export default function DashboardHome() {
           organizerName: fullEvent.team[0]?.first_name ? fullEvent.team[0].first_name + " " + fullEvent.team[0].last_name : "Sahan Perera",
           organizerRole: fullEvent.my_role, organizerEmail: fullEvent.team[0]?.email || "example@example.com",
           isAiAssisted: fullEvent.is_ai_assisted, theme: fullEvent.theme_colors, plan: fullEvent.ai_recommended_plan,
-          totalSpent: Number(fullEvent.total_spent) || 0 // <-- REALTIME BUDGET
+          totalSpent: Number(fullEvent.total_spent) || 0,
+          progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+          checkedInCount: Number(fullEvent.checked_in_count) || 0
         };
 
         setEventDetails(fullEventData);
@@ -305,10 +318,10 @@ export default function DashboardHome() {
                     <p className="font-semibold truncate pr-2">{event.venue}</p>
                   </div>
                   <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
-                    <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs"><Users size={14} /> Registrations</div>
-                    <div className="flex justify-between items-end"><p className="font-semibold">168 / {event.expectedAttendees}</p></div>
+                    <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs"><Users size={14} /> Checked In</div>
+                    <div className="flex justify-between items-end"><p className="font-semibold">{event.checkedInCount} / {event.expectedAttendees}</p></div>
                     <div className="w-full bg-indigo-900/50 h-1.5 rounded-full mt-2">
-                      <div className="bg-white h-1.5 rounded-full" style={{ width: `${(168 / event.expectedAttendees) * 100}%` }}></div>
+                      <div className="bg-white h-1.5 rounded-full transition-all duration-500" style={{ width: `${event.expectedAttendees > 0 ? (event.checkedInCount / event.expectedAttendees) * 100 : 0}%` }}></div>
                     </div>
                   </div>
                   <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
@@ -325,17 +338,17 @@ export default function DashboardHome() {
                   <div className="bg-indigo-800/40 p-4 rounded-xl flex flex-col justify-center">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2"><CheckCircle size={16} className="text-indigo-200" /><span className="text-sm font-medium text-white">Overall Progress</span></div>
-                      <span className="text-sm font-bold text-white">75%</span>
+                      <span className="text-sm font-bold text-white">{event.progressPercentage}%</span>
                     </div>
-                    <div className="w-full bg-indigo-900/50 h-1.5 rounded-full"><div className="bg-green-400 h-1.5 rounded-full" style={{ width: '75%' }}></div></div>
+                    <div className="w-full bg-indigo-900/50 h-1.5 rounded-full"><div className="bg-green-400 h-1.5 rounded-full transition-all duration-500" style={{ width: `${event.progressPercentage}%` }}></div></div>
                   </div>
                   <div className="bg-indigo-800/40 p-4 rounded-xl flex items-center gap-3">
                     <div className="bg-indigo-500/30 p-1.5 rounded-full text-indigo-200"><Clock size={16} /></div>
-                    <div className="flex flex-col"><span className="text-xs text-indigo-200">Tasks Completed</span><span className="text-sm font-bold mt-0.5">16 / 24</span></div>
+                    <div className="flex flex-col"><span className="text-xs text-indigo-200">Tasks Completed</span><span className="text-sm font-bold mt-0.5">{event.completedTasks} / {event.totalTasks}</span></div>
                   </div>
                   <div className="bg-indigo-800/40 p-4 rounded-xl flex items-center gap-3">
                     <div className="bg-indigo-500/30 p-1.5 rounded-full text-indigo-200"><AlertCircle size={16} /></div>
-                    <div className="flex flex-col"><span className="text-xs text-indigo-200">Pending Tasks</span><span className="text-sm font-bold mt-0.5">8 High Priority</span></div>
+                    <div className="flex flex-col"><span className="text-xs text-indigo-200">Pending Tasks</span><span className="text-sm font-bold mt-0.5">{event.pendingHighTasks} High Priority</span></div>
                   </div>
                 </div>
 
@@ -394,8 +407,9 @@ export default function DashboardHome() {
                 <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Statistics</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-[#eff6ff] border border-blue-100 rounded-xl p-5">
-                    <div className="flex items-center gap-2 text-blue-600 mb-3"><Users size={18} /><span className="font-medium text-sm">Attendance</span></div>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">168</p><p className="text-sm text-gray-600">of {eventDetails.expectedAttendees} expected</p>
+                    <div className="flex items-center gap-2 text-blue-600 mb-3"><Users size={18} /><span className="font-medium text-sm">Checked In</span></div>
+                    <p className="text-3xl font-bold text-gray-900 mb-1">{eventDetails.checkedInCount}</p>
+                    <p className="text-sm text-gray-600">of {eventDetails.expectedAttendees} expected</p>
                   </div>
                   <div className="bg-[#f0fdf4] border border-green-100 rounded-xl p-5">
                     <div className="flex items-center gap-2 text-green-600 mb-3"><DollarSign size={18} /><span className="font-medium text-sm">Budget Spent</span></div>
@@ -405,7 +419,7 @@ export default function DashboardHome() {
                   </div>
                   <div className="bg-[#fdf4ff] border border-fuchsia-100 rounded-xl p-5">
                     <div className="flex items-center gap-2 text-fuchsia-600 mb-3"><CheckCircle size={18} /><span className="font-medium text-sm">Progress</span></div>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">75%</p><p className="text-sm text-gray-600">Overall completion</p>
+                    <p className="text-3xl font-bold text-gray-900 mb-1">{eventDetails.progressPercentage}%</p><p className="text-sm text-gray-600">Overall completion</p>
                   </div>
                 </div>
               </section>
