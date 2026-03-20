@@ -132,5 +132,8 @@ else:
     
     # 2. Predict
     venue_pred = rf_venue.predict(final_input)[0]
+
+    # --- NEW IN COMMIT 33: Allocation Prediction ---
+    alloc_pred = rf_alloc.predict(final_input)[0]
     
-    st.success(f"✅ Venue successfully predicted! Hidden target: {venue_pred}")
+    st.success(f"✅ Both models executed! Ready to build the UI dashboard.")
