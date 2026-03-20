@@ -168,6 +168,57 @@ const sendRemovalEmail = async (userEmail, eventTitle) => {
   }
 };
 
+// 3. Email for sending the QR Code Ticket & Calendar Invite
+const sendTicketEmail = async (userEmail, attendeeName, eventTitle, qrCodeDataUrl, icsContent) => {
+  const mailOptions = {
+    from: `"EventLK Tickets" <${process.env.EMAIL_USER}>`,
+    to: userEmail,
+    subject: `Your Ticket & Calendar Invite: ${eventTitle} 🎟️`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e5e7eb; padding: 30px; border-radius: 16px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #4f46e5; margin: 0; font-size: 28px;">EventLK</h1>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 5px;">Official Event E-Ticket</p>
+        </div>
+        <h2 style="color: #111827; font-size: 20px;">Hi ${attendeeName},</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          You are confirmed for <strong>${eventTitle}</strong>! Your unique QR code ticket is attached below. Please present this code at the entrance for quick scanning and check-in.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+          <img src="cid:qrcode" alt="Your QR Code Ticket" style="width: 200px; height: 200px; border-radius: 10px; border: 2px solid #e5e7eb; padding: 10px;" />
+        </div>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          We have also attached a Calendar Invite (.ics file) to this email so you can easily add the event to your Google, Apple, or Outlook calendar!
+        </p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0 20px;" />
+        <p style="text-align: center; font-size: 13px; color: #9ca3af; margin: 0;">
+          See you at the event! <br/> Powered by EventLK
+        </p>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: 'ticket-qr.png',
+        path: qrCodeDataUrl,
+        cid: 'qrcode' // Matches the cid in the img src above to embed the image inline!
+      },
+      {
+        filename: 'event-invite.ics',
+        content: icsContent,
+        contentType: 'text/calendar'
+      }
+    ]
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Ticket email sent successfully to: ${userEmail}`);
+  } catch (error) {
+    console.error('Error sending ticket email:', error);
+  }
+};
+
+
 
 // EXPORT ALL THREE FUNCTIONS
 module.exports = { 
@@ -175,5 +226,6 @@ module.exports = {
   sendExistingUserInviteEmail, 
   sendNewUserInviteEmail,
   sendDeclineNotificationEmail,
-  sendRemovalEmail
+  sendRemovalEmail,
+  sendTicketEmail
 };
