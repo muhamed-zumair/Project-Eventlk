@@ -63,6 +63,9 @@ export default function CommunicationPage() {
   // Load User & "In Progress" Events
   useEffect(() => {
     // 1. Fetch Events FIRST
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
     const fetchActiveEvents = async () => {
       try {
         const response = await fetchAPI('/events', { method: 'GET' });
