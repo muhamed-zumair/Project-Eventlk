@@ -7,6 +7,6 @@ router.post('/webhooks/:eventId', receiveWebhook);
 
 router.get('/:eventId', protect, getEventAttendees);
 router.post('/:eventId/issue-tickets', protect, issueTickets); //  New route for issuing tickets
-router.post('/check-in', protect, checkInAttendee); // New route for checking in attendees
+router.post('/checkin', protect, checkInAttendee); // New route for checking in attendees
 
 module.exports = router;
