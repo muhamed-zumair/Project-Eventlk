@@ -2,21 +2,34 @@ const pool = require('../config/db');
 
 // @desc    Get all team members for an event (for the left sidebar)
 // @route   GET /api/communication/:eventId/team
+// @desc    Get all team members for an event (for the left sidebar)
+// @route   GET /api/communication/:eventId/team
 const getEventTeam = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const loggedInUserId = req.user.id;
+        const loggedInUserId = req.user.id; 
 
-        // 🚀 FIX: Using CONCAT() so missing last names don't break the query
+        console.log(`\n--- 🕵️‍♂️ DEBUG: FETCHING TEAM FOR EVENT ---`);
+        console.log(`Event ID: ${eventId}`);
+        console.log(`Logged-in User ID: ${loggedInUserId}`);
+
+        // We temporarily removed the '!= loggedInUserId' rule so we can see EVERYONE
         const result = await pool.query(`
             SELECT u.id, CONCAT(u.first_name, ' ', u.last_name) as name, et.role 
             FROM "Event_Team" et 
             JOIN "Users" u ON et.user_id = u.id 
-            WHERE et.event_id = $1 AND u.id != $2
+            WHERE et.event_id = $1
             ORDER BY u.first_name ASC
-        `, [eventId, loggedInUserId]);
+        `, [eventId]); 
 
-        res.status(200).json({ success: true, team: result.rows });
+        console.log(`Database found ${result.rows.length} people in the Event_Team table for this event!`);
+        console.log(`Raw Database Data:`, result.rows);
+        console.log(`------------------------------------------\n`);
+
+        // Now we filter out the logged-in user in Javascript instead of SQL
+        const filteredTeam = result.rows.filter(member => member.id !== loggedInUserId);
+
+        res.status(200).json({ success: true, team: filteredTeam });
     } catch (error) {
         console.error("Team Fetch Error:", error);
         res.status(500).json({ success: false, message: "Server error fetching team." });
