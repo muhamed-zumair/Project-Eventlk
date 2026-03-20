@@ -130,4 +130,7 @@ else:
     
     final_input = np.hstack([input_nums, input_encoded])
     
-    st.success("✅ Final input vector assembled! Ready to run predictions.")
+    # 2. Predict
+    venue_pred = rf_venue.predict(final_input)[0]
+    
+    st.success(f"✅ Venue successfully predicted! Hidden target: {venue_pred}")
