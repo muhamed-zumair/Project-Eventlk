@@ -33,6 +33,7 @@ export default function CommunicationPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [searchRecipient, setSearchRecipient] = useState(""); // <-- ADD THIS LINE
   const [internalAttachment, setInternalAttachment] = useState<File | null>(null);
   const internalFileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -140,6 +141,24 @@ export default function CommunicationPage() {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : "??";
   };
 
+  // --- NEW: UNIQUE COLOR GENERATOR ---
+  const bubbleColors = [
+    { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-900", avatar: "bg-blue-500" },
+    { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-900", avatar: "bg-emerald-500" },
+    { bg: "bg-rose-50", border: "border-rose-200", text: "text-rose-900", avatar: "bg-rose-500" },
+    { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-900", avatar: "bg-amber-500" },
+    { bg: "bg-fuchsia-50", border: "border-fuchsia-200", text: "text-fuchsia-900", avatar: "bg-fuchsia-500" },
+    { bg: "bg-cyan-50", border: "border-cyan-200", text: "text-cyan-900", avatar: "bg-cyan-500" },
+    { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-900", avatar: "bg-orange-500" },
+    { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-900", avatar: "bg-teal-500" },
+  ];
+
+  const getUserColor = (name: string) => {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return bubbleColors[Math.abs(hash) % bubbleColors.length];
+  };
+
   // ==========================================
   // 3. INTERNAL CHAT FUNCTIONS
   // ==========================================
@@ -147,9 +166,12 @@ export default function CommunicationPage() {
     setSelectedRecipients(prev => prev.includes(id) ? prev.filter(rId => rId !== id) : [...prev, id]);
   };
 
+  // --- NEW: SEARCH FILTER LOGIC ---
+  const actualTeam = teamMembers.filter(m => m.id !== currentUser?.id); // Hides the logged-in user
+  const filteredTeam = actualTeam.filter(m => m.name.toLowerCase().includes(searchRecipient.toLowerCase()));
   const handleToggleAll = () => {
-    if (selectedRecipients.length === teamMembers.length) setSelectedRecipients([]);
-    else setSelectedRecipients(teamMembers.map(m => m.id));
+    if (selectedRecipients.length === filteredTeam.length && filteredTeam.length > 0) setSelectedRecipients([]);
+    else setSelectedRecipients(filteredTeam.map(m => m.id));
   };
 
   const handleSendMessage = async () => {
@@ -269,17 +291,36 @@ export default function CommunicationPage() {
 
       {/* TAB: Internal Messaging */}
       {activeTab === "internal" && (
-        <div className="flex flex-col lg:flex-row gap-6 h-[600px]">
+        actualTeam.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-[600px] bg-white border border-gray-100 rounded-xl shadow-sm p-8 text-center animate-in fade-in duration-500">
+            <div className="bg-indigo-50 p-5 rounded-full mb-5 border border-indigo-100">
+              <Users size={48} className="text-indigo-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">It's quiet in here...</h3>
+            <p className="text-gray-500 max-w-md text-sm leading-relaxed">
+              You don't have any other team members assigned to this event yet. Organize your team to start a private chat, share documents, and collaborate!
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-6 h-[600px]">
           {/* Sidebar */}
           <div className="w-full lg:w-1/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50"><h3 className="font-semibold text-gray-800 flex items-center gap-2"><Users size={18} className="text-indigo-600" /> Select Recipients</h3></div>
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2"><Users size={18} className="text-indigo-600" /> Select Recipients</h3>
+              {/* NEW: Search Bar */}
+              <div className="mt-3 relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type="text" placeholder="Search team members..." value={searchRecipient} onChange={(e) => setSearchRecipient(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder-gray-400" />
+              </div>
+            </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition border border-transparent hover:border-gray-200">
-                <input type="checkbox" checked={selectedRecipients.length === teamMembers.length && teamMembers.length > 0} onChange={handleToggleAll} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
-                <span className="text-sm font-bold text-gray-800">Select All Event Staff</span>
+                <input type="checkbox" checked={selectedRecipients.length === filteredTeam.length && filteredTeam.length > 0} onChange={handleToggleAll} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
+                <span className="text-sm font-bold text-gray-800">Select All {searchRecipient && "(Filtered)"}</span>
               </label>
               <hr className="my-2 border-gray-100" />
-              {teamMembers.map((member) => (
+              {/* Changed from teamMembers to filteredTeam */}
+              {filteredTeam.map((member) => (
                 <label key={member.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition">
                   <div className="flex items-center gap-3">
                     <input type="checkbox" checked={selectedRecipients.includes(member.id)} onChange={() => handleToggleRecipient(member.id)} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
@@ -288,7 +329,7 @@ export default function CommunicationPage() {
                   <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wider">{member.role}</span>
                 </label>
               ))}
-              {teamMembers.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No other team members assigned to this event.</p>}
+              {filteredTeam.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No team members found.</p>}
             </div>
           </div>
 
@@ -296,30 +337,35 @@ export default function CommunicationPage() {
           <div className="w-full lg:w-2/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col">
             <div className="p-4 border-b border-gray-100 bg-gray-50/50"><h3 className="font-semibold text-gray-800">{currentEventName} - Private Messages</h3><p className="text-xs text-gray-500">Messages sent here are only visible to selected team members.</p></div>
             <div className="flex-1 p-6 overflow-y-auto bg-gray-50/30 space-y-6">
-              {messages.map((msg: any) => (
-                <div key={msg.id} className={`flex flex-col gap-1 max-w-[80%] ${msg.isMe ? 'ml-auto items-end' : ''}`}>
-                  <div className={`flex items-center gap-2 ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm ${msg.isMe ? 'bg-indigo-600' : 'bg-gray-600'}`}>
-                      {getInitials(msg.sender)}
+              {messages.map((msg: any) => {
+                // Determine the unique color for non-me bubbles
+                const uColor = msg.isMe ? null : getUserColor(msg.sender);
+                return (
+                  <div key={msg.id} className={`flex flex-col gap-1 max-w-[80%] ${msg.isMe ? 'ml-auto items-end' : ''}`}>
+                    <div className={`flex items-center gap-2 ${msg.isMe ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm ${msg.isMe ? 'bg-indigo-600' : uColor?.avatar}`}>
+                        {getInitials(msg.sender)}
+                      </div>
+                      <span className="text-sm font-bold text-gray-800">{msg.isMe ? "You" : msg.sender}</span>
+                      <span className="text-[10px] text-gray-400 font-medium">{msg.date ? `${msg.date}, ` : ''}{msg.time}</span>
                     </div>
-                    <span className="text-sm font-bold text-gray-800">{msg.isMe ? "You" : msg.sender}</span>
-                    <span className="text-[10px] text-gray-400 font-medium">{msg.date ? `${msg.date}, ` : ''}{msg.time}</span>
+                    {/* Apply unique colors to the bubble */}
+                    <div className={`text-sm p-3 rounded-2xl shadow-sm ${msg.isMe ? 'bg-indigo-600 text-white rounded-tr-none mr-10' : `${uColor?.bg} border ${uColor?.border} ${uColor?.text} rounded-tl-none ml-10`}`}>
+                      {msg.to_text && (
+                        <div className={`flex items-center gap-1.5 mb-2 pb-2 text-[10px] font-bold tracking-wide border-b ${msg.isMe ? 'border-indigo-500/50 text-indigo-200' : 'border-black/10 opacity-70'}`}>
+                          <Lock size={10} /> TO: {msg.to_text.toUpperCase()}
+                        </div>
+                      )}
+                      {msg.text && <p className="leading-relaxed">{msg.text}</p>}
+                      {msg.attachmentName && (
+                        <div className={`flex items-center gap-2 mt-2 p-2.5 rounded-lg text-xs font-medium border ${msg.isMe ? 'bg-indigo-700/50 border-indigo-500/30' : 'bg-white/50 border-black/10'}`}>
+                          <FileText size={16} /> {msg.attachmentName}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className={`text-sm p-3 rounded-2xl shadow-sm ${msg.isMe ? 'bg-indigo-600 text-white rounded-tr-none mr-10' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none ml-10'}`}>
-                    {msg.to_text && (
-                      <div className={`flex items-center gap-1.5 mb-2 pb-2 text-[10px] font-bold tracking-wide border-b ${msg.isMe ? 'border-indigo-500/50 text-indigo-200' : 'border-gray-100 text-indigo-600'}`}>
-                        <Lock size={10} /> TO: {msg.to_text.toUpperCase()}
-                      </div>
-                    )}
-                    {msg.text && <p className="leading-relaxed">{msg.text}</p>}
-                    {msg.attachmentName && (
-                      <div className={`flex items-center gap-2 mt-2 p-2.5 rounded-lg text-xs font-medium border ${msg.isMe ? 'bg-indigo-700/50 border-indigo-500/30' : 'bg-gray-50 border-gray-200'}`}>
-                        <FileText size={16} /> {msg.attachmentName}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
             <div className="p-4 border-t border-gray-100 bg-white">
@@ -327,13 +373,14 @@ export default function CommunicationPage() {
               <div className="flex items-end gap-3">
                 <input type="file" ref={internalFileInputRef} onChange={(e) => e.target.files && setInternalAttachment(e.target.files[0])} className="hidden" />
                 <button onClick={() => internalFileInputRef.current?.click()} className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 rounded-xl transition"><Paperclip size={20} /></button>
-                <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type a private message..." className="flex-1 border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none transition" rows={2} />
+                {/* FIX: Added text-gray-900 to ensure visibility */}
+                <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type a private message..." className="flex-1 border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none transition" rows={2} />
                 <button onClick={handleSendMessage} className="p-3 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95"><Send size={18} /></button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      ))}
 
       {/* TAB: External AI Bulk Emails */}
       {activeTab === "external" && (
