@@ -111,7 +111,8 @@ export default function DashboardHome() {
             totalTasks: totalTasks,
             completedTasks: completedTasks,
             pendingHighTasks: Number(dbEvent.pending_high_tasks) || 0,
-            progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+            progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+            checkedInCount: Number(dbEvent.checked_in_count) || 0
           };
         });
         setEventsList(allEvents);
@@ -155,7 +156,8 @@ export default function DashboardHome() {
           organizerRole: fullEvent.my_role, organizerEmail: fullEvent.team[0]?.email || "example@example.com",
           isAiAssisted: fullEvent.is_ai_assisted, theme: fullEvent.theme_colors, plan: fullEvent.ai_recommended_plan,
           totalSpent: Number(fullEvent.total_spent) || 0,
-          progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+          progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+          checkedInCount: Number(fullEvent.checked_in_count) || 0
         };
 
         setEventDetails(fullEventData);
@@ -316,10 +318,10 @@ export default function DashboardHome() {
                     <p className="font-semibold truncate pr-2">{event.venue}</p>
                   </div>
                   <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
-                    <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs"><Users size={14} /> Registrations</div>
-                    <div className="flex justify-between items-end"><p className="font-semibold">168 / {event.expectedAttendees}</p></div>
+                    <div className="flex items-center gap-2 text-indigo-200 mb-1 text-xs"><Users size={14} /> Checked In</div>
+                    <div className="flex justify-between items-end"><p className="font-semibold">{event.checkedInCount} / {event.expectedAttendees}</p></div>
                     <div className="w-full bg-indigo-900/50 h-1.5 rounded-full mt-2">
-                      <div className="bg-white h-1.5 rounded-full" style={{ width: `${(168 / event.expectedAttendees) * 100}%` }}></div>
+                      <div className="bg-white h-1.5 rounded-full transition-all duration-500" style={{ width: `${event.expectedAttendees > 0 ? (event.checkedInCount / event.expectedAttendees) * 100 : 0}%` }}></div>
                     </div>
                   </div>
                   <div className="bg-indigo-700/30 p-4 rounded-xl backdrop-blur-sm">
@@ -405,8 +407,9 @@ export default function DashboardHome() {
                 <h3 className="text-lg text-gray-800 mb-4 font-medium">Event Statistics</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-[#eff6ff] border border-blue-100 rounded-xl p-5">
-                    <div className="flex items-center gap-2 text-blue-600 mb-3"><Users size={18} /><span className="font-medium text-sm">Attendance</span></div>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">168</p><p className="text-sm text-gray-600">of {eventDetails.expectedAttendees} expected</p>
+                    <div className="flex items-center gap-2 text-blue-600 mb-3"><Users size={18} /><span className="font-medium text-sm">Checked In</span></div>
+                    <p className="text-3xl font-bold text-gray-900 mb-1">{eventDetails.checkedInCount}</p>
+                    <p className="text-sm text-gray-600">of {eventDetails.expectedAttendees} expected</p>
                   </div>
                   <div className="bg-[#f0fdf4] border border-green-100 rounded-xl p-5">
                     <div className="flex items-center gap-2 text-green-600 mb-3"><DollarSign size={18} /><span className="font-medium text-sm">Budget Spent</span></div>
