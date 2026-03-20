@@ -96,16 +96,26 @@ export default function RegistrationsPage() {
     }
   };
 
-  const handleBulkSend = () => {
+  const handleBulkSend = async () => {
     setIsSending(true);
-    console.log(`Phase 3 Placeholder: Triggering Ticket Engine for IDs:`, selectedIds);
-    // TODO: Connect to Ticket Engine in Phase 3
-    setTimeout(() => {
-      setAttendees(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, status: "QR Sent" } : a));
-      setSelectedIds([]);
+    try {
+      const response = await fetchAPI(`/registrations/${selectedEventId}/issue-tickets`, {
+        method: 'POST',
+        body: JSON.stringify({ attendeeIds: selectedIds })
+      });
+      
+      if (response.success) {
+        // Because we fire a WebSocket event from the backend, we don't even need to 
+        // manually update the state here. The useEffect listener will handle fetching the fresh data!
+        setSelectedIds([]);
+        alert(`Successfully dispatched ${selectedIds.length} QR code tickets via email!`);
+      }
+    } catch (error) {
+      console.error("Error issuing tickets", error);
+      alert("Failed to issue tickets. Please try again.");
+    } finally {
       setIsSending(false);
-      alert(`Tickets dispatch simulation complete!`);
-    }, 1500);
+    }
   };
 
   const pendingCount = attendees.filter(a => a.status === "Pending QR").length;
