@@ -92,6 +92,12 @@ export default function CommunicationPage() {
       socket.on('NEW_INTERNAL_MESSAGE', (msg: any) => {
         setMessages(prev => {
           if (prev.some(m => m.id === msg.id)) return prev;
+          
+          // 🚀 TRIGGER DESKTOP NOTIFICATION
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(`New message from ${msg.sender}`, { body: msg.text });
+          }
+          
           return [...prev, msg];
         });
       });
