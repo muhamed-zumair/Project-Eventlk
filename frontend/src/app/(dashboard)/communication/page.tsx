@@ -402,90 +402,149 @@ export default function CommunicationPage() {
         </div>
       ))}
 
-      {/* TAB: External AI Bulk Emails */}
+      {/* TAB: External AI Bulk Emails (3-Pane Layout) */}
       {activeTab === "external" && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 space-y-6">
-            <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
-                <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl"><Sparkles size={24} /></div>
-                <div><h3 className="text-lg font-bold text-gray-800">Email Updates & Announcements</h3><p className="text-sm text-gray-500">Draft AI emails or write manual updates to attendees.</p></div>
+        <div className="flex flex-col xl:flex-row gap-6 h-[750px]">
+          
+          {/* PANE 1: LEFT SIDEBAR (Controls & AI) */}
+          <div className="w-full xl:w-[300px] shrink-0 flex flex-col gap-6">
+            <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-5 space-y-5 flex-1 overflow-y-auto">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">1. Recipients</label>
+                <select value={emailTarget} onChange={(e) => setEmailTarget(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-gray-50 focus:bg-white focus:border-indigo-500 outline-none transition cursor-pointer text-gray-800 font-medium">
+                  <option value="registered">All Registered Attendees</option>
+                  <option value="venue">Venue Manager</option>
+                  <option value="custom">Custom Email Addresses</option>
+                  <option value="csv">Upload CSV List</option>
+                </select>
+                
+                {emailTarget === "venue" && (
+                  <div className="mt-3">
+                    <input type="email" placeholder="manager@venue.com" value={customEmails} onChange={(e) => setCustomEmails(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 text-gray-900 placeholder-gray-400" />
+                    <p className="text-[10px] text-gray-500 mt-1">We will save this email for future bookings.</p>
+                  </div>
+                )}
+                {emailTarget === "custom" && (
+                  <textarea placeholder="e.g. a@b.com, c@d.com" value={customEmails} onChange={(e) => setCustomEmails(e.target.value)} className="mt-3 w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 text-gray-900 placeholder-gray-400 resize-none" rows={3} />
+                )}
+                {emailTarget === "csv" && (
+                  <div onClick={() => csvInputRef.current?.click()} className="mt-3 border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 text-gray-500 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition">
+                    <input type="file" accept=".csv" ref={csvInputRef} onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setCsvFile(file);
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const text = event.target?.result as string;
+                          const emails = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi) || [];
+                          setCustomEmails(emails.join(', '));
+                        };
+                        reader.readAsText(file);
+                      }
+                    }} className="hidden" />
+                    <Upload size={20} className={csvFile ? "text-indigo-600" : ""} />
+                    <span className={`text-xs text-center font-medium ${csvFile ? "text-indigo-600" : ""}`}>{csvFile ? `${customEmails.split(',').length} emails found` : "Click to upload CSV"}</span>
+                  </div>
+                )}
               </div>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">1. Recipients</label>
-                    <select value={emailTarget} onChange={(e) => setEmailTarget(e.target.value)} className="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:border-indigo-500 outline-none">
-                      <option value="registered">All Registered Attendees</option>
-                      <option value="venue">Venue Manager</option>
-                      <option value="custom">Custom Email Addresses</option>
-                      <option value="csv">Upload CSV List</option>
-                    </select>
-                    {emailTarget === "custom" && (
-                      <div className="mt-3">
-                        <input type="text" placeholder="e.g. a@b.com, c@d.com" value={customEmails} onChange={(e) => setCustomEmails(e.target.value)} className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none" />
-                        <p className="text-[10px] text-gray-400 mt-1 italic">Type one or more emails separated by commas.</p>
-                      </div>
-                    )}
-                    {emailTarget === "venue" && (
-                      <div className="mt-3 bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-                        <p className="text-xs text-indigo-700 font-medium flex items-center gap-2">
-                          <Info size={14} /> Will send to the venue manager on file.
-                        </p>
-                      </div>
-                    )}
-                    {emailTarget === "csv" && <div onClick={() => csvInputRef.current?.click()} className="mt-3 border-2 border-dashed border-gray-300 rounded-xl p-3 flex items-center justify-center gap-2 text-gray-500 text-sm cursor-pointer hover:bg-gray-50"><input type="file" accept=".csv" ref={csvInputRef} onChange={handleCsvChange} className="hidden" /> {csvFile ? <span className="text-indigo-600 font-medium">{csvFile.name}</span> : <span><Upload size={16} /> Upload CSV</span>}</div>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">2. Tone (For AI)</label>
-                    <select className="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:border-indigo-500 outline-none">
-                      <option>Exciting & Welcoming</option><option>Formal & Professional</option><option>Urgent Reminder</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">3. AI Prompt (Optional)</label>
-                  <textarea value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)} placeholder="Provide key details for AI to generate a draft..." className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none" rows={2} />
-                  <button onClick={handleGenerateAI} disabled={isGenerating} className="mt-2 flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-100 disabled:opacity-70 transition">{isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} {isGenerating ? "AI Generating..." : "Generate AI Draft"}</button>
-                </div>
-                <div className="pt-6 border-t border-gray-100">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">4. Review & Manual Edit</label>
-                  <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Subject Line" className="w-full border border-gray-300 rounded-t-xl border-b-0 p-3 text-sm font-medium outline-none focus:bg-gray-50" />
-                  <div className="flex gap-2 bg-gray-50 border-x border-gray-300 p-2 border-b">
-                    <button onClick={handleInsertLink} className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded hover:bg-gray-100"><LinkIcon size={12} /> Add Link</button>
-                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded hover:bg-gray-100"><Paperclip size={12} /> Attach</button>
-                    <input type="file" multiple ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-                  </div>
-                  <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} placeholder="Write your email body here..." className="w-full border border-gray-300 rounded-b-xl p-4 text-sm outline-none focus:bg-gray-50 min-h-[200px]" rows={8} />
-                </div>
-                {attachments.length > 0 && <div className="space-y-2">{attachments.map((f, i) => <div key={i} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg text-xs border border-gray-100"><span>{f.name}</span><button onClick={() => removeAttachment(i)}><X size={14} /></button></div>)}</div>}
-                <div className="flex justify-between items-center">
-                  <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={includeSignature} onChange={(e) => setIncludeSignature(e.target.checked)} className="rounded text-indigo-600 w-4 h-4" /><span className="text-sm font-medium text-gray-700">Add committee signature</span></label>
-                  <button onClick={handleSendMail} className="bg-indigo-600 text-white px-8 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 transition shadow-sm"><Send size={16} /> Send Bulk Mail</button>
-                </div>
+
+              <hr className="border-gray-100" />
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Sparkles size={12} className="text-indigo-500"/> AI Assistant</label>
+                <select className="w-full border border-gray-200 rounded-lg p-2 text-xs bg-gray-50 focus:bg-white focus:border-indigo-500 outline-none mb-3 text-gray-700">
+                  <option>Exciting & Welcoming</option><option>Formal & Professional</option><option>Urgent Reminder</option><option>Thank You</option>
+                </select>
+                <textarea value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)} placeholder="What should this email be about? (e.g. 'Remind attendees about tomorrow's parking rules')" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 text-gray-900 placeholder-gray-400 resize-none" rows={4} />
+                <button 
+                  onClick={async () => {
+                    if (!emailPrompt) return alert("Please provide an AI prompt!");
+                    setIsGenerating(true);
+                    try {
+                      const res = await fetchAPI('/emails/generate', { method: 'POST', body: JSON.stringify({ prompt: emailPrompt, tone: "Exciting", eventName: currentEventName }) });
+                      if (res.success) { setEmailSubject(res.subject); setEmailBody(res.body); }
+                    } finally { setIsGenerating(false); }
+                  }} 
+                  disabled={isGenerating} 
+                  className="mt-2 w-full flex justify-center items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-100 disabled:opacity-50 transition"
+                >
+                  {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} 
+                  {isGenerating ? "Drafting..." : "Generate Draft"}
+                </button>
               </div>
             </div>
           </div>
 
-          {/* History Panel */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-5 flex flex-col max-h-[750px] overflow-hidden">
-            <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4"><History size={18} className="text-indigo-600" /> Sent Mail History</h3>
-            <div className="space-y-3 overflow-y-auto pr-1">
+          {/* PANE 2: CENTER CANVAS (Composer) */}
+          <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50/30">
+              <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Subject" className="w-full text-lg font-bold text-gray-900 bg-transparent outline-none placeholder-gray-300" />
+            </div>
+            
+            <div className="flex gap-2 bg-white border-b border-gray-100 p-2 px-4 shadow-sm z-10">
+              <button onClick={handleInsertLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition"><LinkIcon size={14} /> Link</button>
+              <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition"><Paperclip size={14} /> Attach</button>
+              <input type="file" multiple ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+              {/* Optional CC display for Custom mode */}
+              <span className="ml-auto text-xs text-gray-400 font-medium my-auto px-2">BCC is automatic</span>
+            </div>
+
+            <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} placeholder="Write your email body here..." className="flex-1 w-full p-6 text-sm text-gray-800 outline-none resize-none leading-relaxed" />
+            
+            {attachments.length > 0 && (
+              <div className="p-4 border-t border-gray-100 bg-gray-50 flex flex-wrap gap-2">
+                {attachments.map((f, i) => <div key={i} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 shadow-sm"><FileText size={12} className="text-indigo-500"/> {f.name} <button onClick={() => removeAttachment(i)} className="text-gray-400 hover:text-red-500"><X size={14} /></button></div>)}
+              </div>
+            )}
+
+            <div className="p-4 border-t border-gray-100 bg-white flex justify-between items-center shrink-0">
+              <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={includeSignature} onChange={(e) => setIncludeSignature(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" /><span className="text-sm font-medium text-gray-600">Include signature</span></label>
+              <button 
+                onClick={async () => {
+                  if (!emailSubject || !emailBody) return alert("Subject and body are required!");
+                  setIsSending(true);
+                  try {
+                    const emails = emailTarget === 'venue' ? customEmails : customEmails.split(',').map(e => e.trim()).filter(e => e);
+                    const res = await fetchAPI(`/emails/${selectedEventId}/send`, { method: 'POST', body: JSON.stringify({ target: emailTarget, customEmails: emails, venueEmail: customEmails, subject: emailSubject, body: emailBody }) });
+                    if (res.success) {
+                      alert("Mail sent successfully!");
+                      setEmailSubject(""); setEmailBody(""); setCustomEmails(""); setCsvFile(null);
+                      // Trigger a history refresh here if you add a fetchHistory function!
+                    }
+                  } finally { setIsSending(false); }
+                }} 
+                disabled={isSending} 
+                className="bg-indigo-600 text-white px-8 py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 transition flex items-center gap-2 shadow-md disabled:opacity-70 disabled:hover:scale-100 active:scale-95"
+              >
+                {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} 
+                {isSending ? "Sending..." : "Send Bulk Mail"}
+              </button>
+            </div>
+          </div>
+
+          {/* PANE 3: RIGHT SIDEBAR (History) */}
+          <div className="w-full xl:w-[280px] shrink-0 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2"><History size={16} className="text-indigo-600" /> Sent Mail</h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50/30">
               {currentHistory.length === 0 ? (
-                <div className="text-center py-10"><Mail className="mx-auto text-gray-200 mb-2" size={32} /><p className="text-xs text-gray-400">No emails sent for this event yet.</p></div>
+                <div className="text-center py-10"><Mail className="mx-auto text-gray-300 mb-3" size={32} /><p className="text-xs text-gray-400 font-medium">No history found</p></div>
               ) : (
                 currentHistory.map(h => (
-                  <div key={h.id} onClick={() => setViewingHistoryEmail(h)} className="p-3 border border-gray-100 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/30 transition cursor-pointer group">
-                    <p className="text-sm font-bold text-gray-800 truncate group-hover:text-indigo-700 transition font-sans">{h.subject}</p>
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium truncate max-w-[120px]">{h.target}</span>
-                      <span className="text-[10px] text-gray-400">{h.date}</span>
+                  <div key={h.id} className="p-3 bg-white border border-gray-100 rounded-lg hover:border-indigo-200 transition group flex flex-col gap-2 shadow-sm">
+                    <p className="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-indigo-700 transition">{h.subject}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md font-bold truncate max-w-[120px]">{h.target}</span>
+                      <span className="text-[10px] text-gray-400 font-medium">{h.date}</span>
                     </div>
+                    <button onClick={() => setViewingHistoryEmail(h)} className="mt-1 w-full py-1.5 bg-gray-50 text-gray-600 text-xs font-bold rounded hover:bg-indigo-50 hover:text-indigo-700 transition">View Details</button>
                   </div>
                 ))
               )}
             </div>
           </div>
+
         </div>
       )}
 
@@ -504,14 +563,13 @@ export default function CommunicationPage() {
               </div>
               <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Recipients</p>
-                <div className="flex items-center gap-2 text-sm text-indigo-700 font-medium break-all"><Users size={16} className="shrink-0" /> {viewingHistoryEmail.target}</div>
+                <div className="flex items-center gap-2 text-sm text-indigo-700 font-bold break-all"><Users size={16} className="shrink-0" /> {viewingHistoryEmail.target}</div>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Email Body</p>
                 <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50/50 p-4 rounded-lg border border-gray-50">{viewingHistoryEmail.body}</div>
               </div>
             </div>
-            <div className="p-4 border-t border-gray-100 bg-white shrink-0"><button onClick={() => setViewingHistoryEmail(null)} className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition">Close Preview</button></div>
           </div>
         </div>
       )}

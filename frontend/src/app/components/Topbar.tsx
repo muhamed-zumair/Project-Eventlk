@@ -59,7 +59,11 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     try {
       const response = await fetchAPI('/events/invitations/me');
       if (response.success) {
-        setInvitations(response.notifications || []);
+        // 🚀 FIX: Preserve local chat messages before overwriting with database data!
+        setInvitations(prev => {
+          const localChats = prev.filter(inv => inv.type === 'chat_message');
+          return [...localChats, ...(response.notifications || [])];
+        });
       }
     } catch (error) {
       console.error("Failed to fetch invitations:", error);
@@ -136,6 +140,23 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
         setSocketAlert({ message: data.message, type: 'error' });
         window.dispatchEvent(new Event("taskBoardRefresh")); // <-- 🚀 AUTO-REFRESHES THE TASK BOARD!
         setTimeout(() => setSocketAlert(null), 6000);
+      });
+      // --- 🚀 NEW: Listen for Chat Messages for the Bell / Toast ---
+      socket.on('NEW_INTERNAL_MESSAGE', (data: any) => {
+        if (data.sender_id !== userId) {
+          // 1. Show the temporary pop-up toast
+          setSocketAlert({ message: `💬 New message from ${data.sender}`, type: 'info' });
+          setTimeout(() => setSocketAlert(null), 6000);
+
+          // 2. Add it to the persistent Notification Bell dropdown!
+          const chatNotification = {
+            notification_id: `chat_${data.id}`, // Unique local ID
+            type: 'chat_message',
+            sender: data.sender,
+            text: data.text
+          };
+          setInvitations(prev => [chatNotification, ...prev]);
+        }
       });
     }
 
@@ -363,6 +384,27 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                             </div>
                             <div className="flex pl-9 mt-1">
                               <button onClick={() => handleDismissAlert(notification.notification_id)} className="w-full bg-gray-100 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1.5">Dismiss</button>
+                            </div>
+                          </>
+                        )}
+                        {/* 4. CHAT MESSAGES */}
+                        {notification.type === 'chat_message' && (
+                          <>
+                            <div className="flex gap-3">
+                              <div className="mt-0.5 text-indigo-600 bg-indigo-50 p-1.5 rounded-full shrink-0 h-fit"><MessageSquare size={16} /></div>
+                              <div>
+                                <p className="text-sm text-gray-800 font-medium">New Message from {notification.sender}</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">"{notification.text}"</p>
+                              </div>
+                            </div>
+                            <div className="flex pl-9 mt-1">
+                              {/* Inline dismiss filter so it doesn't hit the database */}
+                              <button 
+                                onClick={() => setInvitations(prev => prev.filter(inv => inv.notification_id !== notification.notification_id))} 
+                                className="w-full bg-gray-100 text-gray-700 py-1.5 rounded-md text-xs font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1.5"
+                              >
+                                Dismiss
+                              </button>
                             </div>
                           </>
                         )}
