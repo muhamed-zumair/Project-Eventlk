@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Home, Calendar, ClipboardList, DollarSign, Users, 
-  Sparkles,  Settings, ChevronLeft , MessageSquare, QrCode
+  Sparkles,  Settings, ChevronLeft , MessageSquare, QrCode, ScanLine
 } from "lucide-react";
 import { useState } from "react";
 
@@ -17,6 +17,7 @@ const navItems = [
   { name: "AI Recommendations", href: "/ai-recommendations", icon: Sparkles },
   { name: "Communication ", href: "/communication", icon: MessageSquare },
   { name: "Registrations", href: "/registrations", icon: QrCode },
+  { name: "Live Scanner", href: "/scanner", icon: ScanLine },
   { name: "Settings", href: "/settings", icon: Settings }
   
 ];

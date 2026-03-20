@@ -64,11 +64,14 @@ export default function RegistrationsPage() {
 
     // 🚀 WEBSOCKET CONNECTION FOR LIVE REGISTRATIONS
     const socket = io('http://localhost:5000');
+    
     socket.on('NEW_REGISTRATION', (data: any) => {
-      // If the incoming registration is for the event we are currently looking at, fetch fresh data!
-      if (data.eventId === selectedEventId) {
-        getAttendees();
-      }
+      if (data.eventId === selectedEventId) getAttendees();
+    });
+
+    // --- ADD THIS NEW LISTENER ---
+    socket.on('ATTENDEE_CHECKED_IN', (data: any) => {
+      if (data.eventId === selectedEventId) getAttendees();
     });
 
     return () => { socket.disconnect(); };
