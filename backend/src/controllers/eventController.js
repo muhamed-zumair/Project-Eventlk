@@ -66,15 +66,19 @@ const getEvents = async (req, res) => {
 
         // --- 🚀 UPGRADED: Now dynamically calculates total_spent from the Expenses table ---
         const fetchEventsQuery = `
-            SELECT 
-                e.id, e.title, e.type, e.status, e.start_date, e.expected_headcount, e.total_budget, e.description, e.is_ai_assisted,
-                v.name as venue, t.role,
-                COALESCE((SELECT SUM(amount) FROM "Expenses" WHERE event_id = e.id), 0) as total_spent
-            FROM "Events" e
-            INNER JOIN "Event_Team" t ON e.id = t.event_id
-            LEFT JOIN "Venues" v ON e.venue_id = v.id
-            WHERE t.user_id = $1 AND e.status = 'In Progress'
-            ORDER BY e.start_date ASC;`;
+        SELECT 
+            e.id, e.title, e.type, e.status, e.start_date, e.expected_headcount, e.total_budget, e.description, e.is_ai_assisted,
+            v.name as venue, t.role,
+            COALESCE((SELECT SUM(amount) FROM "Expenses" WHERE event_id = e.id), 0) as total_spent,
+            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id) as total_tasks,
+            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id AND status = 'Done') as completed_tasks,
+            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id AND priority = 'High' AND status != 'Done') as pending_high_tasks,
+            (SELECT COUNT(*) FROM "Attendees" WHERE event_id = e.id AND status = 'Checked In') as checked_in_count
+        FROM "Events" e
+        INNER JOIN "Event_Team" t ON e.id = t.event_id
+        LEFT JOIN "Venues" v ON e.venue_id = v.id
+        WHERE t.user_id = $1 AND e.status = 'In Progress'
+        ORDER BY e.start_date ASC;`;
 
         const result = await pool.query(fetchEventsQuery, [userId]);
         return res.status(200).json({ success: true, count: result.rows.length, events: result.rows });
@@ -91,13 +95,16 @@ const getEventById = async (req, res) => {
     try {
         // --- 🚀 UPGRADED: Also calculates total_spent for the detailed view modal ---
         const eventQuery = `
-            SELECT 
-                e.*, t.role as my_role, v.name as venue, v.address as venue_address,
-                COALESCE((SELECT SUM(amount) FROM "Expenses" WHERE event_id = e.id), 0) as total_spent
-            FROM "Events" e
-            INNER JOIN "Event_Team" t ON e.id = t.event_id
-            LEFT JOIN "Venues" v ON e.venue_id = v.id
-            WHERE e.id = $1 AND t.user_id = $2;`;
+        SELECT 
+            e.*, t.role as my_role, v.name as venue, v.address as venue_address,
+            COALESCE((SELECT SUM(amount) FROM "Expenses" WHERE event_id = e.id), 0) as total_spent,
+            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id) as total_tasks,
+            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id AND status = 'Done') as completed_tasks,
+            (SELECT COUNT(*) FROM "Tasks" WHERE event_id = e.id AND priority = 'High' AND status != 'Done') as pending_high_tasks
+        FROM "Events" e
+        INNER JOIN "Event_Team" t ON e.id = t.event_id
+        LEFT JOIN "Venues" v ON e.venue_id = v.id
+        WHERE e.id = $1 AND t.user_id = $2;`;
         
         const eventResult = await pool.query(eventQuery, [eventId, userId]);
 
