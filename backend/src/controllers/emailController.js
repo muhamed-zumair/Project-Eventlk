@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key_fo
 const generateAIDraft = async (req, res) => {
     try {
         const { prompt, tone, eventName } = req.body;
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         
         const fullPrompt = `You are an event organizer for an event called "${eventName}". 
         Write a professional email draft based on this prompt: "${prompt}". 
@@ -41,8 +41,11 @@ const generateAIDraft = async (req, res) => {
 const sendBulkMail = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const { target, customEmails, venueEmail, subject, body, ccList } = req.body;
-        const userId = req.user.id; // From auth middleware
+        const { target, customEmails, venueEmail, subject, body, ccList, includeSignature } = req.body;
+        
+        // 🚀 FIX: Correctly extract the userId from the JWT payload
+        const userId = req.user?.userId || req.user?.id;
+        if (!userId) return res.status(401).json({ success: false, message: "Unauthorized: Missing User ID" });
 
         let bccList = [];
         let recipientSummary = {};
@@ -56,28 +59,55 @@ const sendBulkMail = async (req, res) => {
         else if (target === 'venue') {
             bccList = [venueEmail];
             recipientSummary = { type: 'Venue Manager', email: venueEmail };
-            // Update the Venues table with this new email!
-            await pool.query(`
-                UPDATE "Venues" SET manager_email = $1 
-                WHERE id = (SELECT venue_id FROM "Events" WHERE id = $2)
-            `, [venueEmail, eventId]);
+            await pool.query(`UPDATE "Venues" SET manager_email = $1 WHERE id = (SELECT venue_id FROM "Events" WHERE id = $2)`, [venueEmail, eventId]);
         }
         else if (target === 'custom' || target === 'csv') {
-            bccList = customEmails; // Array of emails passed from frontend
+            bccList = customEmails; 
             recipientSummary = { type: target === 'csv' ? 'CSV Upload' : 'Custom List', count: bccList.length };
         }
 
         if (bccList.length === 0) return res.status(400).json({ success: false, message: "No recipients found." });
 
-        // 2. Fetch Organizer Name
-        const userRes = await pool.query(`SELECT first_name, last_name FROM "Users" WHERE id = $1`, [userId]);
-        const senderName = `${userRes.rows[0].first_name} ${userRes.rows[0].last_name}`;
+        // 2. 🚀 Fetch Organizer Name AND their specific Role for this Event
+        const userRes = await pool.query(`
+            SELECT u.first_name, u.last_name, et.role 
+            FROM "Users" u
+            LEFT JOIN "Event_Team" et ON u.id = et.user_id AND et.event_id = $1
+            WHERE u.id = $2
+        `, [eventId, userId]);
 
-        // 3. Send the Email via Nodemailer
-        // NOTE: AWS S3 Attachment handling will be injected here later
-        await sendBulkEmail(senderName, subject, body, bccList, ccList);
+        if (userRes.rows.length === 0) return res.status(404).json({ success: false, message: "User not found in database." });
 
-        // 4. Save to History Table
+        const firstName = userRes.rows[0].first_name || '';
+        const lastName = userRes.rows[0].last_name || '';
+        const senderName = `${firstName} ${lastName}`.trim() || 'Event Organizer';
+        // Format the role (e.g., "TEAM_LEAD" -> "Team Lead")
+        const rawRole = userRes.rows[0].role || 'Organizer';
+        const userRole = rawRole.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+        // 3. 🚀 Format Email Body and inject Professional Signature
+        // Convert basic line breaks from the textarea into HTML <br> tags so it looks correct in Gmail
+        let finalHtmlBody = body.replace(/\n/g, '<br>'); 
+
+        if (includeSignature) {
+            finalHtmlBody += `
+                <br><br>
+                <table style="border-top: 2px solid #e5e7eb; padding-top: 15px; margin-top: 20px; width: 100%; font-family: sans-serif;">
+                    <tr>
+                        <td>
+                            <p style="margin: 0; color: #111827; font-size: 16px;"><strong>${senderName}</strong></p>
+                            <p style="margin: 3px 0; color: #6b7280; font-size: 14px;">${userRole}</p>
+                            <p style="margin: 0; color: #4f46e5; font-size: 14px; font-weight: bold;">Organizing Committee</p>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+
+        // 4. Send the Email via Nodemailer
+        await sendBulkEmail(senderName, subject, finalHtmlBody, bccList, ccList);
+
+        // 5. Save to History Table
         await pool.query(`
             INSERT INTO "Bulk_Email_Logs" (id, event_id, subject, body, recipient_summary, sent_by)
             VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)
