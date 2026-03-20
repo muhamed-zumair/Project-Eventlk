@@ -7,7 +7,7 @@ const pool = require('../config/db');
 const getEventTeam = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const loggedInUserId = req.user.id; 
+        const loggedInUserId = req.user.id;
 
         console.log(`\n--- 🕵️‍♂️ DEBUG: FETCHING TEAM FOR EVENT ---`);
         console.log(`Event ID: ${eventId}`);
@@ -20,7 +20,7 @@ const getEventTeam = async (req, res) => {
             JOIN "Users" u ON et.user_id = u.id 
             WHERE et.event_id = $1
             ORDER BY u.first_name ASC
-        `, [eventId]); 
+        `, [eventId]);
 
         console.log(`Database found ${result.rows.length} people in the Event_Team table for this event!`);
         console.log(`Raw Database Data:`, result.rows);
@@ -76,52 +76,54 @@ const getMessages = async (req, res) => {
 
 // @desc    Send a private message & emit via WebSockets
 // @route   POST /api/communication/:eventId/messages
-// @desc    Send a private message & emit via WebSockets
-// @route   POST /api/communication/:eventId/messages
 const sendMessage = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const { text, recipients, attachmentName } = req.body;
-        const senderId = req.user.id;
+        // 🚀 FIX 1: Accept senderId from the frontend payload to prevent "Unknown User"
+        const { text, recipients, attachmentName, senderId } = req.body;
+
+        // Fallback to req.user.id if senderId isn't in body
+        const finalSenderId = senderId || req.user?.id || req.user?.userId;
 
         if (!recipients || recipients.length === 0) {
             return res.status(400).json({ success: false, message: "Select at least one recipient." });
+        }
+        if (!finalSenderId) {
+            return res.status(400).json({ success: false, message: "Authentication error: Sender ID missing." });
         }
 
         // 1. Save to Messages Table
         const msgRes = await pool.query(`
             INSERT INTO "Internal_Messages" (id, event_id, sender_id, message_text, attachment_name)
             VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *
-        `, [eventId, senderId, text, attachmentName]);
-        
+        `, [eventId, finalSenderId, text, attachmentName]);
+
         const newMessageId = msgRes.rows[0].id;
         const sentAt = msgRes.rows[0].sent_at;
 
-        // 2. Save Recipients to Junction Table
-        for (let recipientId of recipients) {
-            await pool.query(`
-                INSERT INTO "Message_Recipients" (message_id, recipient_id) VALUES ($1, $2)
-            `, [newMessageId, recipientId]);
-        }
+        // 2. Save Recipients (Optimized for speed!)
+        const recipientPromises = recipients.map(recipientId => {
+            return pool.query(`INSERT INTO "Message_Recipients" (message_id, recipient_id) VALUES ($1, $2)`, [newMessageId, recipientId]);
+        });
+        await Promise.all(recipientPromises);
 
-        // 3. 🚀 FIX: Use CONCAT() to prevent crashes on null last names!
-        const senderRes = await pool.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [senderId]);
+        // 3. Get Names for UI
+        const senderRes = await pool.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [finalSenderId]);
         const recipientNamesRes = await pool.query(`
             SELECT string_agg(CONCAT(first_name, ' ', last_name), ', ') as names 
             FROM "Users" WHERE id = ANY($1::uuid[])
         `, [recipients]);
 
-        // Construct the perfect UI object
         const fullMessage = {
             id: newMessageId,
             eventId: eventId,
-            sender: senderRes.rows[0]?.name || 'Unknown User',
-            sender_id: senderId,
+            sender: senderRes.rows[0]?.name?.trim() || 'Unknown User',
+            sender_id: finalSenderId,
             text: text,
             attachmentName: attachmentName,
             time: new Date(sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             to_text: recipientNamesRes.rows[0]?.names || 'Unknown Recipients',
-            isMe: false 
+            isMe: false
         };
 
         // 4. FIRE WEBSOCKETS
@@ -130,9 +132,7 @@ const sendMessage = async (req, res) => {
 
         recipients.forEach(recipientId => {
             const socketId = connectedUsers.get(recipientId);
-            if (socketId) {
-                io.to(socketId).emit('NEW_INTERNAL_MESSAGE', fullMessage);
-            }
+            if (socketId) io.to(socketId).emit('NEW_INTERNAL_MESSAGE', fullMessage);
         });
 
         res.status(200).json({ success: true, message: { ...fullMessage, isMe: true } });
