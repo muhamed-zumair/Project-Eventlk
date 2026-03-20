@@ -60,24 +60,7 @@ export default function CommunicationPage() {
   
   // Load User & "In Progress" Events
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      setCurrentUser(user);
-      
-      const socket = io('http://localhost:5000');
-      socket.emit('register', user.id);
-
-      socket.on('NEW_INTERNAL_MESSAGE', (msg) => {
-        setMessages(prev => {
-          if (prev.some(m => m.id === msg.id)) return prev;
-          return [...prev, msg];
-        });
-      });
-
-      return () => { socket.disconnect(); };
-    }
-
+    // 1. Fetch Events FIRST
     const fetchActiveEvents = async () => {
       try {
         const response = await fetchAPI('/events', { method: 'GET' });
@@ -89,6 +72,30 @@ export default function CommunicationPage() {
       } catch (error) { console.error("Failed to fetch events:", error); }
     };
     fetchActiveEvents();
+
+    // 2. Setup User & WebSockets SECOND
+    const userStr = localStorage.getItem('user');
+    let socket: any; 
+    
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setCurrentUser(user);
+      
+      socket = io('http://localhost:5000');
+      socket.emit('register', user.id);
+
+      socket.on('NEW_INTERNAL_MESSAGE', (msg) => {
+        setMessages(prev => {
+          if (prev.some(m => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+      });
+    }
+
+    // 3. Cleanup function at the VERY END
+    return () => { 
+      if (socket) socket.disconnect(); 
+    };
   }, []);
 
   // Fetch Team & Messages when Event Changes
