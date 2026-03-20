@@ -34,6 +34,7 @@ export default function CommunicationPage() {
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [searchRecipient, setSearchRecipient] = useState(""); // <-- ADD THIS LINE
+  const [isSending, setIsSending] = useState(false);
   const [internalAttachment, setInternalAttachment] = useState<File | null>(null);
   const internalFileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
