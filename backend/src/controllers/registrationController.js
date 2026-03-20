@@ -125,7 +125,7 @@ const issueTickets = async (req, res) => {
             await sendTicketEmail(attendee.email, attendee.name, event.title, qrCodeDataUrl, icsContent);
 
             // Update Database Status
-            await pool.query(`UPDATE "Attendees" SET status = 'QR Sent' WHERE id = $1`, [attendee.id]);
+            await pool.query(`UPDATE "Attendees" SET status = 'Sent' WHERE id = $1`, [attendee.id]);
         }
 
         // 4. Tell the Frontend to refresh the UI live!
