@@ -84,7 +84,7 @@ export default function CommunicationPage() {
       socket = io('http://localhost:5000');
       socket.emit('register', user.id);
 
-      socket.on('NEW_INTERNAL_MESSAGE', (msg) => {
+      socket.on('NEW_INTERNAL_MESSAGE', (msg: any) => {
         setMessages(prev => {
           if (prev.some(m => m.id === msg.id)) return prev;
           return [...prev, msg];
