@@ -60,8 +60,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(cors({
-    origin: 'http://localhost:3000', 
-    credentials: true 
+    origin: 'http://localhost:3000',
+    credentials: true
 }));
 
 app.use(express.json());
@@ -74,6 +74,7 @@ const eventRoutes = require('./src/routes/eventRoutes');
 const budgetRoutes = require('./src/routes/budgetRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const registrationRoutes = require('./src/routes/registrationRoutes');
+const communicationRoutes = require('./src/routes/communicationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api', contactRoutes);
@@ -82,6 +83,7 @@ app.use('/api/budgets', budgetRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/v1', registrationRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/communication', communicationRoutes);
 
 const PORT = 5000;
 
