@@ -76,6 +76,8 @@ const getMessages = async (req, res) => {
 
 // @desc    Send a private message & emit via WebSockets
 // @route   POST /api/communication/:eventId/messages
+// @desc    Send a private message & emit via WebSockets
+// @route   POST /api/communication/:eventId/messages
 const sendMessage = async (req, res) => {
     try {
         const { eventId } = req.params;
@@ -91,7 +93,7 @@ const sendMessage = async (req, res) => {
             INSERT INTO "Internal_Messages" (id, event_id, sender_id, message_text, attachment_name)
             VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *
         `, [eventId, senderId, text, attachmentName]);
-
+        
         const newMessageId = msgRes.rows[0].id;
         const sentAt = msgRes.rows[0].sent_at;
 
@@ -102,10 +104,10 @@ const sendMessage = async (req, res) => {
             `, [newMessageId, recipientId]);
         }
 
-        // 3. Get names for the real-time UI
-        const senderRes = await pool.query(`SELECT first_name || ' ' || last_name as name FROM "Users" WHERE id = $1`, [senderId]);
+        // 3. 🚀 FIX: Use CONCAT() to prevent crashes on null last names!
+        const senderRes = await pool.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [senderId]);
         const recipientNamesRes = await pool.query(`
-            SELECT string_agg(first_name || ' ' || last_name, ', ') as names 
+            SELECT string_agg(CONCAT(first_name, ' ', last_name), ', ') as names 
             FROM "Users" WHERE id = ANY($1::uuid[])
         `, [recipients]);
 
@@ -113,28 +115,26 @@ const sendMessage = async (req, res) => {
         const fullMessage = {
             id: newMessageId,
             eventId: eventId,
-            sender: senderRes.rows[0].name,
+            sender: senderRes.rows[0]?.name || 'Unknown User',
             sender_id: senderId,
             text: text,
             attachmentName: attachmentName,
             time: new Date(sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            to_text: recipientNamesRes.rows[0].names,
-            isMe: false // Defaults to false for recipients
+            to_text: recipientNamesRes.rows[0]?.names || 'Unknown Recipients',
+            isMe: false 
         };
 
-        // 4. FIRE WEBSOCKETS (Only to the specific recipients!)
+        // 4. FIRE WEBSOCKETS
         const io = req.app.get('io');
         const connectedUsers = req.app.get('connectedUsers');
 
         recipients.forEach(recipientId => {
             const socketId = connectedUsers.get(recipientId);
             if (socketId) {
-                // They are online! Send it straight to their screen.
                 io.to(socketId).emit('NEW_INTERNAL_MESSAGE', fullMessage);
             }
         });
 
-        // Send success back to the sender
         res.status(200).json({ success: true, message: { ...fullMessage, isMe: true } });
 
     } catch (error) {
