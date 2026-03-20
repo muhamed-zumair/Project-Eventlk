@@ -392,7 +392,10 @@ export default function CommunicationPage() {
                 <button onClick={() => internalFileInputRef.current?.click()} className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 rounded-xl transition"><Paperclip size={20} /></button>
                 {/* FIX: Added text-gray-900 to ensure visibility */}
                 <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type a private message..." className="flex-1 border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none transition" rows={2} />
-                <button onClick={handleSendMessage} className="p-3 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95"><Send size={18} /></button>
+                {/* 🚀 Updated Send Button */}
+                <button onClick={handleSendMessage} disabled={isSending} className="p-3 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:hover:scale-100 flex items-center justify-center min-w-[48px]">
+                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                </button>
               </div>
             </div>
           </div>
