@@ -124,10 +124,10 @@ else:
     
     # 1. Prepare Input Vector
     input_nums = np.array([[headcount, budget, bph]])
-
+    
     input_cats = pd.DataFrame([[e_type, e_cat, v_cat]], columns=['eventtype', 'eventcategory', 'venuecategory'])
-
-    # --- NEW IN COMMIT 30: Encode the categories ---
     input_encoded = encoder.transform(input_cats)
     
-    st.success("✅ Categories successfully one-hot encoded!")
+    final_input = np.hstack([input_nums, input_encoded])
+    
+    st.success("✅ Final input vector assembled! Ready to run predictions.")
