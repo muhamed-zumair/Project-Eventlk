@@ -66,8 +66,7 @@ export default function EventScannerPage() {
 
       {/* The Camera Viewport */}
       <div className="w-full bg-white p-2 rounded-3xl shadow-lg border border-gray-100 relative overflow-hidden">
-        <div id="reader" className="w-full rounded-2xl overflow-hidden [&_video]:object-cover [&_video]:rounded-2xl border-none"></div>
-        
+        <div id="reader" className="w-full rounded-2xl overflow-hidden [&_video]:object-cover [&_video]:rounded-2xl border-none [&_a]:text-indigo-600 [&_a]:font-bold [&_a]:no-underline hover:[&_a]:underline [&_button]:bg-indigo-50 [&_button]:text-indigo-700 [&_button]:px-4 [&_button]:py-2 [&_button]:rounded-lg [&_button]:font-medium [&_button]:mt-2 [&_button]:mb-4 [&_span]:text-gray-900 [&_span]:font-medium"></div>
         {/* Processing Overlay */}
         {isProcessing && !scanResult && (
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
