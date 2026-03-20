@@ -3,21 +3,21 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchAPI } from "../../../utils/api";
 import { io } from "socket.io-client";
-import { 
-  MessageSquare, Mail, Users, Send, Sparkles, 
+import {
+  MessageSquare, Mail, Users, Send, Sparkles,
   Search, Paperclip, CalendarDays, Loader2, Upload,
   Link as LinkIcon, X, FileText, History, Info, Clock, User, Lock
 } from "lucide-react";
 
 // --- Mock Data for External History (Until we wire it up) ---
 const initialSentHistory = [
-  { 
-    id: 1, 
+  {
+    id: 1,
     eventId: 'evt_1', // We will keep this static for now
-    subject: "Final Schedule Update", 
-    target: "All Registered Attendees", 
-    body: "Hi everyone,\n\nPlease find the final schedule attached for the Annual Tech Summit. We look forward to seeing you there at 9 AM.", 
-    date: "2026-03-10" 
+    subject: "Final Schedule Update",
+    target: "All Registered Attendees",
+    body: "Hi everyone,\n\nPlease find the final schedule attached for the Annual Tech Summit. We look forward to seeing you there at 9 AM.",
+    date: "2026-03-10"
   },
 ];
 
@@ -41,7 +41,7 @@ export default function CommunicationPage() {
 
   // --- External Email State ---
   const [emailTarget, setEmailTarget] = useState("registered");
-  const [customEmails, setCustomEmails] = useState(""); 
+  const [customEmails, setCustomEmails] = useState("");
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [emailPrompt, setEmailPrompt] = useState("");
@@ -52,14 +52,18 @@ export default function CommunicationPage() {
   const [includeSignature, setIncludeSignature] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- History State ---
-  const [sentHistory, setSentHistory] = useState(initialSentHistory);
-  const [viewingHistoryEmail, setViewingHistoryEmail] = useState<any>(null); 
+  // 🚀 NEW: CC and Real History States
+  const [ccEmails, setCcEmails] = useState("");
+  const [showCc, setShowCc] = useState(false);
+  const [sentHistory, setSentHistory] = useState<any[]>([]); // Starts empty!
+  const [viewingHistoryEmail, setViewingHistoryEmail] = useState<any>(null);
+
+
 
   // ==========================================
   // 1. LIFECYCLE & WEBSOCKETS
   // ==========================================
-  
+
   // Load User & "In Progress" Events
   useEffect(() => {
     // 1. Fetch Events FIRST
@@ -80,46 +84,47 @@ export default function CommunicationPage() {
 
     // 2. Setup User & WebSockets SECOND
     const userStr = localStorage.getItem('user');
-    let socket: any; 
-    
+    let socket: any;
+
     if (userStr) {
       const user = JSON.parse(userStr);
       setCurrentUser(user);
-      
+
       socket = io('http://localhost:5000');
       socket.emit('register', user.id);
 
       socket.on('NEW_INTERNAL_MESSAGE', (msg: any) => {
         setMessages(prev => {
           if (prev.some(m => m.id === msg.id)) return prev;
-          
+
           // 🚀 TRIGGER DESKTOP NOTIFICATION
           if ("Notification" in window && Notification.permission === "granted") {
             new Notification(`New message from ${msg.sender}`, { body: msg.text });
           }
-          
+
           return [...prev, msg];
         });
       });
     }
 
     // 3. Cleanup function at the VERY END
-    return () => { 
-      if (socket) socket.disconnect(); 
+    return () => {
+      if (socket) socket.disconnect();
     };
   }, []);
 
-  // Fetch Team & Messages when Event Changes
+  // Fetch Team, Messages, AND History when Event Changes
   useEffect(() => {
     if (!selectedEventId || !currentUser) return;
 
     const fetchData = async () => {
       try {
-        const [teamRes, msgRes] = await Promise.all([
+        const [teamRes, msgRes, historyRes] = await Promise.all([
           fetchAPI(`/communication/${selectedEventId}/team`, { method: 'GET' }),
-          fetchAPI(`/communication/${selectedEventId}/messages`, { method: 'GET' })
+          fetchAPI(`/communication/${selectedEventId}/messages`, { method: 'GET' }),
+          fetchAPI(`/emails/${selectedEventId}/history`, { method: 'GET' }) // 🚀 FETCH REAL HISTORY
         ]);
-        
+
         if (teamRes.success) setTeamMembers(teamRes.team);
         if (msgRes.success) {
           const formattedMsgs = msgRes.messages.map((m: any) => ({
@@ -127,11 +132,14 @@ export default function CommunicationPage() {
           }));
           setMessages(formattedMsgs);
         }
-      } catch (error) { console.error("Error fetching chat data:", error); }
+        if (historyRes.success) {
+          setSentHistory(historyRes.history); // 🚀 SAVE REAL HISTORY TO STATE
+        }
+      } catch (error) { console.error("Error fetching data:", error); }
     };
 
     fetchData();
-    setSelectedRecipients([]); 
+    setSelectedRecipients([]);
   }, [selectedEventId, currentUser]);
 
   // Auto-scroll to bottom of chat
@@ -145,7 +153,7 @@ export default function CommunicationPage() {
   const currentEvent = eventsList.find(e => e.id === selectedEventId);
   const currentEventName = currentEvent?.title || "Event";
   // For the mock history, just show all of it until we wire the backend
-  const currentHistory = sentHistory; 
+  const currentHistory = sentHistory;
 
   const getInitials = (name: string) => {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : "??";
@@ -207,8 +215,8 @@ export default function CommunicationPage() {
         setChatInput("");
         setInternalAttachment(null);
       }
-    } catch (error) { 
-      console.error("Failed to send message", error); 
+    } catch (error) {
+      console.error("Failed to send message", error);
     } finally {
       setIsSending(false); // <-- Stop Loading
     }
@@ -258,7 +266,7 @@ export default function CommunicationPage() {
     let printTarget = "All Registered Attendees";
     if (emailTarget === "custom") {
       if (!customEmails.trim()) { alert("Please enter at least one custom email address."); return; }
-      printTarget = customEmails; 
+      printTarget = customEmails;
     }
     if (emailTarget === "venue") printTarget = `Venue Manager`;
     if (emailTarget === "csv") {
@@ -277,7 +285,7 @@ export default function CommunicationPage() {
 
     setSentHistory([newHistoryItem, ...sentHistory]);
     alert(`Successfully sent bulk emails for ${currentEventName}!`);
-    
+
     setEmailSubject(""); setEmailBody(""); setEmailPrompt(""); setAttachments([]); setCustomEmails(""); setCsvFile(null);
   };
 
@@ -320,92 +328,92 @@ export default function CommunicationPage() {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-6 h-[600px]">
-          {/* Sidebar */}
-          <div className="w-full lg:w-1/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2"><Users size={18} className="text-indigo-600" /> Select Recipients</h3>
-              {/* NEW: Search Bar */}
-              <div className="mt-3 relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" placeholder="Search team members..." value={searchRecipient} onChange={(e) => setSearchRecipient(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder-gray-400" />
+            {/* Sidebar */}
+            <div className="w-full lg:w-1/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
+              <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                <h3 className="font-semibold text-gray-800 flex items-center gap-2"><Users size={18} className="text-indigo-600" /> Select Recipients</h3>
+                {/* NEW: Search Bar */}
+                <div className="mt-3 relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input type="text" placeholder="Search team members..." value={searchRecipient} onChange={(e) => setSearchRecipient(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 placeholder-gray-400" />
+                </div>
               </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition border border-transparent hover:border-gray-200">
-                <input type="checkbox" checked={selectedRecipients.length === filteredTeam.length && filteredTeam.length > 0} onChange={handleToggleAll} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
-                <span className="text-sm font-bold text-gray-800">Select All {searchRecipient && "(Filtered)"}</span>
-              </label>
-              <hr className="my-2 border-gray-100" />
-              {/* Changed from teamMembers to filteredTeam */}
-              {filteredTeam.map((member) => (
-                <label key={member.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition">
-                  <div className="flex items-center gap-3">
-                    <input type="checkbox" checked={selectedRecipients.includes(member.id)} onChange={() => handleToggleRecipient(member.id)} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
-                    <span className="text-sm text-gray-800">{member.name}</span>
-                  </div>
-                  <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wider">{member.role}</span>
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition border border-transparent hover:border-gray-200">
+                  <input type="checkbox" checked={selectedRecipients.length === filteredTeam.length && filteredTeam.length > 0} onChange={handleToggleAll} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
+                  <span className="text-sm font-bold text-gray-800">Select All {searchRecipient && "(Filtered)"}</span>
                 </label>
-              ))}
-              {filteredTeam.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No team members found.</p>}
+                <hr className="my-2 border-gray-100" />
+                {/* Changed from teamMembers to filteredTeam */}
+                {filteredTeam.map((member) => (
+                  <label key={member.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition">
+                    <div className="flex items-center gap-3">
+                      <input type="checkbox" checked={selectedRecipients.includes(member.id)} onChange={() => handleToggleRecipient(member.id)} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" />
+                      <span className="text-sm text-gray-800">{member.name}</span>
+                    </div>
+                    <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wider">{member.role}</span>
+                  </label>
+                ))}
+                {filteredTeam.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No team members found.</p>}
+              </div>
             </div>
-          </div>
 
-          {/* Chat Window */}
-          <div className="w-full lg:w-2/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50"><h3 className="font-semibold text-gray-800">{currentEventName} - Private Messages</h3><p className="text-xs text-gray-500">Messages sent here are only visible to selected team members.</p></div>
-            <div className="flex-1 p-6 overflow-y-auto bg-gray-50/30 space-y-6">
-              {messages.map((msg: any) => {
-                // Determine the unique color for non-me bubbles
-                const uColor = msg.isMe ? null : getUserColor(msg.sender);
-                return (
-                  <div key={msg.id} className={`flex flex-col gap-1 max-w-[80%] ${msg.isMe ? 'ml-auto items-end' : ''}`}>
-                    <div className={`flex items-center gap-2 ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm ${msg.isMe ? 'bg-indigo-600' : uColor?.avatar}`}>
-                        {getInitials(msg.sender)}
+            {/* Chat Window */}
+            <div className="w-full lg:w-2/3 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col">
+              <div className="p-4 border-b border-gray-100 bg-gray-50/50"><h3 className="font-semibold text-gray-800">{currentEventName} - Private Messages</h3><p className="text-xs text-gray-500">Messages sent here are only visible to selected team members.</p></div>
+              <div className="flex-1 p-6 overflow-y-auto bg-gray-50/30 space-y-6">
+                {messages.map((msg: any) => {
+                  // Determine the unique color for non-me bubbles
+                  const uColor = msg.isMe ? null : getUserColor(msg.sender);
+                  return (
+                    <div key={msg.id} className={`flex flex-col gap-1 max-w-[80%] ${msg.isMe ? 'ml-auto items-end' : ''}`}>
+                      <div className={`flex items-center gap-2 ${msg.isMe ? 'flex-row-reverse' : ''}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm ${msg.isMe ? 'bg-indigo-600' : uColor?.avatar}`}>
+                          {getInitials(msg.sender)}
+                        </div>
+                        <span className="text-sm font-bold text-gray-800">{msg.isMe ? "You" : msg.sender}</span>
+                        <span className="text-[10px] text-gray-400 font-medium">{msg.date ? `${msg.date}, ` : ''}{msg.time}</span>
                       </div>
-                      <span className="text-sm font-bold text-gray-800">{msg.isMe ? "You" : msg.sender}</span>
-                      <span className="text-[10px] text-gray-400 font-medium">{msg.date ? `${msg.date}, ` : ''}{msg.time}</span>
+                      {/* Apply unique colors to the bubble */}
+                      <div className={`text-sm p-3 rounded-2xl shadow-sm ${msg.isMe ? 'bg-indigo-600 text-white rounded-tr-none mr-10' : `${uColor?.bg} border ${uColor?.border} ${uColor?.text} rounded-tl-none ml-10`}`}>
+                        {msg.to_text && (
+                          <div className={`flex items-center gap-1.5 mb-2 pb-2 text-[10px] font-bold tracking-wide border-b ${msg.isMe ? 'border-indigo-500/50 text-indigo-200' : 'border-black/10 opacity-70'}`}>
+                            <Lock size={10} /> TO: {msg.to_text.toUpperCase()}
+                          </div>
+                        )}
+                        {msg.text && <p className="leading-relaxed">{msg.text}</p>}
+                        {msg.attachmentName && (
+                          <div className={`flex items-center gap-2 mt-2 p-2.5 rounded-lg text-xs font-medium border ${msg.isMe ? 'bg-indigo-700/50 border-indigo-500/30' : 'bg-white/50 border-black/10'}`}>
+                            <FileText size={16} /> {msg.attachmentName}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {/* Apply unique colors to the bubble */}
-                    <div className={`text-sm p-3 rounded-2xl shadow-sm ${msg.isMe ? 'bg-indigo-600 text-white rounded-tr-none mr-10' : `${uColor?.bg} border ${uColor?.border} ${uColor?.text} rounded-tl-none ml-10`}`}>
-                      {msg.to_text && (
-                        <div className={`flex items-center gap-1.5 mb-2 pb-2 text-[10px] font-bold tracking-wide border-b ${msg.isMe ? 'border-indigo-500/50 text-indigo-200' : 'border-black/10 opacity-70'}`}>
-                          <Lock size={10} /> TO: {msg.to_text.toUpperCase()}
-                        </div>
-                      )}
-                      {msg.text && <p className="leading-relaxed">{msg.text}</p>}
-                      {msg.attachmentName && (
-                        <div className={`flex items-center gap-2 mt-2 p-2.5 rounded-lg text-xs font-medium border ${msg.isMe ? 'bg-indigo-700/50 border-indigo-500/30' : 'bg-white/50 border-black/10'}`}>
-                          <FileText size={16} /> {msg.attachmentName}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-            <div className="p-4 border-t border-gray-100 bg-white">
-              {internalAttachment && <div className="flex items-center gap-2 mb-3 bg-gray-50 border border-gray-200 p-2 rounded-lg w-fit"><FileText size={14} className="text-indigo-600"/> <span className="text-xs font-medium text-gray-700">{internalAttachment.name}</span><button onClick={() => setInternalAttachment(null)} className="text-gray-400 hover:text-red-500"><X size={14} /></button></div>}
-              <div className="flex items-end gap-3">
-                <input type="file" ref={internalFileInputRef} onChange={(e) => e.target.files && setInternalAttachment(e.target.files[0])} className="hidden" />
-                <button onClick={() => internalFileInputRef.current?.click()} className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 rounded-xl transition"><Paperclip size={20} /></button>
-                {/* FIX: Added text-gray-900 to ensure visibility */}
-                <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type a private message..." className="flex-1 border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none transition" rows={2} />
-                {/* 🚀 Updated Send Button */}
-                <button onClick={handleSendMessage} disabled={isSending} className="p-3 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:hover:scale-100 flex items-center justify-center min-w-[48px]">
-                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                </button>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className="p-4 border-t border-gray-100 bg-white">
+                {internalAttachment && <div className="flex items-center gap-2 mb-3 bg-gray-50 border border-gray-200 p-2 rounded-lg w-fit"><FileText size={14} className="text-indigo-600" /> <span className="text-xs font-medium text-gray-700">{internalAttachment.name}</span><button onClick={() => setInternalAttachment(null)} className="text-gray-400 hover:text-red-500"><X size={14} /></button></div>}
+                <div className="flex items-end gap-3">
+                  <input type="file" ref={internalFileInputRef} onChange={(e) => e.target.files && setInternalAttachment(e.target.files[0])} className="hidden" />
+                  <button onClick={() => internalFileInputRef.current?.click()} className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 rounded-xl transition"><Paperclip size={20} /></button>
+                  {/* FIX: Added text-gray-900 to ensure visibility */}
+                  <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type a private message..." className="flex-1 border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none transition" rows={2} />
+                  {/* 🚀 Updated Send Button */}
+                  <button onClick={handleSendMessage} disabled={isSending} className="p-3 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:hover:scale-100 flex items-center justify-center min-w-[48px]">
+                    {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
 
       {/* TAB: External AI Bulk Emails (3-Pane Layout) */}
       {activeTab === "external" && (
         <div className="flex flex-col xl:flex-row gap-6 h-[750px]">
-          
+
           {/* PANE 1: LEFT SIDEBAR (Controls & AI) */}
           <div className="w-full xl:w-[300px] shrink-0 flex flex-col gap-6">
             <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-5 space-y-5 flex-1 overflow-y-auto">
@@ -417,7 +425,7 @@ export default function CommunicationPage() {
                   <option value="custom">Custom Email Addresses</option>
                   <option value="csv">Upload CSV List</option>
                 </select>
-                
+
                 {emailTarget === "venue" && (
                   <div className="mt-3">
                     <input type="email" placeholder="manager@venue.com" value={customEmails} onChange={(e) => setCustomEmails(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 text-gray-900 placeholder-gray-400" />
@@ -451,12 +459,12 @@ export default function CommunicationPage() {
               <hr className="border-gray-100" />
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Sparkles size={12} className="text-indigo-500"/> AI Assistant</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Sparkles size={12} className="text-indigo-500" /> AI Assistant</label>
                 <select className="w-full border border-gray-200 rounded-lg p-2 text-xs bg-gray-50 focus:bg-white focus:border-indigo-500 outline-none mb-3 text-gray-700">
                   <option>Exciting & Welcoming</option><option>Formal & Professional</option><option>Urgent Reminder</option><option>Thank You</option>
                 </select>
                 <textarea value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)} placeholder="What should this email be about? (e.g. 'Remind attendees about tomorrow's parking rules')" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 text-gray-900 placeholder-gray-400 resize-none" rows={4} />
-                <button 
+                <button
                   onClick={async () => {
                     if (!emailPrompt) return alert("Please provide an AI prompt!");
                     setIsGenerating(true);
@@ -464,59 +472,89 @@ export default function CommunicationPage() {
                       const res = await fetchAPI('/emails/generate', { method: 'POST', body: JSON.stringify({ prompt: emailPrompt, tone: "Exciting", eventName: currentEventName }) });
                       if (res.success) { setEmailSubject(res.subject); setEmailBody(res.body); }
                     } finally { setIsGenerating(false); }
-                  }} 
-                  disabled={isGenerating} 
+                  }}
+                  disabled={isGenerating}
                   className="mt-2 w-full flex justify-center items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-100 disabled:opacity-50 transition"
                 >
-                  {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} 
+                  {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                   {isGenerating ? "Drafting..." : "Generate Draft"}
                 </button>
               </div>
             </div>
           </div>
-
           {/* PANE 2: CENTER CANVAS (Composer) */}
           <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
             <div className="p-4 border-b border-gray-100 bg-gray-50/30">
               <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Subject" className="w-full text-lg font-bold text-gray-900 bg-transparent outline-none placeholder-gray-300" />
             </div>
-            
+
             <div className="flex gap-2 bg-white border-b border-gray-100 p-2 px-4 shadow-sm z-10">
               <button onClick={handleInsertLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition"><LinkIcon size={14} /> Link</button>
               <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition"><Paperclip size={14} /> Attach</button>
               <input type="file" multiple ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-              {/* Optional CC display for Custom mode */}
-              <span className="ml-auto text-xs text-gray-400 font-medium my-auto px-2">BCC is automatic</span>
+
+              {/* 🚀 NEW: Add CC Toggle */}
+              <button onClick={() => setShowCc(!showCc)} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition ${showCc ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+                Add CC
+              </button>
+
+              <div className="ml-auto flex items-center gap-1.5 text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-1 rounded border border-gray-200 uppercase tracking-wider">
+                <Lock size={10} /> BCC is Automatic
+              </div>
             </div>
 
+            {/* 🚀 NEW: CC Input Field */}
+            {showCc && (
+              <div className="bg-gray-50 border-b border-gray-100 p-3 px-4 flex items-center gap-3">
+                <span className="text-xs font-bold text-gray-500 w-6">CC:</span>
+                <input type="text" value={ccEmails} onChange={(e) => setCcEmails(e.target.value)} placeholder="e.g. sponsor@company.com, dean@university.edu" className="flex-1 bg-white border border-gray-200 rounded-md p-1.5 text-sm outline-none focus:border-indigo-500" />
+              </div>
+            )}
+
             <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} placeholder="Write your email body here..." className="flex-1 w-full p-6 text-sm text-gray-800 outline-none resize-none leading-relaxed" />
-            
+
             {attachments.length > 0 && (
               <div className="p-4 border-t border-gray-100 bg-gray-50 flex flex-wrap gap-2">
-                {attachments.map((f, i) => <div key={i} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 shadow-sm"><FileText size={12} className="text-indigo-500"/> {f.name} <button onClick={() => removeAttachment(i)} className="text-gray-400 hover:text-red-500"><X size={14} /></button></div>)}
+                {attachments.map((f, i) => <div key={i} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 shadow-sm"><FileText size={12} className="text-indigo-500" /> {f.name} <button onClick={() => removeAttachment(i)} className="text-gray-400 hover:text-red-500"><X size={14} /></button></div>)}
               </div>
             )}
 
             <div className="p-4 border-t border-gray-100 bg-white flex justify-between items-center shrink-0">
               <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={includeSignature} onChange={(e) => setIncludeSignature(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" /><span className="text-sm font-medium text-gray-600">Include signature</span></label>
-              <button 
+              <button
                 onClick={async () => {
                   if (!emailSubject || !emailBody) return alert("Subject and body are required!");
                   setIsSending(true);
                   try {
                     const emails = emailTarget === 'venue' ? customEmails : customEmails.split(',').map(e => e.trim()).filter(e => e);
-                    const res = await fetchAPI(`/emails/${selectedEventId}/send`, { method: 'POST', body: JSON.stringify({ target: emailTarget, customEmails: emails, venueEmail: customEmails, subject: emailSubject, body: emailBody }) });
+                    const ccListArray = ccEmails.split(',').map(e => e.trim()).filter(e => e); // 🚀 Parse CCs
+
+                    const res = await fetchAPI(`/emails/${selectedEventId}/send`, {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        target: emailTarget,
+                        customEmails: emails,
+                        venueEmail: customEmails,
+                        subject: emailSubject,
+                        body: emailBody,
+                        ccList: ccListArray, // 🚀 Send CCs to backend!
+                        includeSignature: includeSignature
+                      })
+                    });
+
                     if (res.success) {
                       alert("Mail sent successfully!");
-                      setEmailSubject(""); setEmailBody(""); setCustomEmails(""); setCsvFile(null);
-                      // Trigger a history refresh here if you add a fetchHistory function!
+                      setEmailSubject(""); setEmailBody(""); setCustomEmails(""); setCsvFile(null); setCcEmails(""); setShowCc(false);
+                      // Refresh History!
+                      const historyRes = await fetchAPI(`/emails/${selectedEventId}/history`, { method: 'GET' });
+                      if (historyRes.success) setSentHistory(historyRes.history);
                     }
                   } finally { setIsSending(false); }
-                }} 
-                disabled={isSending} 
+                }}
+                disabled={isSending}
                 className="bg-indigo-600 text-white px-8 py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 transition flex items-center gap-2 shadow-md disabled:opacity-70 disabled:hover:scale-100 active:scale-95"
               >
-                {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} 
+                {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 {isSending ? "Sending..." : "Send Bulk Mail"}
               </button>
             </div>
@@ -556,19 +594,46 @@ export default function CommunicationPage() {
               <div><h2 className="text-xl font-bold text-gray-900">Email Details</h2><p className="text-xs text-gray-500 mt-1 flex items-center gap-1"><Clock size={12} /> Sent on {viewingHistoryEmail.date}</p></div>
               <button onClick={() => setViewingHistoryEmail(null)} className="text-gray-400 hover:text-gray-600 bg-gray-100 p-2 rounded-full"><X size={20} /></button>
             </div>
-            <div className="p-6 overflow-y-auto space-y-6 bg-gray-50/30 font-sans">
+            
+            <div className="p-6 overflow-y-auto space-y-4 bg-gray-50/30 font-sans">
+              
+              {/* 🚀 NEW: Detailed Routing Breakdown (TO, CC, BCC) */}
+              <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                <div className="flex items-start gap-3 border-b border-gray-50 pb-3">
+                  <span className="text-xs font-bold text-gray-400 w-10 mt-0.5">FROM:</span>
+                  <span className="text-sm font-semibold text-gray-800">EventLK Organizer (You)</span>
+                </div>
+                <div className="flex items-start gap-3 border-b border-gray-50 pb-3">
+                  <span className="text-xs font-bold text-gray-400 w-10 mt-0.5">TO:</span>
+                  <span className="text-sm text-gray-600 italic">Undisclosed Recipients (Hidden for privacy)</span>
+                </div>
+                
+                {/* Parse the JSON recipient summary from the database */}
+                <div className="flex items-start gap-3 border-b border-gray-50 pb-3">
+                  <span className="text-xs font-bold text-indigo-400 w-10 mt-0.5">BCC:</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-indigo-700">
+                      {JSON.parse(viewingHistoryEmail.recipient_summary || '{}').type || "Custom Target"}
+                    </span>
+                    <span className="text-xs text-gray-500 mt-0.5">
+                      {JSON.parse(viewingHistoryEmail.recipient_summary || '{}').count 
+                        ? `${JSON.parse(viewingHistoryEmail.recipient_summary || '{}').count} individual emails securely blind-copied.` 
+                        : JSON.parse(viewingHistoryEmail.recipient_summary || '{}').email}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Subject</p>
                 <h3 className="text-lg font-bold text-gray-800 leading-tight">{viewingHistoryEmail.subject}</h3>
               </div>
-              <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Recipients</p>
-                <div className="flex items-center gap-2 text-sm text-indigo-700 font-bold break-all"><Users size={16} className="shrink-0" /> {viewingHistoryEmail.target}</div>
-              </div>
+              
               <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Email Body</p>
                 <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50/50 p-4 rounded-lg border border-gray-50">{viewingHistoryEmail.body}</div>
               </div>
+
             </div>
           </div>
         </div>
