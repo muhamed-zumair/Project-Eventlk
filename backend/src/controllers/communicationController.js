@@ -5,15 +5,16 @@ const pool = require('../config/db');
 const getEventTeam = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const loggedInUserId = req.user.id; // From your auth middleware
+        const loggedInUserId = req.user.id;
 
+        // 🚀 FIX: Using CONCAT() so missing last names don't break the query
         const result = await pool.query(`
-            SELECT u.id, u.first_name || ' ' || u.last_name as name, et.role 
+            SELECT u.id, CONCAT(u.first_name, ' ', u.last_name) as name, et.role 
             FROM "Event_Team" et 
             JOIN "Users" u ON et.user_id = u.id 
             WHERE et.event_id = $1 AND u.id != $2
             ORDER BY u.first_name ASC
-        `, [eventId, loggedInUserId]); // Exclude the logged-in user from the list
+        `, [eventId, loggedInUserId]);
 
         res.status(200).json({ success: true, team: result.rows });
     } catch (error) {
@@ -29,16 +30,16 @@ const getMessages = async (req, res) => {
         const { eventId } = req.params;
         const userId = req.user.id;
 
-        // Fetch messages where the user is EITHER the sender OR a recipient
+        // 🚀 FIX: Using CONCAT() here as well!
         const result = await pool.query(`
             SELECT 
                 m.id as message_id, m.message_text as text, m.attachment_name, 
                 to_char(m.sent_at, 'HH12:MI AM') as time,
                 to_char(m.sent_at, 'Mon DD') as date,
-                u.first_name || ' ' || u.last_name as sender,
+                CONCAT(u.first_name, ' ', u.last_name) as sender,
                 m.sender_id,
                 (
-                    SELECT string_agg(u2.first_name || ' ' || u2.last_name, ', ')
+                    SELECT string_agg(CONCAT(u2.first_name, ' ', u2.last_name), ', ')
                     FROM "Message_Recipients" mr
                     JOIN "Users" u2 ON mr.recipient_id = u2.id
                     WHERE mr.message_id = m.id
