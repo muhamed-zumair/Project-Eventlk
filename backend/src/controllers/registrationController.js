@@ -143,6 +143,7 @@ const issueTickets = async (req, res) => {
 // @desc    Scan QR Token and Check-In Attendee
 // @route   POST /api/registrations/checkin
 // @access  PRIVATE
+
 const checkInAttendee = async (req, res) => {
     const { token } = req.body;
 
@@ -158,8 +159,13 @@ const checkInAttendee = async (req, res) => {
         
         const attendeeId = parts[1];
         
-        // 2. Find the attendee
-        const attendeeRes = await pool.query('SELECT id, name, status, event_id FROM "Attendees" WHERE id = $1', [attendeeId]);
+        // 🚀 2. UPGRADED: Join with the Events table to check if the event is still active
+        const attendeeRes = await pool.query(`
+            SELECT a.id, a.name, a.status as attendee_status, a.event_id, e.status as event_status, e.title as event_title
+            FROM "Attendees" a
+            JOIN "Events" e ON a.event_id = e.id
+            WHERE a.id = $1
+        `, [attendeeId]);
         
         if (attendeeRes.rows.length === 0) {
             return res.status(404).json({ success: false, message: "Attendee not found in the system." });
@@ -167,26 +173,38 @@ const checkInAttendee = async (req, res) => {
 
         const attendee = attendeeRes.rows[0];
 
-        // 3. Prevent double check-ins!
-        if (attendee.status === 'Checked In') {
-            return res.status(400).json({ success: false, message: `${attendee.name} is already checked in!` });
+        // 🚀 3. THE EVENT STATUS GUARD: Block check-ins for finished events
+        if (attendee.event_status === 'Done') {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Access Denied. "${attendee.event_title}" has already concluded.` 
+            });
         }
 
-        // 4. Update status to 'Checked In' and record the timestamp
+        // 4. Prevent double check-ins!
+        if (attendee.attendee_status === 'Checked In') {
+            return res.status(400).json({ 
+                success: false, 
+                message: `${attendee.name} is already checked in!` 
+            });
+        }
+
+        // 5. Update status to 'Checked In' and record the timestamp
         await pool.query(`UPDATE "Attendees" SET status = 'Checked In', checked_in_at = NOW() WHERE id = $1`, [attendeeId]);
 
-        // 5. Fire WebSocket to update the organizers' dashboards LIVE!
+        // 6. Fire WebSocket to update the organizers' dashboards LIVE!
         const io = req.app.get('io');
         io.emit('ATTENDEE_CHECKED_IN', { eventId: attendee.event_id });
 
-        res.status(200).json({ success: true, message: `${attendee.name} has been successfully checked in!` });
+        res.status(200).json({ 
+            success: true, 
+            message: `Welcome, ${attendee.name}! Successfully checked in.` 
+        });
 
     } catch (error) {
         console.error("Check-in Error:", error);
         res.status(500).json({ success: false, message: "Server error processing check-in." });
     }
 };
-
-
 // Export it!
 module.exports = { receiveWebhook, getEventAttendees, issueTickets, checkInAttendee }; // <-- Add issueTickets to the exports
