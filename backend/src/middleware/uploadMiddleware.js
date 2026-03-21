@@ -7,7 +7,7 @@ const storage = multer.memoryStorage();
 // Set a file size limit (e.g., 10MB to protect your server from massive files)
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } 
+    limits: { fileSize: 50 * 1024 * 1024 } 
 });
 
 module.exports = upload;

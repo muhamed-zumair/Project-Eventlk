@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-const { uploadAttachmentToS3 } = require('../utils/s3Service');
+const { uploadAttachmentToS3, getPresignedDownloadUrl } = require('../utils/s3Service');
 
 // @desc    Get all team members for an event (for the left sidebar)
 // @route   GET /api/communication/:eventId/team
@@ -84,7 +84,15 @@ const getMessages = async (req, res) => {
     ORDER BY m.sent_at ASC
 `, [eventId, userId]);
 
-        res.status(200).json({ success: true, messages: result.rows });
+        // 🚀 Generate secure URLs for every attachment
+        const messagesWithUrls = await Promise.all(result.rows.map(async (msg) => {
+            if (msg.attachment && msg.attachment.aws_key) {
+                msg.attachment.url = await getPresignedDownloadUrl(msg.attachment.aws_key);
+            }
+            return msg;
+        }));
+
+        res.status(200).json({ success: true, messages: messagesWithUrls });
     } catch (error) {
         console.error("Message Fetch Error:", error);
         res.status(500).json({ success: false, message: "Server error fetching messages." });
@@ -137,6 +145,8 @@ const sendMessage = async (req, res) => {
             `, [req.file.originalname, awsKey, fileType, sizeInMB, newMessageId, finalSenderId]);
             
             fileData = attachRes.rows[0];
+            // 🚀 Add the secure URL for real-time messages
+            fileData.url = await getPresignedDownloadUrl(awsKey);
         }
 
         // Save Recipients

@@ -63,4 +63,4 @@ const uploadAttachmentToS3 = async (file, eventId, type = 'general') => {
     return uniqueFileName;
 };
 // 3. Update the export at the bottom
-module.exports = { s3Client, uploadFileToS3, getPresignedDownloadUrl, deleteFileFromS3 };
+module.exports = { s3Client, uploadFileToS3, getPresignedDownloadUrl, deleteFileFromS3 , uploadAttachmentToS3};
