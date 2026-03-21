@@ -7,7 +7,7 @@ const uploadEventDocument = async (req, res) => {
     try {
         const eventId = req.params.id;
         const isConfidential = req.body.isConfidential === 'true';
-        
+
         if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
 
         // Shoot it to AWS
@@ -31,14 +31,14 @@ const uploadEventDocument = async (req, res) => {
 const downloadEventDocument = async (req, res) => {
     try {
         const { docId } = req.params;
-        
+
         // Find the AWS Key in the database
         const docRes = await pool.query('SELECT aws_key FROM "Event_Documents" WHERE id = $1', [docId]);
         if (docRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Document not found' });
 
         // Ask AWS for a secure, temporary link
         const downloadUrl = await getPresignedDownloadUrl(docRes.rows[0].aws_key);
-        
+
         // Send the link to the frontend
         res.status(200).json({ success: true, downloadUrl });
     } catch (error) {
@@ -50,7 +50,7 @@ const downloadEventDocument = async (req, res) => {
 const deleteEventDocument = async (req, res) => {
     try {
         const { docId } = req.params;
-        
+
         // 1. Find the AWS Key in the database
         const docRes = await pool.query('SELECT aws_key FROM "Event_Documents" WHERE id = $1', [docId]);
         if (docRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Document not found' });
@@ -78,7 +78,7 @@ const createEvent = async (req, res) => {
 
     const inputDate = new Date(date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); 
+    today.setHours(0, 0, 0, 0);
 
     if (inputDate < today) {
         return res.status(400).json({ success: false, message: 'Cannot create events in the past. Please select a future date.' });
@@ -93,7 +93,7 @@ const createEvent = async (req, res) => {
         }
 
         const eventId = uuidv4();
-        
+
         const insertEventQuery = `
             INSERT INTO "Events" (id, title, start_date, type, expected_headcount, total_budget, description, created_by, venue_id, is_ai_assisted, theme_colors, ai_recommended_plan)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -124,13 +124,16 @@ const getEvents = async (req, res) => {
     const userId = req.user.userId;
 
     try {
+        // 🚀 THE BULLETPROOF AUTO-ARCHIVER
         await pool.query(`
             UPDATE "Events" SET status = 'Done'
-            WHERE start_date < CURRENT_DATE AND status = 'In Progress' AND id IN (SELECT event_id FROM "Event_Team" WHERE user_id = $1);`,
+            WHERE start_date < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Colombo')::date 
+            AND status = 'In Progress' 
+            AND id IN (SELECT event_id FROM "Event_Team" WHERE user_id = $1);`,
             [userId]
         );
 
-        // --- 🚀 UPGRADED: Now dynamically calculates total_spent from the Expenses table ---
+        // 🚀 THE FULL, UNABBREVIATED QUERY
         const fetchEventsQuery = `
         SELECT 
             e.id, e.title, e.type, e.status, e.start_date, e.expected_headcount, e.total_budget, e.description, e.is_ai_assisted,
@@ -171,7 +174,7 @@ const getEventById = async (req, res) => {
         INNER JOIN "Event_Team" t ON e.id = t.event_id
         LEFT JOIN "Venues" v ON e.venue_id = v.id
         WHERE e.id = $1 AND t.user_id = $2;`;
-        
+
         const eventResult = await pool.query(eventQuery, [eventId, userId]);
 
         if (eventResult.rows.length === 0) return res.status(404).json({ success: false, message: 'Event not found or access denied.' });
@@ -207,14 +210,14 @@ const updateEvent = async (req, res) => {
     const eventId = req.params.id;
     const userId = req.user.userId;
     const { title, date, expectedAttendees, budget, description, agenda, speakers, sponsors, startTime, endTime, venue, venueAddress, organizerRole } = req.body;
-    
+
     if (date) {
         const inputDate = new Date(date);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         if (inputDate < today) return res.status(400).json({ success: false, message: 'Cannot update event to a past date.' });
-    } 
-    
+    }
+
     try {
         await pool.query('BEGIN');
         const checkTeam = await pool.query(`SELECT role FROM "Event_Team" WHERE event_id = $1 AND user_id = $2;`, [eventId, userId]);
@@ -228,8 +231,8 @@ const updateEvent = async (req, res) => {
 
         const finalHeadcount = isAi ? currentEventRes.rows[0].expected_headcount : expectedAttendees;
         const finalBudget = isAi ? currentEventRes.rows[0].total_budget : budget;
-        let finalVenueId = currentEventRes.rows[0].venue_id; 
-        
+        let finalVenueId = currentEventRes.rows[0].venue_id;
+
         if (!isAi && venue) {
             finalVenueId = uuidv4();
             await pool.query(`INSERT INTO "Venues" (id, name, address) VALUES ($1, $2, $3);`, [finalVenueId, venue, venueAddress]);
@@ -271,9 +274,27 @@ const updateEvent = async (req, res) => {
 const getPastEvents = async (req, res) => {
     const userId = req.user.userId;
     try {
-        const result = await pool.query(`SELECT e.*, v.name as venue_name FROM "Events" e INNER JOIN "Event_Team" t ON e.id = t.event_id LEFT JOIN "Venues" v ON e.venue_id = v.id WHERE t.user_id = $1 AND e.status = 'Done' ORDER BY e.start_date DESC;`, [userId]);
+        const fetchPastEventsQuery = `
+            SELECT 
+                e.id, e.title, e.start_date, e.expected_headcount, e.total_budget, e.status,
+                v.name as venue_name,
+                COALESCE((SELECT SUM(amount) FROM "Expenses" WHERE event_id = e.id), 0) as total_spent,
+                (SELECT COUNT(*) FROM "Attendees" WHERE event_id = e.id AND status = 'Checked In') as checked_in_count
+            FROM "Events" e
+            INNER JOIN "Event_Team" t ON e.id = t.event_id
+            LEFT JOIN "Venues" v ON e.venue_id = v.id
+            WHERE t.user_id = $1 AND e.status = 'Done'
+            ORDER BY e.start_date DESC;
+        `;
+
+        const result = await pool.query(fetchPastEventsQuery, [userId]);
+
+        // 🚀 ADD THIS LINE TO DEBUG:
+        console.log(`Found ${result.rows.length} past events for user!`);
+
         return res.status(200).json({ success: true, events: result.rows });
     } catch (error) {
+        console.error("Database Error in getPastEvents:", error);
         return res.status(500).json({ success: false, message: 'Failed to fetch past events.' });
     }
 };
@@ -308,27 +329,49 @@ const getPostEventReport = async (req, res) => {
 
 const deleteEvent = async (req, res) => {
     const eventId = req.params.id;
-    const userId = req.user.userId;
+    const userId = req.user.userId || req.user.id;
+
+    // 🚀 1. Get a dedicated client from the pool
+    const client = await pool.connect();
+
     try {
-        const checkTeam = await pool.query(`SELECT role FROM "Event_Team" WHERE event_id = $1 AND user_id = $2;`, [eventId, userId]);
-        if (checkTeam.rows.length === 0) return res.status(403).json({ success: false, message: 'Access denied.' });
+        const checkTeam = await client.query(`SELECT role FROM "Event_Team" WHERE event_id = $1 AND user_id = $2;`, [eventId, userId]);
+        if (checkTeam.rows.length === 0) {
+            client.release();
+            return res.status(403).json({ success: false, message: 'Access denied.' });
+        }
 
-        await pool.query('BEGIN');
-        await pool.query('DELETE FROM "Agenda" WHERE event_id = $1;', [eventId]);
-        await pool.query('DELETE FROM "Guest_Speakers" WHERE event_id = $1;', [eventId]);
-        await pool.query('DELETE FROM "Sponsors" WHERE event_id = $1;', [eventId]);
-        await pool.query('DELETE FROM "Event_Documents" WHERE event_id = $1;', [eventId]);
-        await pool.query('DELETE FROM "Budget_Categories" WHERE event_id = $1;', [eventId]); 
-        await pool.query('DELETE FROM "Expenses" WHERE event_id = $1;', [eventId]).catch(() => { }); 
-        await pool.query('DELETE FROM "Attendees" WHERE event_id = $1;', [eventId]).catch(() => { });
-        await pool.query('DELETE FROM "Event_Team" WHERE event_id = $1;', [eventId]);
-        await pool.query('DELETE FROM "Events" WHERE id = $1;', [eventId]);
+        await client.query('BEGIN'); // 🚀 Start transaction on this SPECIFIC client
 
-        await pool.query('COMMIT');
+        // 🚀 2. Delete CHILD items first (Work from the inside out)
+        await client.query('DELETE FROM "Notifications" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Tasks" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Internal_Messages" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Agenda" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Guest_Speakers" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Sponsors" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Event_Documents" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Attendees" WHERE event_id = $1;', [eventId]);
+
+        // 🚀 3. IMPORTANT: Delete Expenses BEFORE Categories
+        await client.query('DELETE FROM "Expenses" WHERE event_id = $1;', [eventId]);
+        await client.query('DELETE FROM "Budget_Categories" WHERE event_id = $1;', [eventId]);
+
+        await client.query('DELETE FROM "Event_Team" WHERE event_id = $1;', [eventId]);
+
+        // 🚀 4. Finally, delete the parent event
+        await client.query('DELETE FROM "Events" WHERE id = $1;', [eventId]);
+
+        await client.query('COMMIT');
         return res.status(200).json({ success: true, message: 'Event deleted successfully' });
+
     } catch (error) {
-        await pool.query('ROLLBACK');
-        return res.status(500).json({ success: false, message: 'Failed to delete event' });
+        await client.query('ROLLBACK');
+        console.error("CRITICAL DELETE ERROR:", error);
+        return res.status(500).json({ success: false, message: 'Failed to delete event: ' + error.message });
+    } finally {
+        // 🚀 5. ALWAYS release the client
+        client.release();
     }
 };
 
@@ -352,10 +395,10 @@ const inviteTeamMember = async (req, res) => {
             await pool.query('ROLLBACK');
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
-        
+
         const eventTitle = eventCheck.rows[0].title;
         const teamCheck = await pool.query(`SELECT * FROM "Event_Team" et JOIN "Users" u ON et.user_id = u.id WHERE et.event_id = $1 AND u.email = $2;`, [eventId, email]);
-        
+
         if (teamCheck.rows.length > 0) {
             await pool.query('ROLLBACK');
             return res.status(400).json({ success: false, message: 'User is already part of the team' });
@@ -370,11 +413,11 @@ const inviteTeamMember = async (req, res) => {
         const userCheck = await pool.query(`SELECT id FROM "Users" WHERE email = $1`, [email]);
 
         if (userCheck.rows.length > 0) {
-            const invitedUserId = userCheck.rows[0].id; 
+            const invitedUserId = userCheck.rows[0].id;
             await pool.query(`INSERT INTO "Event_Invitations" (event_id, email, role) VALUES ($1, $2, $3)`, [eventId, email, role]);
             await sendExistingUserInviteEmail(email, eventTitle, role, "Event organizer");
             await pool.query('COMMIT');
-            
+
             const io = req.app.get('io');
             const connectedUsers = req.app.get('connectedUsers');
             const targetSocketId = connectedUsers.get(invitedUserId);
@@ -396,7 +439,7 @@ const inviteTeamMember = async (req, res) => {
 };
 
 const getUserInvitations = async (req, res) => {
-    const userId = req.user.userId; 
+    const userId = req.user.userId;
     try {
         const userCheck = await pool.query(`SELECT email FROM "Users" WHERE id = $1`, [userId]);
         if (userCheck.rows.length === 0) return res.status(404).json({ success: false, message: 'User not found.' });
@@ -404,7 +447,7 @@ const getUserInvitations = async (req, res) => {
 
         const myInvitesQuery = `SELECT i.id as notification_id, i.role, e.title as event_title, 'invite' as type, i.email as target_email FROM "Event_Invitations" i JOIN "Events" e ON i.event_id = e.id WHERE i.email = $1 AND i.status = 'Pending';`;
         const myDeclinedAlertsQuery = `SELECT i.id as notification_id, i.role, e.title as event_title, 'declined_alert' as type, i.email as target_email FROM "Event_Invitations" i JOIN "Events" e ON i.event_id = e.id WHERE e.created_by = $1 AND i.status = 'Declined';`;
-        
+
         // 🚀 NEW: Fetch persistent alerts from your new Notifications table!
         const myNotificationsQuery = `SELECT id as notification_id, message, type, event_id FROM "Notifications" WHERE user_id = $1 AND is_read = false ORDER BY created_at DESC;`;
 
@@ -423,7 +466,7 @@ const getUserInvitations = async (req, res) => {
 
 const respondToInvitation = async (req, res) => {
     const userId = req.user.userId;
-    const { inviteId, action } = req.body; 
+    const { inviteId, action } = req.body;
 
     if (!['accept', 'decline'].includes(action)) return res.status(400).json({ success: false, message: 'Invalid action.' });
 
@@ -448,28 +491,28 @@ const respondToInvitation = async (req, res) => {
         if (action === 'accept') {
             await pool.query(`INSERT INTO "Event_Team" (event_id, user_id, role) VALUES ($1, $2, $3)`, [invite.event_id, userId, invite.role]);
             await pool.query(`DELETE FROM "Event_Invitations" WHERE id = $1`, [inviteId]);
-            
+
             // 🚀 NEW: Save Acceptance to the new Notifications Table for the Organizer!
             const msg = `${userEmail} accepted your invite to ${invite.event_title}!`;
             await pool.query(`INSERT INTO "Notifications" (id, user_id, event_id, message, type) VALUES ($1, $2, $3, $4, 'invite_accepted')`, [uuidv4(), invite.created_by, invite.event_id, msg]);
-            
+
             await pool.query('COMMIT');
-            
+
             const io = req.app.get('io');
             const organizerSocket = req.app.get('connectedUsers').get(invite.created_by);
             if (organizerSocket) io.to(organizerSocket).emit('TEAM_UPDATED', { message: msg });
-            
+
             return res.status(200).json({ success: true, message: 'Welcome to the team!' });
         } else if (action === 'decline') {
             await pool.query(`UPDATE "Event_Invitations" SET status = 'Declined' WHERE id = $1`, [inviteId]);
             const { sendDeclineNotificationEmail } = require('../utils/emailService');
             await sendDeclineNotificationEmail(invite.organizer_email, invite.organizer_name, invite.event_title, userEmail);
             await pool.query('COMMIT');
-            
+
             const io = req.app.get('io');
             const organizerSocket = req.app.get('connectedUsers').get(invite.created_by);
             if (organizerSocket) io.to(organizerSocket).emit('TEAM_UPDATED', { message: `${userEmail} declined the invite to ${invite.event_title}.` });
-            
+
             return res.status(200).json({ success: true, message: 'Invitation declined.' });
         }
     } catch (error) {
@@ -508,7 +551,7 @@ const removeTeamMember = async (req, res) => {
         await pool.query('BEGIN');
         const details = await pool.query(`SELECT u.email, e.title FROM "Users" u, "Events" e WHERE u.id = $1 AND e.id = $2`, [targetUserId, eventId]);
         await pool.query(`DELETE FROM "Event_Team" WHERE event_id = $1 AND user_id = $2`, [eventId, targetUserId]);
-        
+
         // 🚀 NEW: Save Removal to the new Notifications Table!
         const msg = `You have been removed from the team for ${details.rows[0].title}.`;
         await pool.query(`INSERT INTO "Notifications" (id, user_id, event_id, message, type) VALUES ($1, $2, $3, $4, 'removal')`, [uuidv4(), targetUserId, eventId, msg]);
@@ -516,7 +559,7 @@ const removeTeamMember = async (req, res) => {
         const { sendRemovalEmail } = require('../utils/emailService');
         await sendRemovalEmail(details.rows[0].email, details.rows[0].title);
         await pool.query('COMMIT');
-        
+
         const targetSocketId = req.app.get('connectedUsers').get(targetUserId);
         if (targetSocketId) {
             req.app.get('io').to(targetSocketId).emit('MEMBER_REMOVED', { message: msg, eventId });
@@ -534,7 +577,7 @@ const changeMemberRole = async (req, res) => {
     try {
         const eventCheck = await pool.query(`SELECT title FROM "Events" WHERE id = $1`, [eventId]);
         await pool.query(`UPDATE "Event_Team" SET role = $1 WHERE event_id = $2 AND user_id = $3`, [req.body.newRole, eventId, targetUserId]);
-        
+
         // 🚀 NEW: Save Role Change to the new Notifications Table!
         const msg = `Your role for ${eventCheck.rows[0]?.title} was changed to ${req.body.newRole}.`;
         await pool.query(`INSERT INTO "Notifications" (id, user_id, event_id, message, type) VALUES ($1, $2, $3, $4, 'role_change')`, [uuidv4(), targetUserId, eventId, msg]);
@@ -552,10 +595,10 @@ const changeMemberRole = async (req, res) => {
 
 module.exports = {
     // Original functions
-    createEvent, getEvents, updateEvent, getEventById, getPastEvents, getPostEventReport, 
-    deleteEvent, inviteTeamMember, getUserInvitations, respondToInvitation, 
+    createEvent, getEvents, updateEvent, getEventById, getPastEvents, getPostEventReport,
+    deleteEvent, inviteTeamMember, getUserInvitations, respondToInvitation,
     dismissNotification, changeMemberRole, removeTeamMember,
-    
+
     // 🚀 NEW: The AWS S3 Document Functions
     uploadEventDocument,
     downloadEventDocument,

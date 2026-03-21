@@ -1,10 +1,21 @@
 const {Pool} = require('pg');
 require('dotenv').config();
 
-//creating a new connection using the url from the .env file
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  // 🚀 Increase these for heavy AI-assisted data
+  statement_timeout: 15000,      // Give it 15 seconds to delete everything
+  connectionTimeoutMillis: 10000, 
+  idle_in_transaction_session_timeout: 15000 
 });
+
+// 🚀 CRITICAL: This stops the "node:events:486" crash you saw!
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle database client', err);
+});
+
+
 
 //testing the connection
 pool.connect((err, client, release) => {
