@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { uploadAttachmentToS3, getPresignedDownloadUrl } = require('../utils/s3Service');
 const { sendBulkEmail } = require('../utils/emailService');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
@@ -38,12 +39,30 @@ const generateAIDraft = async (req, res) => {
 
 // @desc    Send Bulk Email & Log History
 // @route   POST /api/emails/:eventId/send
+// @desc    Send Bulk Email & Log History
+// @route   POST /api/emails/:eventId/send
 const sendBulkMail = async (req, res) => {
     try {
+        console.log("📩 Incoming Bulk Mail Request");
+        console.log("Body:", req.body);
+        console.log("Files:", req.files ? req.files.length : 0);
+
+        // 🚀 Safety Check: If body is missing, Multer didn't run!
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ success: false, message: "Invalid form data. Make sure Multer is in your route!" });
+        }
+
         const { eventId } = req.params;
-        const { target, customEmails, venueEmail, subject, body, ccList, includeSignature } = req.body;
+        // 🚀 1. Parse FormData properly (FormData sends boolean as the string "true")
+        const { target, venueEmail, subject, body } = req.body;
+        const includeSignature = req.body.includeSignature === 'true';
         
-        // 🚀 FIX: Correctly extract the userId from the JWT payload
+        // ... rest of your code stays exactly the same
+        
+        // FormData arrays need to be safely parsed
+        const customEmails = req.body.customEmails ? (Array.isArray(req.body.customEmails) ? req.body.customEmails : [req.body.customEmails]) : [];
+        const ccList = req.body.ccList ? (Array.isArray(req.body.ccList) ? req.body.ccList : [req.body.ccList]) : [];
+
         const userId = req.user?.userId || req.user?.id;
         if (!userId) return res.status(401).json({ success: false, message: "Unauthorized: Missing User ID" });
 
@@ -68,7 +87,7 @@ const sendBulkMail = async (req, res) => {
 
         if (bccList.length === 0) return res.status(400).json({ success: false, message: "No recipients found." });
 
-        // 2. 🚀 Fetch Organizer Name, Role, AND Event Title
+        // 2. Fetch Organizer Details
         const userRes = await pool.query(`
             SELECT u.first_name, u.last_name, et.role, e.title as event_title 
             FROM "Users" u
@@ -79,15 +98,37 @@ const sendBulkMail = async (req, res) => {
 
         if (userRes.rows.length === 0) return res.status(404).json({ success: false, message: "User not found in database." });
 
-        const firstName = userRes.rows[0].first_name || '';
-        const lastName = userRes.rows[0].last_name || '';
-        const senderName = `${firstName} ${lastName}`.trim() || 'Event Organizer';
-        const rawRole = userRes.rows[0].role || 'Organizer';
-        const userRole = rawRole.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        const eventTitle = userRes.rows[0].event_title || 'Event'; // <-- Fetches the Event Name!
+        const senderName = `${userRes.rows[0].first_name || ''} ${userRes.rows[0].last_name || ''}`.trim() || 'Event Organizer';
+        const userRole = (userRes.rows[0].role || 'Organizer').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const eventTitle = userRes.rows[0].event_title || 'Event';
 
-        // 3. 🚀 Format Email Body and inject Professional Signature
+        // 3. Format Email Body
         let finalHtmlBody = body.replace(/\n/g, '<br>'); 
+
+        // 🚀 4. THE CLOUD MAGIC: Inject Secure S3 Links into the HTML body
+        if (req.files && req.files.length > 0) {
+            
+            recipientSummary.attachments = []; // 🚀 NEW: Array to store history data
+            
+            finalHtmlBody += `
+                <br><br>
+                <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; font-family: sans-serif;">
+                    <h4 style="margin-top: 0; color: #4f46e5;">📎 Secure Event Attachments:</h4>
+                    <ul style="margin-bottom: 0; padding-left: 20px;">
+            `;
+            
+            for (const file of req.files) {
+                const awsKey = await uploadAttachmentToS3(file, eventId, 'emails');
+                const downloadUrl = await getPresignedDownloadUrl(awsKey);
+                
+                // 🚀 NEW: Save the name and secure link to our database summary
+                recipientSummary.attachments.push({ name: file.originalname, url: downloadUrl });
+
+                // Make a clickable hyperlink for the actual email
+                finalHtmlBody += `<li style="margin-bottom: 5px;"><a href="${downloadUrl}" target="_blank" style="color: #4f46e5; text-decoration: none; font-weight: bold;">${file.originalname}</a></li>`;
+            }
+            finalHtmlBody += `</ul></div>`;
+        }
 
         if (includeSignature) {
             finalHtmlBody += `
@@ -104,7 +145,9 @@ const sendBulkMail = async (req, res) => {
             `;
         }
 
-        // 4. Send the Email via Nodemailer
+        // 5. Send the Email via Nodemailer
+
+        
         await sendBulkEmail(senderName, subject, finalHtmlBody, bccList, ccList);
 
         // 5. Save to History Table
