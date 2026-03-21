@@ -205,12 +205,12 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     setIsNotificationOpen(false);
   };
 
-  // --- HUSSAIN'S AI API INTEGRATION ---
+  // --AI API INTEGRATION ---
   const handleGenerateAIPlan = async () => {
     setIsGeneratingAI(true);
     setErrorMessage("");
 
-    // Converts your Database ENUMs into Hussain's AI-friendly format!
+    // Converts your Database ENUMs into AI-friendly format!
     const aiCategoryMapping: { [key: string]: string } = {
       "Workshops & Training": "Workshop / Training",
       "Competitions & Hackathons": "Competition / Hackathon",
