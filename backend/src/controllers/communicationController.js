@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { uploadAttachmentToS3 } = require('../utils/s3Service');
 
 // @desc    Get all team members for an event (for the left sidebar)
 // @route   GET /api/communication/:eventId/team
@@ -80,72 +81,68 @@ const getMessages = async (req, res) => {
     }
 };
 
-// @desc    Send a private message & emit via WebSockets
-// @route   POST /api/communication/:eventId/messages
+
+
+const { uploadAttachmentToS3 } = require('../utils/s3Service');
+
 const sendMessage = async (req, res) => {
     try {
         const { eventId } = req.params;
-        // 🚀 FIX 1: Accept senderId from the frontend payload to prevent "Unknown User"
-        const { text, recipients, attachmentName, senderId } = req.body;
+        const { text, recipients, senderId, fileType } = req.body;
+        const finalSenderId = senderId || req.user?.userId;
 
-        // Fallback to req.user.id if senderId isn't in body
-        const finalSenderId = senderId || req.user?.id || req.user?.userId;
+        await pool.query('BEGIN'); // Start transaction for safety
 
-        if (!recipients || recipients.length === 0) {
-            return res.status(400).json({ success: false, message: "Select at least one recipient." });
-        }
-        if (!finalSenderId) {
-            return res.status(400).json({ success: false, message: "Authentication error: Sender ID missing." });
-        }
-
-        // 1. Save to Messages Table
+        // 1. Save the Message text
         const msgRes = await pool.query(`
-            INSERT INTO "Internal_Messages" (id, event_id, sender_id, message_text, attachment_name)
-            VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *
-        `, [eventId, finalSenderId, text, attachmentName]);
-
+            INSERT INTO "Internal_Messages" (id, event_id, sender_id, message_text)
+            VALUES (gen_random_uuid(), $1, $2, $3) RETURNING *
+        `, [eventId, finalSenderId, text]);
         const newMessageId = msgRes.rows[0].id;
-        const sentAt = msgRes.rows[0].sent_at;
 
-        // 2. Save Recipients (Optimized for speed!)
-        const recipientPromises = recipients.map(recipientId => {
-            return pool.query(`INSERT INTO "Message_Recipients" (message_id, recipient_id) VALUES ($1, $2)`, [newMessageId, recipientId]);
-        });
-        await Promise.all(recipientPromises);
+        // 2. If there is a file, save it to S3 and the Attachments table
+        let fileData = null;
+        if (req.file) {
+            const awsKey = await uploadAttachmentToS3(req.file, eventId, 'chat');
+            const sizeInMB = (req.file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            
+            const attachRes = await pool.query(`
+                INSERT INTO "Attachments" (id, file_name, aws_key, file_type, file_size, message_id, uploaded_by)
+                VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6) RETURNING *
+            `, [req.file.originalname, awsKey, fileType, sizeInMB, newMessageId, finalSenderId]);
+            
+            fileData = attachRes.rows[0];
+        }
 
-        // 3. Get Names for UI
+        // 3. Save Recipients
+        await Promise.all(recipients.map(rId => 
+            pool.query(`INSERT INTO "Message_Recipients" (message_id, recipient_id) VALUES ($1, $2)`, [newMessageId, rId])
+        ));
+
+        await pool.query('COMMIT');
+
+        // 4. Construct response for WebSockets
         const senderRes = await pool.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [finalSenderId]);
-        const recipientNamesRes = await pool.query(`
-            SELECT string_agg(CONCAT(first_name, ' ', last_name), ', ') as names 
-            FROM "Users" WHERE id = ANY($1::uuid[])
-        `, [recipients]);
-
+        
         const fullMessage = {
             id: newMessageId,
-            eventId: eventId,
-            sender: senderRes.rows[0]?.name?.trim() || 'Unknown User',
+            text,
+            sender: senderRes.rows[0]?.name || 'User',
             sender_id: finalSenderId,
-            text: text,
-            attachmentName: attachmentName,
-            time: new Date(sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            to_text: recipientNamesRes.rows[0]?.names || 'Unknown Recipients',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            attachment: fileData, // Include the new attachment data
             isMe: false
         };
 
-        // 4. FIRE WEBSOCKETS (Using Rooms)
         const io = req.app.get('io');
-
-        recipients.forEach(recipientId => {
-            // 🚀 Emits to EVERY open tab the recipient currently has!
-            io.to(recipientId).emit('NEW_INTERNAL_MESSAGE', fullMessage);
-        });
+        recipients.forEach(rId => io.to(rId).emit('NEW_INTERNAL_MESSAGE', fullMessage));
 
         res.status(200).json({ success: true, message: { ...fullMessage, isMe: true } });
-
     } catch (error) {
-        console.error("Send Message Error:", error);
-        res.status(500).json({ success: false, message: "Server error sending message." });
+        await pool.query('ROLLBACK');
+        res.status(500).json({ success: false, message: "Error sending message." });
     }
 };
+
 
 module.exports = { getEventTeam, getMessages, sendMessage };

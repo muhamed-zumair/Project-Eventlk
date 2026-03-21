@@ -44,5 +44,23 @@ const deleteFileFromS3 = async (awsKey) => {
     await s3Client.send(new DeleteObjectCommand(params));
 };
 
+
+
+// Add this function to your s3Service.js
+const uploadAttachmentToS3 = async (file, eventId, type = 'general') => {
+    const randomHex = crypto.randomBytes(4).toString('hex');
+    // Folder structure: event_123/chat/image_171000.png
+    const uniqueFileName = `event_${eventId}/${type}/${Date.now()}-${randomHex}-${file.originalname.replace(/\s+/g, '_')}`;
+
+    const params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: uniqueFileName,
+        Body: file.buffer,
+        ContentType: file.mimetype
+    };
+
+    await s3Client.send(new PutObjectCommand(params));
+    return uniqueFileName;
+};
 // 3. Update the export at the bottom
 module.exports = { s3Client, uploadFileToS3, getPresignedDownloadUrl, deleteFileFromS3 };
