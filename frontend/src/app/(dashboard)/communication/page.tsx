@@ -401,9 +401,56 @@ export default function CommunicationPage() {
                           </div>
                         )}
                         {msg.text && <p className="leading-relaxed">{msg.text}</p>}
-                        {msg.attachmentName && (
-                          <div className={`flex items-center gap-2 mt-2 p-2.5 rounded-lg text-xs font-medium border ${msg.isMe ? 'bg-indigo-700/50 border-indigo-500/30' : 'bg-white/50 border-black/10'}`}>
-                            <FileText size={16} /> {msg.attachmentName}
+                        {/* 🚀 NEW: Dynamic Attachment Rendering */}
+                        {msg.attachment && (
+                          <div className={`mt-3 overflow-hidden rounded-xl border ${msg.isMe ? 'bg-indigo-700/30 border-indigo-400/30' : 'bg-white/50 border-black/5'}`}>
+
+                            {/* CASE 1: IMAGES (Show a real preview) */}
+                            {msg.attachment.file_type === 'image' && (
+                              <div className="group relative cursor-pointer" onClick={() => window.open(`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`, '_blank')}>
+                                <img
+                                  src={`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`}
+                                  alt={msg.attachment.file_name}
+                                  className="max-h-60 w-full object-cover transition group-hover:opacity-90"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/20">
+                                  <Search className="text-white" size={24} />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* CASE 2: VIDEOS (Show a Play Icon) */}
+                            {msg.attachment.file_type === 'video' && (
+                              <button
+                                onClick={() => window.open(`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`, '_blank')}
+                                className="flex items-center gap-4 p-4 w-full hover:bg-black/5 transition text-left"
+                              >
+                                <div className="bg-amber-500 p-3 rounded-full text-white shadow-lg">
+                                  <Send size={20} className="rotate-90 ml-0.5" /> {/* Using Send as a Play icon substitute */}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-bold truncate max-w-[150px]">{msg.attachment.file_name}</p>
+                                  <p className="text-[10px] opacity-70 uppercase tracking-tighter">Click to Play Video • {msg.attachment.file_size}</p>
+                                </div>
+                              </button>
+                            )}
+
+                            {/* CASE 3: DOCUMENTS (Standard Card) */}
+                            {msg.attachment.file_type === 'document' && (
+                              <button
+                                onClick={() => window.open(`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`, '_blank')}
+                                className="flex items-center gap-3 p-3 w-full hover:bg-black/5 transition text-left"
+                              >
+                                <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                  <FileText size={20} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-bold truncate">{msg.attachment.file_name}</p>
+                                  <p className="text-[10px] opacity-60 uppercase tracking-tighter">{msg.attachment.file_size}</p>
+                                </div>
+                                <Upload size={14} className="rotate-180 opacity-40" /> {/* Download arrow */}
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
