@@ -250,6 +250,18 @@ const updatePassword = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error updating password." });
     }
 };
+// 5. Delete Account
+const deleteAccount = async (req, res) => {
+    try {
+        const userId = req.user.userId || req.user.id;
+        // This will cascade and delete all their events, tasks, etc., if foreign keys are set up correctly!
+        await pool.query('DELETE FROM "Users" WHERE id = $1', [userId]);
+        res.status(200).json({ success: true, message: "Account deleted successfully." });
+    } catch (error) {
+        console.error("Delete Account Error:", error);
+        res.status(500).json({ success: false, message: "Failed to delete account." });
+    }
+};
 
 module.exports = {
     registerUser,
@@ -257,6 +269,7 @@ module.exports = {
     getUserSettings,
     updateProfile,
     updateNotifications,
-    updatePassword
+    updatePassword, 
+    deleteAccount
 }
 
