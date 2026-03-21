@@ -133,15 +133,16 @@ else:
     # 2. Predict
     venue_pred = rf_venue.predict(final_input)[0]
     alloc_pred = rf_alloc.predict(final_input)[0]
-
-    # --- NEW IN COMMIT 34: Display Venue Result Layout ---
+    
+    # --- Display Venue Result ---
     st.markdown("---")
     col1, col2 = st.columns([2, 1])
-
+    
     with col1:
         st.subheader("📍 Recommended Venue")
-        st.write("*(Prediction will appear here)*")
+        st.success(f"**{venue_pred}**")
+        st.caption(f"Based on {headcount} people and LKR {bph:.0f}/head budget.")
 
     with col2:
         st.subheader("💵 Est. Total Cost")
-        st.write("*(Cost will appear here)*")
+        st.info(f"**LKR {budget:,.2f}**")
