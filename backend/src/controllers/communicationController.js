@@ -8,11 +8,11 @@ const { uploadAttachmentToS3 } = require('../utils/s3Service');
 const getEventTeam = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const loggedInUserId = req.user.id;
+        // 🚀 Check both common names for the ID in the token
+        const loggedInUserId = req.user?.userId || req.user?.id;
 
-        console.log(`\n--- 🕵️‍♂️ DEBUG: FETCHING TEAM FOR EVENT ---`);
-        console.log(`Event ID: ${eventId}`);
         console.log(`Logged-in User ID: ${loggedInUserId}`);
+        // ... rest of the code ...
 
         // We temporarily removed the '!= loggedInUserId' rule so we can see EVERYONE
         const result = await pool.query(`
@@ -93,53 +93,81 @@ const getMessages = async (req, res) => {
 
 
 
-
 const sendMessage = async (req, res) => {
+    console.log("📩 Message Request Received!");
+    
+    // 🚀 1. CHECK OUT A DEDICATED CLIENT FROM THE POOL
+    const client = await pool.connect(); 
+
     try {
         const { eventId } = req.params;
-        const { text, recipients, senderId, fileType } = req.body;
-        const finalSenderId = senderId || req.user?.userId;
+        let { text, recipients, senderId, fileType } = req.body;
+        
+        if (recipients && !Array.isArray(recipients)) {
+            recipients = [recipients];
+        }
 
-        await pool.query('BEGIN'); // Start transaction for safety
+        const finalSenderId = senderId || req.user?.userId || req.user?.id;
 
-        // 1. Save the Message text
-        const msgRes = await pool.query(`
+        if (!recipients || recipients.length === 0 || !recipients[0]) {
+            return res.status(400).json({ success: false, message: "Select at least one recipient." });
+        }
+
+        // 🚀 2. USE 'client.query' INSTEAD OF 'pool.query' FOR EVERYTHING
+        await client.query('BEGIN'); // Start transaction on THIS specific connection
+
+        // Save the Message text
+        const msgRes = await client.query(`
             INSERT INTO "Internal_Messages" (id, event_id, sender_id, message_text)
-            VALUES (gen_random_uuid(), $1, $2, $3) RETURNING *
+            VALUES (gen_random_uuid(), $1, $2, $3) RETURNING id, sent_at
         `, [eventId, finalSenderId, text]);
+        
         const newMessageId = msgRes.rows[0].id;
+        const sentAt = msgRes.rows[0].sent_at;
 
-        // 2. If there is a file, save it to S3 and the Attachments table
+        // If there is a file attached, save it to S3 and Attachments table
         let fileData = null;
         if (req.file) {
             const awsKey = await uploadAttachmentToS3(req.file, eventId, 'chat');
             const sizeInMB = (req.file.size / (1024 * 1024)).toFixed(2) + ' MB';
-
-            const attachRes = await pool.query(`
+            
+            const attachRes = await client.query(`
                 INSERT INTO "Attachments" (id, file_name, aws_key, file_type, file_size, message_id, uploaded_by)
                 VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6) RETURNING *
             `, [req.file.originalname, awsKey, fileType, sizeInMB, newMessageId, finalSenderId]);
-
+            
             fileData = attachRes.rows[0];
         }
 
-        // 3. Save Recipients
-        await Promise.all(recipients.map(rId =>
-            pool.query(`INSERT INTO "Message_Recipients" (message_id, recipient_id) VALUES ($1, $2)`, [newMessageId, rId])
+        // Save Recipients
+        await Promise.all(recipients.map(rId => 
+            client.query(`
+                INSERT INTO "Message_Recipients" (message_id, recipient_id) 
+                VALUES ($1, $2)
+            `, [newMessageId, rId])
         ));
 
-        await pool.query('COMMIT');
+        // 🚀 3. COMMIT ON THIS SPECIFIC CONNECTION
+        await client.query('COMMIT'); 
 
         // 4. Construct response for WebSockets
-        const senderRes = await pool.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [finalSenderId]);
-
+        // 4. Construct response for WebSockets
+        const senderRes = await client.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [finalSenderId]);
+        
+        // 🚀 WE FORGOT THIS: Fetch the recipient names for the UI
+        const recipientNamesRes = await client.query(`
+            SELECT string_agg(CONCAT(first_name, ' ', last_name), ', ') as names 
+            FROM "Users" WHERE id = ANY($1::uuid[])
+        `, [recipients]);
+        
         const fullMessage = {
             id: newMessageId,
             text,
             sender: senderRes.rows[0]?.name || 'User',
             sender_id: finalSenderId,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            attachment: fileData, // Include the new attachment data
+            time: new Date(sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            attachment: fileData,
+            to_text: recipientNamesRes.rows[0]?.names || 'Unknown Recipients', // 🚀 Added this back!
             isMe: false
         };
 
@@ -147,11 +175,16 @@ const sendMessage = async (req, res) => {
         recipients.forEach(rId => io.to(rId).emit('NEW_INTERNAL_MESSAGE', fullMessage));
 
         res.status(200).json({ success: true, message: { ...fullMessage, isMe: true } });
+
     } catch (error) {
-        await pool.query('ROLLBACK');
-        res.status(500).json({ success: false, message: "Error sending message." });
+        // 🚀 ROLLBACK IF ANYTHING FAILS
+        await client.query('ROLLBACK');
+        console.error("❌ CRITICAL SEND ERROR:", error);
+        res.status(500).json({ success: false, message: error.message });
+    } finally {
+        // 🚀 4. ALWAYS RETURN THE CLIENT TO THE POOL SO IT DOESN'T LEAK
+        client.release(); 
     }
 };
-
 
 module.exports = { getEventTeam, getMessages, sendMessage };
