@@ -42,7 +42,7 @@ const getEventTeam = async (req, res) => {
 const getMessages = async (req, res) => {
     try {
         const { eventId } = req.params;
-        
+
         // 🚀 FIX: Look for 'userId' first, which matches your JWT payload structure
         const userId = req.user?.userId || req.user?.id;
 
@@ -52,27 +52,37 @@ const getMessages = async (req, res) => {
         }
 
         const result = await pool.query(`
-            SELECT 
-                m.id as message_id, m.message_text as text, m.attachment_name, 
-                to_char(m.sent_at, 'HH12:MI AM') as time,
-                to_char(m.sent_at, 'Mon DD') as date,
-                CONCAT(u.first_name, ' ', u.last_name) as sender,
-                m.sender_id,
-                (
-                    SELECT string_agg(CONCAT(u2.first_name, ' ', u2.last_name), ', ')
-                    FROM "Message_Recipients" mr
-                    JOIN "Users" u2 ON mr.recipient_id = u2.id
-                    WHERE mr.message_id = m.id
-                ) as to_text
-            FROM "Internal_Messages" m
-            JOIN "Users" u ON m.sender_id = u.id
-            WHERE m.event_id = $1
-              AND (m.sender_id = $2 OR EXISTS (
-                  SELECT 1 FROM "Message_Recipients" mr2 
-                  WHERE mr2.message_id = m.id AND mr2.recipient_id = $2
-              ))
-            ORDER BY m.sent_at ASC
-        `, [eventId, userId]);
+    SELECT 
+        m.id as message_id, m.message_text as text,
+        to_char(m.sent_at, 'HH12:MI AM') as time,
+        to_char(m.sent_at, 'Mon DD') as date,
+        CONCAT(u.first_name, ' ', u.last_name) as sender,
+        m.sender_id,
+        (
+            SELECT json_build_object(
+                'id', a.id,
+                'file_name', a.file_name,
+                'aws_key', a.aws_key,
+                'file_type', a.file_type,
+                'file_size', a.file_size
+            )
+            FROM "Attachments" a WHERE a.message_id = m.id LIMIT 1
+        ) as attachment,
+        (
+            SELECT string_agg(CONCAT(u2.first_name, ' ', u2.last_name), ', ')
+            FROM "Message_Recipients" mr
+            JOIN "Users" u2 ON mr.recipient_id = u2.id
+            WHERE mr.message_id = m.id
+        ) as to_text
+    FROM "Internal_Messages" m
+    JOIN "Users" u ON m.sender_id = u.id
+    WHERE m.event_id = $1
+      AND (m.sender_id = $2 OR EXISTS (
+          SELECT 1 FROM "Message_Recipients" mr2 
+          WHERE mr2.message_id = m.id AND mr2.recipient_id = $2
+      ))
+    ORDER BY m.sent_at ASC
+`, [eventId, userId]);
 
         res.status(200).json({ success: true, messages: result.rows });
     } catch (error) {
@@ -83,7 +93,6 @@ const getMessages = async (req, res) => {
 
 
 
-const { uploadAttachmentToS3 } = require('../utils/s3Service');
 
 const sendMessage = async (req, res) => {
     try {
@@ -105,17 +114,17 @@ const sendMessage = async (req, res) => {
         if (req.file) {
             const awsKey = await uploadAttachmentToS3(req.file, eventId, 'chat');
             const sizeInMB = (req.file.size / (1024 * 1024)).toFixed(2) + ' MB';
-            
+
             const attachRes = await pool.query(`
                 INSERT INTO "Attachments" (id, file_name, aws_key, file_type, file_size, message_id, uploaded_by)
                 VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6) RETURNING *
             `, [req.file.originalname, awsKey, fileType, sizeInMB, newMessageId, finalSenderId]);
-            
+
             fileData = attachRes.rows[0];
         }
 
         // 3. Save Recipients
-        await Promise.all(recipients.map(rId => 
+        await Promise.all(recipients.map(rId =>
             pool.query(`INSERT INTO "Message_Recipients" (message_id, recipient_id) VALUES ($1, $2)`, [newMessageId, rId])
         ));
 
@@ -123,7 +132,7 @@ const sendMessage = async (req, res) => {
 
         // 4. Construct response for WebSockets
         const senderRes = await pool.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [finalSenderId]);
-        
+
         const fullMessage = {
             id: newMessageId,
             text,
