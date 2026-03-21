@@ -68,11 +68,12 @@ const sendBulkMail = async (req, res) => {
 
         if (bccList.length === 0) return res.status(400).json({ success: false, message: "No recipients found." });
 
-        // 2. 🚀 Fetch Organizer Name AND their specific Role for this Event
+        // 2. 🚀 Fetch Organizer Name, Role, AND Event Title
         const userRes = await pool.query(`
-            SELECT u.first_name, u.last_name, et.role 
+            SELECT u.first_name, u.last_name, et.role, e.title as event_title 
             FROM "Users" u
             LEFT JOIN "Event_Team" et ON u.id = et.user_id AND et.event_id = $1
+            LEFT JOIN "Events" e ON e.id = $1
             WHERE u.id = $2
         `, [eventId, userId]);
 
@@ -81,12 +82,11 @@ const sendBulkMail = async (req, res) => {
         const firstName = userRes.rows[0].first_name || '';
         const lastName = userRes.rows[0].last_name || '';
         const senderName = `${firstName} ${lastName}`.trim() || 'Event Organizer';
-        // Format the role (e.g., "TEAM_LEAD" -> "Team Lead")
         const rawRole = userRes.rows[0].role || 'Organizer';
         const userRole = rawRole.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const eventTitle = userRes.rows[0].event_title || 'Event'; // <-- Fetches the Event Name!
 
         // 3. 🚀 Format Email Body and inject Professional Signature
-        // Convert basic line breaks from the textarea into HTML <br> tags so it looks correct in Gmail
         let finalHtmlBody = body.replace(/\n/g, '<br>'); 
 
         if (includeSignature) {
@@ -97,7 +97,7 @@ const sendBulkMail = async (req, res) => {
                         <td>
                             <p style="margin: 0; color: #111827; font-size: 16px;"><strong>${senderName}</strong></p>
                             <p style="margin: 3px 0; color: #6b7280; font-size: 14px;">${userRole}</p>
-                            <p style="margin: 0; color: #4f46e5; font-size: 14px; font-weight: bold;">Organizing Committee</p>
+                            <p style="margin: 0; color: #4f46e5; font-size: 14px; font-weight: bold;">Organizing Committee of ${eventTitle}</p>
                         </td>
                     </tr>
                 </table>

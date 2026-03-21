@@ -1,6 +1,52 @@
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { sendExistingUserInviteEmail, sendNewUserInviteEmail } = require('../utils/emailService');
+const { uploadFileToS3, getPresignedDownloadUrl } = require('../../utils/s3Service');
+
+// 1. Upload a Document
+const uploadEventDocument = async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        const isConfidential = req.body.isConfidential === 'true';
+        
+        if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+
+        // Shoot it to AWS
+        const awsKey = await uploadFileToS3(req.file, `event_${eventId}`);
+        const sizeInMB = (req.file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+        // Save the reference in the database
+        const result = await pool.query(`
+            INSERT INTO "Event_Documents" (id, event_id, file_name, aws_key, file_size, is_confidential) 
+            VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING *;
+        `, [eventId, req.file.originalname, awsKey, sizeInMB, isConfidential]);
+
+        res.status(201).json({ success: true, document: result.rows[0] });
+    } catch (error) {
+        console.error('Upload Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to upload document' });
+    }
+};
+
+// 2. Download a Document
+const downloadEventDocument = async (req, res) => {
+    try {
+        const { docId } = req.params;
+        
+        // Find the AWS Key in the database
+        const docRes = await pool.query('SELECT aws_key FROM "Event_Documents" WHERE id = $1', [docId]);
+        if (docRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Document not found' });
+
+        // Ask AWS for a secure, temporary link
+        const downloadUrl = await getPresignedDownloadUrl(docRes.rows[0].aws_key);
+        
+        // Send the link to the frontend
+        res.status(200).json({ success: true, downloadUrl });
+    } catch (error) {
+        console.error('Download Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to generate download link' });
+    }
+};
 
 const createEvent = async (req, res) => {
     const { title, date, category, expectedAttendees, budget, description, venue, venueAddress, isAiAssisted, theme, plan, budgetAllocation } = req.body;
