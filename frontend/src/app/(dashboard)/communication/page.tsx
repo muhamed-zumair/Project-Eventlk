@@ -185,6 +185,19 @@ export default function CommunicationPage() {
   const handleToggleRecipient = (id: string) => {
     setSelectedRecipients(prev => prev.includes(id) ? prev.filter(rId => rId !== id) : [...prev, id]);
   };
+  // 🚀 NEW: Helper to restrict file types before opening the picker
+  const handleUploadClick = (type: 'image' | 'video' | 'document') => {
+    setSelectedFileType(type);
+    if (internalFileInputRef.current) {
+      // Instantly update the HTML 'accept' attribute based on the button clicked
+      if (type === 'image') internalFileInputRef.current.accept = 'image/png, image/jpeg, image/jpg, image/gif';
+      else if (type === 'video') internalFileInputRef.current.accept = 'video/mp4, video/mov, video/quicktime';
+      else internalFileInputRef.current.accept = '.pdf, .doc, .docx, .xls, .xlsx, .txt';
+
+      // Open the file dialog
+      internalFileInputRef.current.click();
+    }
+  };
 
   // --- NEW: SEARCH FILTER LOGIC ---
   const actualTeam = teamMembers.filter(m => m.id !== currentUser?.id); // Hides the logged-in user
@@ -401,20 +414,21 @@ export default function CommunicationPage() {
                           </div>
                         )}
                         {msg.text && <p className="leading-relaxed">{msg.text}</p>}
-                        {/* 🚀 NEW: Dynamic Attachment Rendering */}
-                        {msg.attachment && (
+                        {/* 🚀 DYNAMIC ATTACHMENT RENDERING */}
+                        {msg.attachment && msg.attachment.url && (
                           <div className={`mt-3 overflow-hidden rounded-xl border ${msg.isMe ? 'bg-indigo-700/30 border-indigo-400/30' : 'bg-white/50 border-black/5'}`}>
 
                             {/* CASE 1: IMAGES (Show a real preview) */}
                             {msg.attachment.file_type === 'image' && (
-                              <div className="group relative cursor-pointer" onClick={() => window.open(`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`, '_blank')}>
+                              <div className="group relative cursor-pointer" onClick={() => window.open(msg.attachment.url, '_blank')}>
                                 <img
-                                  src={`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`}
+                                  src={msg.attachment.url}
                                   alt={msg.attachment.file_name}
                                   className="max-h-60 w-full object-cover transition group-hover:opacity-90"
+                                  onError={(e) => e.currentTarget.style.display = 'none'} // Hides broken icon if the image fails to load
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/20">
-                                  <Search className="text-white" size={24} />
+                                  <Search className="text-white drop-shadow-md" size={28} />
                                 </div>
                               </div>
                             )}
@@ -422,15 +436,19 @@ export default function CommunicationPage() {
                             {/* CASE 2: VIDEOS (Show a Play Icon) */}
                             {msg.attachment.file_type === 'video' && (
                               <button
-                                onClick={() => window.open(`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`, '_blank')}
+                                onClick={() => window.open(msg.attachment.url, '_blank')}
                                 className="flex items-center gap-4 p-4 w-full hover:bg-black/5 transition text-left"
                               >
-                                <div className="bg-amber-500 p-3 rounded-full text-white shadow-lg">
-                                  <Send size={20} className="rotate-90 ml-0.5" /> {/* Using Send as a Play icon substitute */}
+                                <div className="bg-amber-500 p-3 rounded-full text-white shadow-md group-hover:scale-105 transition">
+                                  <Send size={18} className="rotate-90 ml-0.5" /> {/* Send icon rotated acts as a Play button */}
                                 </div>
-                                <div>
-                                  <p className="text-xs font-bold truncate max-w-[150px]">{msg.attachment.file_name}</p>
-                                  <p className="text-[10px] opacity-70 uppercase tracking-tighter">Click to Play Video • {msg.attachment.file_size}</p>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-xs font-bold truncate ${msg.isMe ? 'text-indigo-50' : 'text-gray-800'}`}>
+                                    {msg.attachment.file_name}
+                                  </p>
+                                  <p className={`text-[10px] uppercase tracking-tighter mt-0.5 ${msg.isMe ? 'text-indigo-200' : 'text-gray-500'}`}>
+                                    Click to Play Video • {msg.attachment.file_size}
+                                  </p>
                                 </div>
                               </button>
                             )}
@@ -438,17 +456,21 @@ export default function CommunicationPage() {
                             {/* CASE 3: DOCUMENTS (Standard Card) */}
                             {msg.attachment.file_type === 'document' && (
                               <button
-                                onClick={() => window.open(`https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${msg.attachment.aws_key}`, '_blank')}
-                                className="flex items-center gap-3 p-3 w-full hover:bg-black/5 transition text-left"
+                                onClick={() => window.open(msg.attachment.url, '_blank')}
+                                className="flex items-center gap-3 p-3 w-full hover:bg-black/5 transition text-left group"
                               >
-                                <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                <div className={`p-2 rounded-lg ${msg.isMe ? 'bg-indigo-500/50 text-white' : 'bg-blue-100 text-blue-600'}`}>
                                   <FileText size={20} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-bold truncate">{msg.attachment.file_name}</p>
-                                  <p className="text-[10px] opacity-60 uppercase tracking-tighter">{msg.attachment.file_size}</p>
+                                  <p className={`text-xs font-bold truncate ${msg.isMe ? 'text-indigo-50' : 'text-gray-800'}`}>
+                                    {msg.attachment.file_name}
+                                  </p>
+                                  <p className={`text-[10px] uppercase tracking-tighter mt-0.5 ${msg.isMe ? 'text-indigo-200' : 'text-gray-500'}`}>
+                                    {msg.attachment.file_size}
+                                  </p>
                                 </div>
-                                <Upload size={14} className="rotate-180 opacity-40" /> {/* Download arrow */}
+                                <Upload size={16} className={`rotate-180 opacity-60 group-hover:opacity-100 transition ${msg.isMe ? 'text-indigo-200' : 'text-gray-400'}`} /> {/* Download arrow */}
                               </button>
                             )}
                           </div>
@@ -502,15 +524,15 @@ export default function CommunicationPage() {
                     {/* Expanding Symbol Menu */}
                     {showUploadMenu && (
                       <div className="absolute bottom-16 left-0 bg-white border border-gray-100 shadow-2xl rounded-2xl p-2 flex flex-col gap-2 animate-in slide-in-from-bottom-4 duration-200 z-50 min-w-[160px]">
-                        <button onClick={() => { setSelectedFileType('image'); internalFileInputRef.current?.click(); }} className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 flex items-center gap-3 transition group">
+                        <button onClick={() => handleUploadClick('image')} className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 flex items-center gap-3 transition group">
                           <div className="bg-white p-1.5 rounded-lg shadow-sm group-hover:shadow"><Upload size={16} /></div>
                           <span className="text-[10px] font-black uppercase tracking-widest">Image</span>
                         </button>
-                        <button onClick={() => { setSelectedFileType('video'); internalFileInputRef.current?.click(); }} className="p-3 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 flex items-center gap-3 transition group">
+                        <button onClick={() => handleUploadClick('video')} className="p-3 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 flex items-center gap-3 transition group">
                           <div className="bg-white p-1.5 rounded-lg shadow-sm group-hover:shadow"><Send size={16} className="rotate-90" /></div>
                           <span className="text-[10px] font-black uppercase tracking-widest">Video</span>
                         </button>
-                        <button onClick={() => { setSelectedFileType('document'); internalFileInputRef.current?.click(); }} className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 flex items-center gap-3 transition group">
+                        <button onClick={() => handleUploadClick('document')} className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 flex items-center gap-3 transition group">
                           <div className="bg-white p-1.5 rounded-lg shadow-sm group-hover:shadow"><FileText size={16} /></div>
                           <span className="text-[10px] font-black uppercase tracking-widest">Document</span>
                         </button>
