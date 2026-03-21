@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import {
   MessageSquare, Mail, Users, Send, Sparkles,
   Search, Paperclip, CalendarDays, Loader2, Upload,
-  Link as LinkIcon, X, FileText, History, Info, Clock, User, Lock
+  Link as LinkIcon, X, FileText, History, Info, Clock, User, Lock, Image as ImageIcon, CheckCircle
 } from "lucide-react";
 
 // --- Mock Data for External History (Until we wire it up) ---
@@ -28,6 +28,8 @@ export default function CommunicationPage() {
   const [activeTab, setActiveTab] = useState<"internal" | "external">("internal");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // --- Internal Chat State ---
+  const [fileError, setFileError] = useState<string | null>(null);
   // --- Internal Chat State ---
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
@@ -60,6 +62,16 @@ export default function CommunicationPage() {
   const [sentHistory, setSentHistory] = useState<any[]>([]); // Starts empty!
   const [viewingHistoryEmail, setViewingHistoryEmail] = useState<any>(null);
 
+  // 🚀 NEW: Custom UI States
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
+
+  // Helper to trigger nice toast messages instead of alerts
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000); // Auto-hide after 5 seconds
+  };
 
 
   // ==========================================
@@ -270,15 +282,42 @@ export default function CommunicationPage() {
     }, 1500);
   };
 
-  const handleInsertLink = () => {
-    const url = prompt("Enter the URL (e.g., https://example.com):");
-    if (url) setEmailBody(prev => prev + `\n\nLink: ${url}\n`);
+  const handleInsertLinkClick = () => {
+    setLinkInput(""); // Clear old input
+    setShowLinkModal(true); // Open our nice custom modal
+  };
+
+  const confirmInsertLink = () => {
+    if (linkInput.trim()) {
+      setEmailBody(prev => prev + `\n${linkInput.trim()}\n`);
+    }
+    setShowLinkModal(false); // Close the modal
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setAttachments(prev => [...prev, ...newFiles]);
+      const validFiles: File[] = [];
+      let hasError = false;
+
+      // 🚀 50MB Security Check
+      newFiles.forEach(file => {
+        if (file.size > 50 * 1024 * 1024) {
+          setFileError(`"${file.name}" is too large! Maximum allowed size is 50MB.`);
+          hasError = true;
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      if (hasError) {
+        setTimeout(() => setFileError(null), 5000);
+      }
+
+      setAttachments(prev => [...prev, ...validFiles]);
+      
+      // Reset input so you can select the exact same file again if you accidentally delete it
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -505,8 +544,23 @@ export default function CommunicationPage() {
                     ref={internalFileInputRef}
                     onChange={(e) => {
                       if (e.target.files && e.target.files.length > 0) {
-                        setInternalAttachment(e.target.files[0]);
-                        setShowUploadMenu(false); // Close the menu once a file is chosen
+                        const file = e.target.files[0];
+
+                        // 🚀 THE SECURITY CHECK: If it's over 50MB, show the error and stop!
+                        if (file.size > 50 * 1024 * 1024) {
+                          setFileError(`"${file.name}" is too large! Maximum allowed size is 50MB.`);
+                          e.target.value = ''; // Reset the hidden input
+                          setShowUploadMenu(false); // Close the menu
+
+                          // Auto-hide the error after 5 seconds
+                          setTimeout(() => setFileError(null), 5000);
+                          return;
+                        }
+
+                        // If it passes the test, attach it!
+                        setInternalAttachment(file);
+                        setShowUploadMenu(false);
+                        setFileError(null); // Clear any old errors
                       }
                     }}
                     className="hidden"
@@ -625,12 +679,36 @@ export default function CommunicationPage() {
           </div>
           {/* PANE 2: CENTER CANVAS (Composer) */}
           <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/30">
-              <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Subject" className="w-full text-lg font-bold text-gray-900 bg-transparent outline-none placeholder-gray-300" />
+            <div className="p-4 border-b border-gray-100 bg-gray-50/30 flex flex-col gap-3">
+              <input 
+                type="text" 
+                value={emailSubject} 
+                onChange={(e) => setEmailSubject(e.target.value)} 
+                placeholder="Subject" 
+                className="w-full text-lg font-bold text-gray-900 bg-transparent outline-none placeholder-gray-300" 
+              />
+              
+              {/* 🚀 NEW: The Attachment "Chips" Bar */}
+              {attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200/60 animate-in fade-in duration-300">
+                  {attachments.map((f, i) => (
+                    <div key={i} className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full text-xs font-bold text-indigo-700 shadow-sm transition-all hover:shadow hover:border-indigo-200">
+                      {f.type.startsWith('image/') ? <ImageIcon size={14} className="text-indigo-500" /> : <FileText size={14} className="text-indigo-500" />}
+                      <span className="max-w-[180px] truncate">{f.name}</span>
+                      <button 
+                        onClick={() => removeAttachment(i)} 
+                        className="ml-1 text-indigo-400 hover:text-white hover:bg-red-500 rounded-full p-0.5 transition"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2 bg-white border-b border-gray-100 p-2 px-4 shadow-sm z-10">
-              <button onClick={handleInsertLink} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition"><LinkIcon size={14} /> Link</button>
+              <button onClick={handleInsertLinkClick} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition"><LinkIcon size={14} /> Link</button>
               <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-600 rounded-lg hover:bg-gray-100 transition"><Paperclip size={14} /> Attach</button>
               <input type="file" multiple ref={fileInputRef} onChange={handleFileChange} className="hidden" />
 
@@ -654,42 +732,62 @@ export default function CommunicationPage() {
 
             <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} placeholder="Write your email body here..." className="flex-1 w-full p-6 text-sm text-gray-800 outline-none resize-none leading-relaxed" />
 
-            {attachments.length > 0 && (
-              <div className="p-4 border-t border-gray-100 bg-gray-50 flex flex-wrap gap-2">
-                {attachments.map((f, i) => <div key={i} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 shadow-sm"><FileText size={12} className="text-indigo-500" /> {f.name} <button onClick={() => removeAttachment(i)} className="text-gray-400 hover:text-red-500"><X size={14} /></button></div>)}
-              </div>
-            )}
+            
 
             <div className="p-4 border-t border-gray-100 bg-white flex justify-between items-center shrink-0">
               <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={includeSignature} onChange={(e) => setIncludeSignature(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4" /><span className="text-sm font-medium text-gray-600">Include signature</span></label>
               <button
                 onClick={async () => {
-                  if (!emailSubject || !emailBody) return alert("Subject and body are required!");
+                  if (!emailSubject || !emailBody) return showToast("Subject and body are required!", "error");
                   setIsSending(true);
                   try {
-                    const emails = emailTarget === 'venue' ? customEmails : customEmails.split(',').map(e => e.trim()).filter(e => e);
-                    const ccListArray = ccEmails.split(',').map(e => e.trim()).filter(e => e); // 🚀 Parse CCs
+                    const emails = emailTarget === 'venue' ? [customEmails] : customEmails.split(',').map(e => e.trim()).filter(e => e);
+                    const ccListArray = ccEmails.split(',').map(e => e.trim()).filter(e => e);
 
-                    const res = await fetchAPI(`/emails/${selectedEventId}/send`, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        target: emailTarget,
-                        customEmails: emails,
-                        venueEmail: customEmails,
-                        subject: emailSubject,
-                        body: emailBody,
-                        ccList: ccListArray, // 🚀 Send CCs to backend!
-                        includeSignature: includeSignature
-                      })
+                    // 🚀 1. Build the FormData package to carry the files
+                    const formData = new FormData();
+                    formData.append('target', emailTarget);
+                    formData.append('subject', emailSubject);
+                    formData.append('body', emailBody);
+                    formData.append('includeSignature', String(includeSignature));
+                    
+                    // The UI uses 'customEmails' for the venue input too, so we map it appropriately
+                    formData.append('venueEmail', customEmails);
+
+                    // Append all email addresses individually
+                    emails.forEach(email => formData.append('customEmails', email));
+                    ccListArray.forEach(cc => formData.append('ccList', cc));
+
+                    // 🚀 2. Attach the physical files to the payload!
+                    attachments.forEach(file => {
+                      formData.append('attachments', file);
                     });
 
-                    if (res.success) {
-                      alert("Mail sent successfully!");
-                      setEmailSubject(""); setEmailBody(""); setCustomEmails(""); setCsvFile(null); setCcEmails(""); setShowCc(false);
+                    // 🚀 3. Send using native fetch instead of fetchAPI so the browser handles the file data
+                    const res = await fetch(`http://localhost:5000/api/emails/${selectedEventId}/send`, {
+                      method: 'POST',
+                      headers: { 
+                        'Authorization': `Bearer ${localStorage.getItem('token')}` 
+                      },
+                      body: formData
+                    });
+
+                    const responseData = await res.json();
+
+                    if (responseData.success) {
+                      showToast("Mail sent successfully!", "success");
+                      setEmailSubject(""); setEmailBody(""); setCustomEmails(""); setCsvFile(null); setCcEmails(""); setShowCc(false); 
+                      setAttachments([]); // Clear the attachment chips!
+                      
                       // Refresh History!
                       const historyRes = await fetchAPI(`/emails/${selectedEventId}/history`, { method: 'GET' });
                       if (historyRes.success) setSentHistory(historyRes.history);
+                    } else {
+                      showToast("Error sending email: " + responseData.message, "error");
                     }
+                  } catch (error) {
+                    console.error("Failed to send email", error);
+                    showToast("A critical error occurred while sending the email.", "error");
                   } finally { setIsSending(false); }
                 }}
                 disabled={isSending}
@@ -775,10 +873,102 @@ export default function CommunicationPage() {
                 <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50/50 p-4 rounded-lg border border-gray-50">{viewingHistoryEmail.body}</div>
               </div>
 
+              {/* 🚀 NEW: Render Attached Files as Clickable Buttons */}
+              {JSON.parse(viewingHistoryEmail.recipient_summary || '{}').attachments?.length > 0 && (
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Paperclip size={14} /> Attachments Sent
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {JSON.parse(viewingHistoryEmail.recipient_summary || '{}').attachments.map((att: any, idx: number) => (
+                      <a
+                        key={idx}
+                        href={att.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition group w-fit pr-6"
+                      >
+                        <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm group-hover:shadow transition">
+                          <FileText size={16} />
+                        </div>
+                        <span className="text-sm font-bold text-indigo-900 underline-offset-2 group-hover:underline">
+                          {att.name}
+                        </span>
+                        <LinkIcon size={12} className="text-indigo-400 opacity-0 group-hover:opacity-100 transition ml-2" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
       )}
+      {/* 🚀 NEW: File Size Error Toast */}
+      {fileError && (
+        <div className="fixed bottom-10 right-10 z-[100] bg-white border border-red-100 shadow-2xl rounded-xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className="bg-red-50 p-2.5 rounded-full text-red-500 border border-red-100 shadow-sm">
+            <Info size={20} />
+          </div>
+          <div className="pr-4">
+            <h4 className="text-sm font-bold text-gray-900">File Too Large</h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{fileError}</p>
+          </div>
+          <button 
+            onClick={() => setFileError(null)} 
+            className="p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        
+
+      )}
+      {/* 🚀 NEW UI: Link Insertion Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2"><LinkIcon size={18} className="text-indigo-600" /> Insert Link</h3>
+              <button onClick={() => setShowLinkModal(false)} className="text-gray-400 hover:text-gray-600 transition"><X size={18} /></button>
+            </div>
+            <div className="p-5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">URL Address</label>
+              <input 
+                type="url" 
+                autoFocus
+                placeholder="https://example.com" 
+                value={linkInput} 
+                onChange={(e) => setLinkInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && confirmInsertLink()}
+                className="w-full border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition text-gray-900" 
+              />
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
+              <button onClick={() => setShowLinkModal(false)} className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-lg transition">Cancel</button>
+              <button onClick={confirmInsertLink} className="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm">Insert</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 NEW UI: Beautiful Toast Notifications (Replaces Alerts) */}
+      {toast && (
+        <div className={`fixed bottom-10 right-10 z-[100] bg-white border shadow-2xl rounded-xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === 'success' ? 'border-green-100' : 'border-red-100'}`}>
+          <div className={`p-2.5 rounded-full border shadow-sm ${toast.type === 'success' ? 'bg-green-50 text-green-500 border-green-100' : 'bg-red-50 text-red-500 border-red-100'}`}>
+            {toast.type === 'success' ? <CheckCircle size={20} /> : <Info size={20} />}
+          </div>
+          <div className="pr-4">
+            <h4 className="text-sm font-bold text-gray-900">{toast.type === 'success' ? 'Success' : 'Error'}</h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} className={`p-1.5 rounded-lg transition ${toast.type === 'success' ? 'text-green-400 hover:bg-green-50 hover:text-green-600' : 'text-red-400 hover:bg-red-50 hover:text-red-600'}`}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
     </div>
+
   );
 }
