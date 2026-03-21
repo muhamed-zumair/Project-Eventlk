@@ -27,10 +27,8 @@ export default function DashboardHome() {
 
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
 
-  const [eventFiles, setEventFiles] = useState([
-    { id: '1', name: "Venue_Contract_Final.pdf", size: "2.4 MB", date: "Oct 12, 2024", isConfidential: true },
-    { id: '2', name: "Sponsor_Packages_v2.pdf", size: "1.1 MB", date: "Oct 15, 2024", isConfidential: false }
-  ]);
+  // Start with an empty list!
+  const [eventFiles, setEventFiles] = useState<any[]>([]);
 
   const [isUploadConfidential, setIsUploadConfidential] = useState(false);
   const [editErrorMessage, setEditErrorMessage] = useState("");
@@ -51,12 +49,22 @@ export default function DashboardHome() {
       formData.append('isConfidential', String(isUploadConfidential));
 
       try {
-        // Send to your backend route (which sends it to AWS)
-        const response = await fetchAPI(`/events/${eventDetails.id}/documents`, {
+        // 1. Grab your auth token
+        const token = localStorage.getItem('token');
+        
+        // 2. Use native fetch to bypass the forced JSON headers in fetchAPI
+        // NOTE: Make sure to change 'http://localhost:5000/api' to match your actual backend URL!
+        const res = await fetch(`http://localhost:5000/api/events/${eventDetails.id}/documents`, {
           method: 'POST',
-          body: formData,
-          // Note: fetchAPI utility shouldn't force 'application/json' if body is FormData!
+          headers: {
+            'Authorization': `Bearer ${token}`
+            // 🚨 CRITICAL: Do NOT type 'Content-Type' here! 
+            // The browser must automatically generate the multipart/form-data boundary.
+          },
+          body: formData, 
         });
+
+        const response = await res.json();
 
         if (response.success) {
           // Add the newly saved DB record to the UI instantly
@@ -64,12 +72,15 @@ export default function DashboardHome() {
             id: response.document.id,
             name: response.document.file_name,
             size: response.document.file_size,
-            date: new Date().toLocaleDateString(),
+            date: "Just now",
             isConfidential: response.document.is_confidential
           }]);
           setIsUploadConfidential(false);
+        } else {
+           alert("Upload failed: " + response.message);
         }
       } catch (error) {
+        console.error("Upload error:", error);
         alert("Upload failed. Please try again.");
       }
     }
@@ -221,7 +232,21 @@ export default function DashboardHome() {
         })));
 
         setSpeakers(fullEvent.speakers.map((s: any) => ({ name: s.name, role: s.designation })));
+        // Find this line:
         setSponsors(fullEvent.sponsors.map((s: any) => ({ name: s.name, tier: s.tier, amount: s.contribution_amount })));
+
+        // 🚀 PASTE THIS RIGHT BELOW IT:
+        if (fullEvent.documents) {
+          setEventFiles(fullEvent.documents.map((doc: any) => ({
+            id: doc.id,
+            name: doc.file_name,
+            size: doc.file_size,
+            date: "Uploaded", // We keep this simple since we didn't fetch created_at
+            isConfidential: doc.is_confidential
+          })));
+        } else {
+          setEventFiles([]);
+        }
 
         if (modalType === 'edit') setIsEditModalOpen(true);
         if (modalType === 'details') setIsDetailsModalOpen(true);
@@ -820,17 +845,17 @@ export default function DashboardHome() {
               <p className="text-sm text-gray-500 mb-1">Are you sure you want to delete:</p>
               <p className="text-sm font-semibold text-gray-800 mb-6 truncate px-4">"{documentToDelete.name}"</p>
               <p className="text-xs text-red-500 font-medium bg-red-50 py-2 rounded-lg mb-6">This action cannot be undone.</p>
-              
+
               <div className="flex gap-3">
-                <button 
-                  onClick={() => setDocumentToDelete(null)} 
+                <button
+                  onClick={() => setDocumentToDelete(null)}
                   disabled={isDeleting}
                   className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
-                <button 
-                  onClick={confirmDeleteDocument} 
+                <button
+                  onClick={confirmDeleteDocument}
                   disabled={isDeleting}
                   className="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-semibold hover:bg-red-600 transition disabled:opacity-50"
                 >

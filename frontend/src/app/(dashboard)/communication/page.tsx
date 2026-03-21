@@ -51,6 +51,8 @@ export default function CommunicationPage() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [includeSignature, setIncludeSignature] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [selectedFileType, setSelectedFileType] = useState<'image' | 'video' | 'document' | null>(null);
 
   // 🚀 NEW: CC and Real History States
   const [ccEmails, setCcEmails] = useState("");
@@ -196,29 +198,46 @@ export default function CommunicationPage() {
     if (!chatInput.trim() && !internalAttachment) return;
     if (selectedRecipients.length === 0) { alert("Please select at least one recipient."); return; }
 
-    setIsSending(true); // <-- Start Loading
+    setIsSending(true);
 
-    const payload = {
-      text: chatInput,
-      recipients: selectedRecipients,
-      attachmentName: internalAttachment ? internalAttachment.name : null,
-      senderId: currentUser.id // 🚀 Send explicit ID to fix "Unknown User"
-    };
+    // 🚀 NEW: Using FormData to handle files
+    const formData = new FormData();
+    formData.append('text', chatInput);
+    formData.append('senderId', currentUser.id);
+    formData.append('fileType', selectedFileType || 'document');
+
+    // Add all recipients to the form
+    selectedRecipients.forEach(id => formData.append('recipients', id));
+
+    // Attach the file if it exists
+    if (internalAttachment) {
+      formData.append('file', internalAttachment);
+    }
 
     try {
-      const response = await fetchAPI(`/communication/${selectedEventId}/messages`, {
-        method: 'POST', body: JSON.stringify(payload)
+      const token = localStorage.getItem('token');
+      // We use native fetch here to allow the browser to set the 'multipart/form-data' boundary
+      const res = await fetch(`http://localhost:5000/api/communication/${selectedEventId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+          // DO NOT set Content-Type here!
+        },
+        body: formData
       });
+
+      const response = await res.json();
 
       if (response.success) {
         setMessages(prev => [...prev, response.message]);
         setChatInput("");
         setInternalAttachment(null);
+        setSelectedFileType(null);
       }
     } catch (error) {
       console.error("Failed to send message", error);
     } finally {
-      setIsSending(false); // <-- Stop Loading
+      setIsSending(false);
     }
   };
 
@@ -394,10 +413,63 @@ export default function CommunicationPage() {
                 <div ref={messagesEndRef} />
               </div>
               <div className="p-4 border-t border-gray-100 bg-white">
-                {internalAttachment && <div className="flex items-center gap-2 mb-3 bg-gray-50 border border-gray-200 p-2 rounded-lg w-fit"><FileText size={14} className="text-indigo-600" /> <span className="text-xs font-medium text-gray-700">{internalAttachment.name}</span><button onClick={() => setInternalAttachment(null)} className="text-gray-400 hover:text-red-500"><X size={14} /></button></div>}
+                {/* 🚀 NEW IMPROVED PREVIEW BLOCK */}
+                {internalAttachment && (
+                  <div className="flex items-center gap-2 mb-3 bg-indigo-50 border border-indigo-100 p-2 rounded-lg w-fit shadow-sm animate-in zoom-in-95">
+                    <FileText size={14} className="text-indigo-600" />
+                    <span className="text-xs font-bold text-indigo-900">{internalAttachment.name}</span>
+                    <button
+                      onClick={() => {
+                        setInternalAttachment(null);
+                        setSelectedFileType(null); // 🚀 Clears the file type state too
+                      }}
+                      className="text-indigo-400 hover:text-red-500 transition"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex items-end gap-3">
-                  <input type="file" ref={internalFileInputRef} onChange={(e) => e.target.files && setInternalAttachment(e.target.files[0])} className="hidden" />
-                  <button onClick={() => internalFileInputRef.current?.click()} className="p-2.5 bg-gray-50 border border-gray-200 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 rounded-xl transition"><Paperclip size={20} /></button>
+                  <input
+                    type="file"
+                    ref={internalFileInputRef}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setInternalAttachment(e.target.files[0]);
+                        setShowUploadMenu(false); // Close the menu once a file is chosen
+                      }
+                    }}
+                    className="hidden"
+                  />
+
+                  <div className="relative">
+                    {/* The Plus/Paperclip Button */}
+                    <button
+                      onClick={() => setShowUploadMenu(!showUploadMenu)}
+                      className={`p-2.5 rounded-xl transition shadow-sm border ${showUploadMenu ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-gray-50 text-gray-600 hover:bg-indigo-50 border-gray-200'}`}
+                    >
+                      {showUploadMenu ? <X size={20} /> : <Paperclip size={20} />}
+                    </button>
+
+                    {/* Expanding Symbol Menu */}
+                    {showUploadMenu && (
+                      <div className="absolute bottom-16 left-0 bg-white border border-gray-100 shadow-2xl rounded-2xl p-2 flex flex-col gap-2 animate-in slide-in-from-bottom-4 duration-200 z-50 min-w-[160px]">
+                        <button onClick={() => { setSelectedFileType('image'); internalFileInputRef.current?.click(); }} className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 flex items-center gap-3 transition group">
+                          <div className="bg-white p-1.5 rounded-lg shadow-sm group-hover:shadow"><Upload size={16} /></div>
+                          <span className="text-[10px] font-black uppercase tracking-widest">Image</span>
+                        </button>
+                        <button onClick={() => { setSelectedFileType('video'); internalFileInputRef.current?.click(); }} className="p-3 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 flex items-center gap-3 transition group">
+                          <div className="bg-white p-1.5 rounded-lg shadow-sm group-hover:shadow"><Send size={16} className="rotate-90" /></div>
+                          <span className="text-[10px] font-black uppercase tracking-widest">Video</span>
+                        </button>
+                        <button onClick={() => { setSelectedFileType('document'); internalFileInputRef.current?.click(); }} className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 flex items-center gap-3 transition group">
+                          <div className="bg-white p-1.5 rounded-lg shadow-sm group-hover:shadow"><FileText size={16} /></div>
+                          <span className="text-[10px] font-black uppercase tracking-widest">Document</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   {/* FIX: Added text-gray-900 to ensure visibility */}
                   <textarea value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Type a private message..." className="flex-1 border border-gray-200 bg-gray-50 rounded-xl p-3 text-sm text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none transition" rows={2} />
                   {/* 🚀 Updated Send Button */}
@@ -594,9 +666,9 @@ export default function CommunicationPage() {
               <div><h2 className="text-xl font-bold text-gray-900">Email Details</h2><p className="text-xs text-gray-500 mt-1 flex items-center gap-1"><Clock size={12} /> Sent on {viewingHistoryEmail.date}</p></div>
               <button onClick={() => setViewingHistoryEmail(null)} className="text-gray-400 hover:text-gray-600 bg-gray-100 p-2 rounded-full"><X size={20} /></button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto space-y-4 bg-gray-50/30 font-sans">
-              
+
               {/* 🚀 NEW: Detailed Routing Breakdown (TO, CC, BCC) */}
               <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
                 <div className="flex items-start gap-3 border-b border-gray-50 pb-3">
@@ -607,7 +679,7 @@ export default function CommunicationPage() {
                   <span className="text-xs font-bold text-gray-400 w-10 mt-0.5">TO:</span>
                   <span className="text-sm text-gray-600 italic">Undisclosed Recipients (Hidden for privacy)</span>
                 </div>
-                
+
                 {/* Parse the JSON recipient summary from the database */}
                 <div className="flex items-start gap-3 border-b border-gray-50 pb-3">
                   <span className="text-xs font-bold text-indigo-400 w-10 mt-0.5">BCC:</span>
@@ -616,8 +688,8 @@ export default function CommunicationPage() {
                       {JSON.parse(viewingHistoryEmail.recipient_summary || '{}').type || "Custom Target"}
                     </span>
                     <span className="text-xs text-gray-500 mt-0.5">
-                      {JSON.parse(viewingHistoryEmail.recipient_summary || '{}').count 
-                        ? `${JSON.parse(viewingHistoryEmail.recipient_summary || '{}').count} individual emails securely blind-copied.` 
+                      {JSON.parse(viewingHistoryEmail.recipient_summary || '{}').count
+                        ? `${JSON.parse(viewingHistoryEmail.recipient_summary || '{}').count} individual emails securely blind-copied.`
                         : JSON.parse(viewingHistoryEmail.recipient_summary || '{}').email}
                     </span>
                   </div>
@@ -628,7 +700,7 @@ export default function CommunicationPage() {
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Subject</p>
                 <h3 className="text-lg font-bold text-gray-800 leading-tight">{viewingHistoryEmail.subject}</h3>
               </div>
-              
+
               <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Email Body</p>
                 <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50/50 p-4 rounded-lg border border-gray-50">{viewingHistoryEmail.body}</div>
