@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Bell, Lock, CheckCircle, Info, X, Loader2 } from "lucide-react";
+import { User, Bell, Lock, CheckCircle, Info, X, Loader2, Eye, EyeOff } from "lucide-react";
 import { fetchAPI } from "../../../utils/api";
 
 export default function SettingsPage() {
@@ -14,6 +14,11 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState({ tasks: true, messages: true });
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [isSaving, setIsSaving] = useState(false);
+
+
+  // 🚀 NEW: Track password visibility
+  const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
+
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
@@ -81,16 +86,25 @@ export default function SettingsPage() {
     if (passwords.new.length < 8) return showToast("Password must be at least 8 characters.", "error");
 
     setIsSaving(true);
-    const res = await fetchAPI("/auth/settings/password", {
-      method: "PUT",
-      body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.new })
-    });
-    setIsSaving(false);
-    
-    if (res.success) {
-      showToast(res.message, "success");
-      setPasswords({ current: "", new: "", confirm: "" });
-    } else showToast(res.message, "error");
+    try {
+      const res = await fetchAPI("/auth/settings/password", {
+        method: "PUT",
+        body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.new })
+      });
+
+      if (res.success) {
+        showToast(res.message, "success");
+        setPasswords({ current: "", new: "", confirm: "" });
+        setShowPassword({ current: false, new: false, confirm: false }); // Reset eyes
+      } else {
+        showToast(res.message, "error");
+      }
+    } catch (error: any) {
+      // 🚀 CATCH THE THROWN ERROR AND SHOW IT IN THE TOAST
+      showToast(error.message || "Failed to update password.", "error");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) return <div className="p-10 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={32} /></div>;
@@ -105,29 +119,30 @@ export default function SettingsPage() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
         <div className="w-full lg:w-64 space-y-1 shrink-0">
-          {[ { id: "profile", label: "Profile", icon: User }, { id: "notifications", label: "Notifications", icon: Bell }, { id: "security", label: "Security", icon: Lock }].map((item) => (
-             <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? "bg-indigo-50 text-indigo-700 border border-indigo-100" : "text-gray-600 hover:bg-gray-50"}`}>
-               <item.icon size={18} /> {item.label}
-             </button>
+          {[{ id: "profile", label: "Profile", icon: User }, { id: "notifications", label: "Notifications", icon: Bell }, { id: "security", label: "Security", icon: Lock }].map((item) => (
+            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? "bg-indigo-50 text-indigo-700 border border-indigo-100" : "text-gray-600 hover:bg-gray-50"}`}>
+              <item.icon size={18} /> {item.label}
+            </button>
           ))}
         </div>
 
         {/* Main Content Area */}
         <div className="flex-1 bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
-          
+
           {/* PROFILE TAB */}
           {activeTab === "profile" && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-6">Profile Settings</h3>
               <form onSubmit={handleSaveProfile} className="space-y-6 max-w-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">First Name</label>
-                    <input type="text" value={profile.firstName} onChange={e => setProfile({...profile, firstName: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                    <input type="text" value={profile.firstName} onChange={e => setProfile({ ...profile, firstName: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white" required />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Last Name</label>
-                    <input type="text" value={profile.lastName} onChange={e => setProfile({...profile, lastName: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                    <input type="text" value={profile.lastName} onChange={e => setProfile({ ...profile, lastName: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white" required />
                   </div>
                 </div>
 
@@ -156,19 +171,19 @@ export default function SettingsPage() {
             <div className="space-y-8 max-w-2xl">
               <h3 className="text-lg font-semibold text-gray-800 mb-6">Email Notification Preferences</h3>
               <div className="space-y-6">
-                
+
                 <div className="flex items-center justify-between">
                   <div><p className="text-sm font-medium text-gray-800">Task Assignments</p><p className="text-sm text-gray-500 mt-1">Email me when I am assigned a new task</p></div>
-                  <button onClick={() => setNotifications({...notifications, tasks: !notifications.tasks})} className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${notifications.tasks ? "bg-indigo-600" : "bg-gray-200"}`}>
+                  <button onClick={() => setNotifications({ ...notifications, tasks: !notifications.tasks })} className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${notifications.tasks ? "bg-indigo-600" : "bg-gray-200"}`}>
                     <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 mt-0.5 ${notifications.tasks ? "translate-x-5" : "translate-x-0.5"}`} />
                   </button>
                 </div>
-                
+
                 <div className="border-t border-gray-50"></div>
 
                 <div className="flex items-center justify-between">
                   <div><p className="text-sm font-medium text-gray-800">Internal Messages</p><p className="text-sm text-gray-500 mt-1">Email me when someone sends a private message</p></div>
-                  <button onClick={() => setNotifications({...notifications, messages: !notifications.messages})} className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${notifications.messages ? "bg-indigo-600" : "bg-gray-200"}`}>
+                  <button onClick={() => setNotifications({ ...notifications, messages: !notifications.messages })} className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${notifications.messages ? "bg-indigo-600" : "bg-gray-200"}`}>
                     <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 mt-0.5 ${notifications.messages ? "translate-x-5" : "translate-x-0.5"}`} />
                   </button>
                 </div>
@@ -189,15 +204,32 @@ export default function SettingsPage() {
               <form onSubmit={handleSavePassword} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Current Password</label>
-                  <input type="password" value={passwords.current} onChange={e => setPasswords({...passwords, current: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                  <div className="relative">
+                    <input type={showPassword.current ? "text" : "password"} value={passwords.current} onChange={e => setPasswords({ ...passwords, current: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
+                    <button type="button" onClick={() => setShowPassword({ ...showPassword, current: !showPassword.current })} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
+                      {showPassword.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">New Password</label>
-                  <input type="password" value={passwords.new} onChange={e => setPasswords({...passwords, new: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                  <div className="relative">
+                    <input type={showPassword.new ? "text" : "password"} value={passwords.new} onChange={e => setPasswords({ ...passwords, new: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
+                    <button type="button" onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
+                      {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
-                  <input type="password" value={passwords.confirm} onChange={e => setPasswords({...passwords, confirm: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                  <div className="relative">
+                    <input type={showPassword.confirm ? "text" : "password"} value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
+                    <button type="button" onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
+                      {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-gray-100">
