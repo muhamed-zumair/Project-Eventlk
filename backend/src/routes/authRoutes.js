@@ -1,6 +1,6 @@
 const express = require('express');
 const passport = require('passport');
-const { registerUser, loginUser } = require('../controllers/authController');
+const { registerUser, loginUser ,getUserSettings, updateProfile, updateNotifications, updatePassword} = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const jwt = require('jsonwebtoken');
 
@@ -53,6 +53,12 @@ router.get('/logout', (req, res, next) => {
         res.send('Logged out successfully');
     });
 });
+
+// --- SETTINGS ROUTES ---
+router.get('/settings', protect, getUserSettings);
+router.put('/settings/profile', protect, updateProfile);
+router.put('/settings/notifications', protect, updateNotifications);
+router.put('/settings/password', protect, updatePassword);
 
 // Export the router exactly once at the very bottom
 module.exports = router;
