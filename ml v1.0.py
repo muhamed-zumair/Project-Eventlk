@@ -146,3 +146,7 @@ else:
     with col2:
         st.subheader("💵 Est. Total Cost")
         st.info(f"**LKR {budget:,.2f}**")
+
+    # --- Display Budget Breakdown ---
+    st.markdown("---")
+    st.subheader("📊 Suggested Budget Allocation")
