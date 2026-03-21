@@ -205,29 +205,32 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Current Password</label>
                   <div className="relative">
-                    <input type={showPassword.current ? "text" : "password"} value={passwords.current} onChange={e => setPasswords({ ...passwords, current: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
-                    <button type="button" onClick={() => setShowPassword({ ...showPassword, current: !showPassword.current })} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
-                      {showPassword.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                    <input type={showPassword.current ? "text" : "password"} value={passwords.current} onChange={e => setPasswords({...passwords, current: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
+                    <button type="button" onClick={() => setShowPassword({...showPassword, current: !showPassword.current})} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
+                      {/* 🚀 SWAPPED ICONS HERE */}
+                      {showPassword.current ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
                   </div>
                 </div>
-
+                
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">New Password</label>
                   <div className="relative">
-                    <input type={showPassword.new ? "text" : "password"} value={passwords.new} onChange={e => setPasswords({ ...passwords, new: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
-                    <button type="button" onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
-                      {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                    <input type={showPassword.new ? "text" : "password"} value={passwords.new} onChange={e => setPasswords({...passwords, new: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
+                    <button type="button" onClick={() => setShowPassword({...showPassword, new: !showPassword.new})} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
+                      {/* 🚀 SWAPPED ICONS HERE */}
+                      {showPassword.new ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
                   </div>
                 </div>
-
+                
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
                   <div className="relative">
-                    <input type={showPassword.confirm ? "text" : "password"} value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
-                    <button type="button" onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
-                      {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                    <input type={showPassword.confirm ? "text" : "password"} value={passwords.confirm} onChange={e => setPasswords({...passwords, confirm: e.target.value})} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 bg-white pr-10" required />
+                    <button type="button" onClick={() => setShowPassword({...showPassword, confirm: !showPassword.confirm})} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-indigo-600 transition">
+                      {/* 🚀 SWAPPED ICONS HERE */}
+                      {showPassword.confirm ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
                   </div>
                 </div>
