@@ -221,7 +221,7 @@ export default function CommunicationPage() {
 
   const handleSendMessage = async () => {
     if (!chatInput.trim() && !internalAttachment) return;
-    if (selectedRecipients.length === 0) { alert("Please select at least one recipient."); return; }
+    if (selectedRecipients.length === 0) { showToast("Please select at least one recipient.", "error"); return; }
 
     setIsSending(true);
 
@@ -269,18 +269,7 @@ export default function CommunicationPage() {
   // ==========================================
   // 4. EXTERNAL EMAIL FUNCTIONS
   // ==========================================
-  const handleGenerateAI = () => {
-    if (!emailPrompt.trim()) {
-      alert("Please provide some key details for the AI to use!");
-      return;
-    }
-    setIsGenerating(true);
-    setTimeout(() => {
-      setEmailSubject(`Update regarding the ${currentEventName}`);
-      setEmailBody(`Hi everyone,\n\nI hope this email finds you well.\n\nRegarding the update: "${emailPrompt}"\n\nPlease let us know if you have any questions.`);
-      setIsGenerating(false);
-    }, 1500);
-  };
+  
 
   const handleInsertLinkClick = () => {
     setLinkInput(""); // Clear old input
@@ -331,34 +320,7 @@ export default function CommunicationPage() {
     }
   };
 
-  const handleSendMail = () => {
-    if (!emailSubject || !emailBody) { alert("Please write or generate an email body first."); return; }
-
-    let printTarget = "All Registered Attendees";
-    if (emailTarget === "custom") {
-      if (!customEmails.trim()) { alert("Please enter at least one custom email address."); return; }
-      printTarget = customEmails;
-    }
-    if (emailTarget === "venue") printTarget = `Venue Manager`;
-    if (emailTarget === "csv") {
-      if (!csvFile) { alert("Please upload a CSV file first."); return; }
-      printTarget = `CSV: ${csvFile.name}`;
-    }
-
-    const newHistoryItem = {
-      id: Date.now(),
-      eventId: selectedEventId,
-      subject: emailSubject,
-      target: printTarget,
-      body: emailBody,
-      date: new Date().toISOString().split('T')[0]
-    };
-
-    setSentHistory([newHistoryItem, ...sentHistory]);
-    alert(`Successfully sent bulk emails for ${currentEventName}!`);
-
-    setEmailSubject(""); setEmailBody(""); setEmailPrompt(""); setAttachments([]); setCustomEmails(""); setCsvFile(null);
-  };
+  
 
   // ==========================================
   // RENDER
@@ -661,7 +623,7 @@ export default function CommunicationPage() {
                 <textarea value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)} placeholder="What should this email be about? (e.g. 'Remind attendees about tomorrow's parking rules')" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 text-gray-900 placeholder-gray-400 resize-none" rows={4} />
                 <button
                   onClick={async () => {
-                    if (!emailPrompt) return alert("Please provide an AI prompt!");
+                    if (!emailPrompt) return showToast("Please provide an AI prompt!", "error");
                     setIsGenerating(true);
                     try {
                       const res = await fetchAPI('/emails/generate', { method: 'POST', body: JSON.stringify({ prompt: emailPrompt, tone: "Exciting", eventName: currentEventName }) });
@@ -726,7 +688,7 @@ export default function CommunicationPage() {
             {showCc && (
               <div className="bg-gray-50 border-b border-gray-100 p-3 px-4 flex items-center gap-3">
                 <span className="text-xs font-bold text-gray-500 w-6">CC:</span>
-                <input type="text" value={ccEmails} onChange={(e) => setCcEmails(e.target.value)} placeholder="e.g. sponsor@company.com, dean@university.edu" className="flex-1 bg-white border border-gray-200 rounded-md p-1.5 text-sm outline-none focus:border-indigo-500" />
+                <input type="text" value={ccEmails} onChange={(e) => setCcEmails(e.target.value)} placeholder="e.g. sponsor@company.com, dean@university.edu" className="flex-1 bg-white border border-gray-200 rounded-md p-1.5 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow" />
               </div>
             )}
 

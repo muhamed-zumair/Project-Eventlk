@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { fetchAPI } from "../../../utils/api";
 import { io } from "socket.io-client";
-import { 
-  QrCode, Mail, Users, Search, CheckCircle, 
-  Clock, CheckSquare, Square, Link as LinkIcon, Copy, CalendarDays
+import {
+  QrCode, Mail, Users, Search, CheckCircle,
+  Clock, CheckSquare, Square, Link as LinkIcon, Copy, CalendarDays,
+  Loader2, X, Info // 🚀 ADDED NEW ICONS HERE
 } from "lucide-react";
 
 interface Attendee {
@@ -17,14 +18,22 @@ interface Attendee {
 }
 
 export default function RegistrationsPage() {
-  const [eventsList, setEventsList] = useState<{id: string, name: string}[]>([]);
+  const [eventsList, setEventsList] = useState<{ id: string, name: string }[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [attendees, setAttendees] = useState<Attendee[]>([]);
-  
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 🚀 NEW: UI State for Toasts
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
+  };
 
   // 1. Fetch "In Progress" Events
   useEffect(() => {
@@ -64,7 +73,7 @@ export default function RegistrationsPage() {
 
     // 🚀 WEBSOCKET CONNECTION FOR LIVE REGISTRATIONS
     const socket = io('http://localhost:5000');
-    
+
     socket.on('NEW_REGISTRATION', (data: any) => {
       if (data.eventId === selectedEventId) getAttendees();
     });
@@ -106,22 +115,19 @@ export default function RegistrationsPage() {
         method: 'POST',
         body: JSON.stringify({ attendeeIds: selectedIds })
       });
-      
+
       if (response.success) {
-        // Because we fire a WebSocket event from the backend, we don't even need to 
-        // manually update the state here. The useEffect listener will handle fetching the fresh data!
         setAttendees(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, status: 'Sent' } : a));
+        showToast(`Successfully dispatched ${selectedIds.length} QR code tickets via email!`, "success"); // 🚀 REPLACED ALERT
         setSelectedIds([]);
-        alert(`Successfully dispatched ${selectedIds.length} QR code tickets via email!`);
       }
     } catch (error) {
       console.error("Error issuing tickets", error);
-      alert("Failed to issue tickets. Please try again.");
+      showToast("Failed to issue tickets. Please try again.", "error"); // 🚀 REPLACED ALERT
     } finally {
       setIsSending(false);
     }
   };
-
   const pendingCount = attendees.filter(a => a.status === "Pending QR").length;
   const sentCount = attendees.filter(a => a.status === "Sent" || a.status === "Checked In").length;
 
@@ -145,7 +151,7 @@ export default function RegistrationsPage() {
 
         <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
           <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm"><CalendarDays size={18} /></div>
-          <select 
+          <select
             value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)}
             className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer max-w-[200px] truncate"
           >
@@ -195,11 +201,15 @@ export default function RegistrationsPage() {
             <input type="text" placeholder="Search attendees..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
           </div>
 
-          <button 
+          <button
             onClick={handleBulkSend} disabled={selectedIds.length === 0 || isSending}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${selectedIds.length > 0 ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-70 disabled:cursor-not-allowed ${selectedIds.length > 0 ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm" : "bg-gray-100 text-gray-400"}`}
           >
-            {isSending ? <span className="animate-pulse">Dispatching...</span> : <><Mail size={16} /> Issue Tickets & Calendar Invites {selectedIds.length > 0 ? `(${selectedIds.length})` : ""}</>}
+            {isSending ? (
+              <><Loader2 size={16} className="animate-spin" /> Dispatching...</>
+            ) : (
+              <><Mail size={16} /> Issue Tickets & Calendar Invites {selectedIds.length > 0 ? `(${selectedIds.length})` : ""}</>
+            )}
           </button>
         </div>
 
@@ -233,8 +243,8 @@ export default function RegistrationsPage() {
                       <td className="p-4 text-gray-500 text-sm">{attendee.date}</td>
                       <td className="p-4">
                         {attendee.status === "Sent" ? <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"><CheckCircle size={12} /> Ticket Sent</span> :
-                         attendee.status === "Checked In" ? <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100"><CheckCircle size={12} /> Checked In</span> :
-                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100"><Clock size={12} /> Pending QR</span>}
+                          attendee.status === "Checked In" ? <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100"><CheckCircle size={12} /> Checked In</span> :
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100"><Clock size={12} /> Pending QR</span>}
                       </td>
                     </tr>
                   ))
@@ -244,6 +254,21 @@ export default function RegistrationsPage() {
           )}
         </div>
       </div>
+      {/* 🚀 NEW: Beautiful Toast Notifications */}
+      {toast && (
+        <div className={`fixed bottom-10 right-10 z-[250] bg-white border shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === 'success' ? 'border-green-100' : 'border-red-100'}`}>
+          <div className={`p-2.5 rounded-full border shadow-sm ${toast.type === 'success' ? 'bg-green-50 text-green-500 border-green-100' : 'bg-red-50 text-red-500 border-red-100'}`}>
+            {toast.type === 'success' ? <CheckCircle size={20} /> : <Info size={20} />}
+          </div>
+          <div className="pr-5">
+            <h4 className="text-sm font-bold text-gray-900">{toast.type === 'success' ? 'Success' : 'Error'}</h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} className={`p-1.5 rounded-lg transition ${toast.type === 'success' ? 'text-green-400 hover:bg-green-50 hover:text-green-600' : 'text-red-400 hover:bg-red-50 hover:text-red-600'}`}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

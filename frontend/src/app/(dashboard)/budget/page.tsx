@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { fetchAPI } from "../../../utils/api";
-import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle, Receipt, User, Clock, AlertTriangle, Sparkles } from "lucide-react";
+import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle, Receipt, User, Clock, AlertTriangle, Sparkles, Loader2, CheckCircle, Info } from "lucide-react";
 
 // --- Types ---
 interface BudgetCategory {
@@ -55,6 +55,14 @@ export default function BudgetPage() {
   const [expenses, setExpenses] = useState<ExpenseTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  // 🚀 NEW: Custom Toast State
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000); // Auto-hide after 5 seconds
+  };
 
   // Modals State
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -141,10 +149,11 @@ export default function BudgetPage() {
       if (response.success) {
         await fetchBudgetOverview(selectedEventId); // Refresh live data!
         handleCloseModal();
+        showToast("Expense logged successfully!", "success");
       }
     } catch (error) {
       console.error("Error adding expense:", error);
-      alert("Failed to save expense.");
+      showToast("Failed to save expense.", "error");
     } finally {
       setIsSaving(false);
     }
@@ -173,10 +182,10 @@ export default function BudgetPage() {
         setIsCategoryModalOpen(false);
         setNewCategoryName("");
         setNewCategoryAmount("");
+        showToast("Category created successfully!", "success");
       }
     } catch (error: any) {
-      console.error("Error adding category:", error);
-      alert(error.message || "Failed to create category.");
+      showToast("Failed to create category.", "error");
     } finally {
       setIsSaving(false);
     }
@@ -434,8 +443,8 @@ export default function BudgetPage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50 shrink-0">
-              <button onClick={handleAddCategory} disabled={!newCategoryName || !newCategoryAmount || Number(newCategoryAmount) <= 0 || isSaving} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                {isSaving ? "Saving..." : "Create Category"}
+              <button onClick={handleAddCategory} disabled={!newCategoryName || !newCategoryAmount || Number(newCategoryAmount) <= 0 || isSaving} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                {isSaving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : "Create Category"}
               </button>
               <button onClick={() => setIsCategoryModalOpen(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
             </div>
@@ -479,8 +488,8 @@ export default function BudgetPage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50 shrink-0">
-              <button onClick={handleAddExpense} disabled={!expenseAmount || Number(expenseAmount) <= 0 || isSaving} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                {isSaving ? "Saving..." : "Save Expense"}
+              <button onClick={handleAddExpense} disabled={!expenseAmount || Number(expenseAmount) <= 0 || isSaving} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                {isSaving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : "Save Expense"}
               </button>
               <button onClick={handleCloseModal} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
             </div>
@@ -544,6 +553,21 @@ export default function BudgetPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {/* 🚀 NEW: Beautiful Toast Notifications */}
+      {toast && (
+        <div className={`fixed bottom-10 right-10 z-[250] bg-white border shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === 'success' ? 'border-green-100' : 'border-red-100'}`}>
+          <div className={`p-2.5 rounded-full border shadow-sm ${toast.type === 'success' ? 'bg-green-50 text-green-500 border-green-100' : 'bg-red-50 text-red-500 border-red-100'}`}>
+            {toast.type === 'success' ? <CheckCircle size={20} /> : <Info size={20} />}
+          </div>
+          <div className="pr-5">
+            <h4 className="text-sm font-bold text-gray-900">{toast.type === 'success' ? 'Success' : 'Error'}</h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} className={`p-1.5 rounded-lg transition ${toast.type === 'success' ? 'text-green-400 hover:bg-green-50 hover:text-green-600' : 'text-red-400 hover:bg-red-50 hover:text-red-600'}`}>
+            <X size={16} />
+          </button>
         </div>
       )}
     </div>

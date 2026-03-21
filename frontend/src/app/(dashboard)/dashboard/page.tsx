@@ -5,7 +5,7 @@ import {
   Sparkles, Calendar, MapPin, Users, DollarSign,
   CheckCircle, Clock, AlertCircle, Pencil, X, Trash2, Plus,
   FileText, Mail, User, Check, Lock, Palette, ListChecks, ShieldAlert,
-  CalendarPlus, Mic, Handshake, FileUp, DownloadCloud
+  CalendarPlus, Mic, Handshake, FileUp, DownloadCloud, Loader2, Info
 } from "lucide-react";
 
 export default function DashboardHome() {
@@ -26,6 +26,16 @@ export default function DashboardHome() {
   const [sponsors, setSponsors] = useState<any[]>([]);
 
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
+
+  // 🚀 NEW: UI States for Toasts & Event Deletion
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  const [eventToDelete, setEventToDelete] = useState<{ id: string, title: string } | null>(null);
+  const [isDeletingEvent, setIsDeletingEvent] = useState(false);
 
   // Start with an empty list!
   const [eventFiles, setEventFiles] = useState<any[]>([]);
@@ -51,7 +61,7 @@ export default function DashboardHome() {
       try {
         // 1. Grab your auth token
         const token = localStorage.getItem('token');
-        
+
         // 2. Use native fetch to bypass the forced JSON headers in fetchAPI
         // NOTE: Make sure to change 'http://localhost:5000/api' to match your actual backend URL!
         const res = await fetch(`http://localhost:5000/api/events/${eventDetails.id}/documents`, {
@@ -61,7 +71,7 @@ export default function DashboardHome() {
             // 🚨 CRITICAL: Do NOT type 'Content-Type' here! 
             // The browser must automatically generate the multipart/form-data boundary.
           },
-          body: formData, 
+          body: formData,
         });
 
         const response = await res.json();
@@ -76,12 +86,13 @@ export default function DashboardHome() {
             isConfidential: response.document.is_confidential
           }]);
           setIsUploadConfidential(false);
+          showToast("Document uploaded successfully!", "success");
         } else {
-           alert("Upload failed: " + response.message);
+          showToast("Upload failed: " + response.message, "error");
         }
       } catch (error) {
         console.error("Upload error:", error);
-        alert("Upload failed. Please try again.");
+        showToast("Upload failed. Please try again.", "error");
       }
     }
   };
@@ -102,7 +113,7 @@ export default function DashboardHome() {
         setDocumentToDelete(null);
       }
     } catch (error) {
-      alert("Failed to delete the document.");
+      showToast("Failed to delete the document.", "error");
     } finally {
       setIsDeleting(false);
     }
@@ -115,7 +126,7 @@ export default function DashboardHome() {
         window.open(response.downloadUrl, '_blank');
       }
     } catch (error) {
-      alert("Failed to download file.");
+      showToast("Failed to download file.", "error");
     }
   };
   const handlePrint = () => window.print();
@@ -128,56 +139,49 @@ export default function DashboardHome() {
     setIsLoading(true);
     try {
       const response = await fetchAPI('/events/', { method: 'GET' });
+      
       if (response.success && response.events.length > 0) {
-        const allEvents = response.events.map((dbEvent: any) => {
-          let eventStatus = "In Progress";
-          let diffDays = 0;
-          let cleanDate = "";
-          let formattedDate = "";
-
-          if (dbEvent.start_date) {
-            const dateObj = new Date(dbEvent.start_date);
-            formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-            const year = dateObj.getFullYear();
-            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            cleanDate = `${year}-${month}-${day}`;
-
+        // 🚀 FIX: Just trust the database! No more tricky date math or frontend auto-archiving.
+        const activeEvents = response.events
+          .filter((dbEvent: any) => dbEvent.status !== 'Done') // Only hide it if the DB officially says 'Done'
+          .map((dbEvent: any) => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const mathDate = new Date(dateObj);
-            mathDate.setHours(0, 0, 0, 0);
+            
+            let cleanDate = "";
+            let formattedDate = "";
 
-            eventStatus = mathDate < today ? "Done" : "In Progress";
-            const diffTime = mathDate.getTime() - today.getTime();
-            diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          }
+            if (dbEvent.start_date) {
+              const dateObj = new Date(dbEvent.start_date);
+              formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+              cleanDate = dbEvent.start_date.split('T')[0];
+            }
 
-          const totalTasks = Number(dbEvent.total_tasks) || 0;
-          const completedTasks = Number(dbEvent.completed_tasks) || 0;
+            const totalTasks = Number(dbEvent.total_tasks) || 0;
+            const completedTasks = Number(dbEvent.completed_tasks) || 0;
 
-          return {
-            id: dbEvent.id,
-            title: dbEvent.title,
-            date: cleanDate,
-            formattedDate,
-            eventStatus,
-            diffDays,
-            venue: dbEvent.venue || "TBA",
-            expectedAttendees: dbEvent.expected_headcount,
-            budget: Number(dbEvent.total_budget),
-            description: dbEvent.description,
-            isAiAssisted: dbEvent.is_ai_assisted,
-            totalSpent: Number(dbEvent.total_spent) || 0,
-            totalTasks: totalTasks,
-            completedTasks: completedTasks,
-            pendingHighTasks: Number(dbEvent.pending_high_tasks) || 0,
-            progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
-            checkedInCount: Number(dbEvent.checked_in_count) || 0
-          };
-        });
-        setEventsList(allEvents);
+            return {
+              id: dbEvent.id,
+              title: dbEvent.title,
+              date: cleanDate,
+              formattedDate,
+              eventStatus: "In Progress",
+              // DiffDays can just be basic math now
+              diffDays: Math.max(0, Math.ceil((new Date(dbEvent.start_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))),
+              venue: dbEvent.venue || "TBA",
+              expectedAttendees: dbEvent.expected_headcount,
+              budget: Number(dbEvent.total_budget),
+              description: dbEvent.description,
+              isAiAssisted: dbEvent.is_ai_assisted,
+              totalSpent: Number(dbEvent.total_spent) || 0,
+              totalTasks: totalTasks,
+              completedTasks: completedTasks,
+              pendingHighTasks: Number(dbEvent.pending_high_tasks) || 0,
+              progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+              checkedInCount: Number(dbEvent.checked_in_count) || 0
+            };
+          });
+        setEventsList(activeEvents);
       } else {
         setEventsList([]);
       }
@@ -187,7 +191,6 @@ export default function DashboardHome() {
       setIsLoading(false);
     }
   };
-
   const fetchFullEventDetails = async (eventId: string, modalType: 'edit' | 'details') => {
     setIsFetchingDetails(true);
     try {
@@ -290,22 +293,33 @@ export default function DashboardHome() {
       }
     } catch (error) {
       console.error("Failed to update event:", error);
-      alert("Failed to save changes. Please try again.");
+      showToast("Failed to save changes. Please try again.", "error");
     } finally {
       setIsSaving(false);
     }
   };
+  
 
-  const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`);
-    if (!confirmDelete) return;
+  // 🚀 REPLACED window.confirm WITH CUSTOM MODAL LOGIC
+  const handleDeleteEventClick = (eventId: string, eventTitle: string) => {
+    setEventToDelete({ id: eventId, title: eventTitle });
+  };
 
+  const confirmDeleteEvent = async () => {
+    if (!eventToDelete) return;
+    setIsDeletingEvent(true);
     try {
-      const response = await fetchAPI(`/events/${eventId}`, { method: 'DELETE' });
-      if (response.success) fetchMyEvents();
+      const response = await fetchAPI(`/events/${eventToDelete.id}`, { method: 'DELETE' });
+      if (response.success) {
+        fetchMyEvents();
+        setEventToDelete(null);
+        showToast("Event deleted successfully!", "success");
+      }
     } catch (error) {
       console.error("Failed to delete event:", error);
-      alert("Failed to delete the event. Please try again.");
+      showToast("Failed to delete the event. Please try again.", "error");
+    } finally {
+      setIsDeletingEvent(false);
     }
   };
 
@@ -432,8 +446,11 @@ export default function DashboardHome() {
                   <button onClick={() => fetchFullEventDetails(event.id, 'details')} disabled={isFetchingDetails} className="bg-white text-indigo-700 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50">
                     {isFetchingDetails ? "Loading..." : "View Full Details"}
                   </button>
+                  {/* 🚀 NEW: Completion Button */}
+                  
+
                   <button onClick={() => fetchFullEventDetails(event.id, 'edit')} disabled={isFetchingDetails} className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center disabled:opacity-50" title="Edit Event"><Pencil size={20} /></button>
-                  <button onClick={() => handleDeleteEvent(event.id, event.title)} className="bg-red-500/20 border border-red-400/30 text-red-100 p-2.5 rounded-lg hover:bg-red-500/40 hover:text-white transition-colors flex items-center justify-center ml-auto" title="Delete Event"><Trash2 size={20} /></button>
+                  <button onClick={() => handleDeleteEventClick(event.id, event.title)} className="bg-red-500/20 border border-red-400/30 text-red-100 p-2.5 rounded-lg hover:bg-red-500/40 hover:text-white transition-colors flex items-center justify-center ml-auto" title="Delete Event"><Trash2 size={20} /></button>
                 </div>
               </div>
             );
@@ -824,7 +841,7 @@ export default function DashboardHome() {
 
             <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
               <button onClick={handleUpdateEvent} disabled={isSaving} className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm disabled:opacity-50">
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : "Save Changes"}
               </button>
               <button onClick={() => setIsEditModalOpen(false)} className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm">
                 Cancel
@@ -859,11 +876,60 @@ export default function DashboardHome() {
                   disabled={isDeleting}
                   className="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-semibold hover:bg-red-600 transition disabled:opacity-50"
                 >
-                  {isDeleting ? "Deleting..." : "Yes, Delete"}
+                  {isDeleting ? <><Loader2 size={16} className="animate-spin" /> Deleting...</> : "Yes, Delete"}
                 </button>
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {/* 🚀 NEW: Event Deletion Confirmation Modal */}
+      {eventToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center space-y-4 mt-2">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto border-4 border-red-100 shadow-sm">
+                <Trash2 size={28} className="text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Delete Event?</h3>
+              <p className="text-sm text-gray-500 leading-relaxed px-2">
+                Are you sure you want to permanently delete <strong className="text-gray-800">"{eventToDelete.title}"</strong>? This action cannot be undone.
+              </p>
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => setEventToDelete(null)}
+                disabled={isDeletingEvent}
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteEvent}
+                disabled={isDeletingEvent}
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                {isDeletingEvent ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                {isDeletingEvent ? "Deleting..." : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 NEW: Beautiful Toast Notifications */}
+      {toast && (
+        <div className={`fixed bottom-10 right-10 z-[250] bg-white border shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === 'success' ? 'border-green-100' : 'border-red-100'}`}>
+          <div className={`p-2.5 rounded-full border shadow-sm ${toast.type === 'success' ? 'bg-green-50 text-green-500 border-green-100' : 'bg-red-50 text-red-500 border-red-100'}`}>
+            {toast.type === 'success' ? <CheckCircle size={20} /> : <Info size={20} />}
+          </div>
+          <div className="pr-5">
+            <h4 className="text-sm font-bold text-gray-900">{toast.type === 'success' ? 'Success' : 'Error'}</h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} className={`p-1.5 rounded-lg transition ${toast.type === 'success' ? 'text-green-400 hover:bg-green-50 hover:text-green-600' : 'text-red-400 hover:bg-red-50 hover:text-red-600'}`}>
+            <X size={16} />
+          </button>
         </div>
       )}
     </div>

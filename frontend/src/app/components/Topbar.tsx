@@ -6,7 +6,7 @@ import {
   Search, Plus, Bell, X, Calendar, Tag, Users,
   DollarSign, FileText, User, LogOut, Settings,
   CheckCircle, AlertCircle, MessageSquare, MenuIcon,
-  SlidersHorizontal, Sparkles, Minus, MapPin, Check, ChevronDown, Trash2
+  SlidersHorizontal, Sparkles, Minus, MapPin, Check, ChevronDown, Trash2, Loader2
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { s } from "framer-motion/client";
@@ -42,15 +42,28 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     window.location.href = "/signin"; // Redirects to login
   };
 
-  const handleDeleteAccount = async () => {
-    if (window.confirm("🚨 Are you absolutely sure? This will permanently delete your account, events, and all related data. This cannot be undone.")) {
-      try {
-        await fetchAPI('/auth/delete', { method: 'DELETE' });
-        localStorage.clear();
-        window.location.href = "/signin";
-      } catch (error) {
-        alert("Failed to delete account. Please contact support.");
-      }
+  // 🚀 1. NEW STATES FOR THE MODAL
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // 🚀 2. UPDATED HANDLERS
+  const handleDeleteAccount = () => {
+    setShowDeleteConfirm(true); // Open the beautiful modal
+    setIsProfileOpen(false); // Close the dropdown menu
+  };
+
+  const confirmDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await fetchAPI('/auth/delete', { method: 'DELETE' });
+      localStorage.clear();
+      window.location.href = "/signin";
+    } catch (error) {
+      // 🚀 3. Uses your existing Toast system instead of an alert!
+      setSocketAlert({ message: "Failed to delete account. Please contact support.", type: 'error' });
+      setShowDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -713,6 +726,39 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 🚀 NEW: Custom Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center space-y-4 mt-2">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto border-4 border-red-100 shadow-sm">
+                <Trash2 size={28} className="text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Delete Account?</h3>
+              <p className="text-sm text-gray-500 leading-relaxed px-2">
+                Are you absolutely sure? This action will <strong className="text-gray-800">permanently delete</strong> your account and all related data. This cannot be undone.
+              </p>
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+              <button 
+                onClick={() => setShowDeleteConfirm(false)} 
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteAccount} 
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:bg-red-600"
+              >
+                {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                {isDeleting ? "Deleting..." : "Yes, Delete"}
+              </button>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, MapPin, PieChart, Palette, 
   ListChecks, BrainCircuit, Zap, DollarSign, Check, X,
-  TrendingUp, Rocket, ArrowRight
+  TrendingUp, Rocket, ArrowRight, Loader2, CheckCircle, Info, Trash2
 } from "lucide-react";
 import { PieChart as ReChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { fetchAPI } from "../../../utils/api";
@@ -12,6 +12,16 @@ import { fetchAPI } from "../../../utils/api";
 export default function AIRecommendationsPage() {
   const [draft, setDraft] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // 🚀 NEW: UI States for Toasts & Discard Modal
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+
+  // Helper to trigger nice toast messages
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000); // Auto-hide after 5 seconds
+  };
 
   useEffect(() => {
     const savedDraft = localStorage.getItem("aiDraft");
@@ -50,7 +60,7 @@ export default function AIRecommendationsPage() {
       }
     } catch (error: any) {
       console.error("Full Error Details:", error);
-      alert(`Error: ${error.message}`);
+      showToast(error.message || "Failed to initialize dashboard. Please try again.", "error");
     } finally {
       setIsSaving(false);
     }
@@ -272,17 +282,19 @@ export default function AIRecommendationsPage() {
                     <button 
                       onClick={handleConfirmEvent}
                       disabled={isSaving}
-                      className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:bg-indigo-500 transition-all duration-200 flex justify-center items-center gap-2"
+                      className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:bg-indigo-500 transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed"
                     >
+                      {/* 🚀 Upgraded with SaaS Loader Spinner */}
                       {isSaving ? (
-                        <span className="animate-pulse">Saving to Database...</span>
+                        <><Loader2 size={18} className="animate-spin" /> Saving to Database...</>
                       ) : (
                         <>Initialize Dashboard <ArrowRight size={18} /></>
                       )}
                     </button>
                     <button 
-                      onClick={() => { localStorage.removeItem("aiDraft"); setDraft(null); }}
-                      className="w-full bg-gray-800 border border-gray-700 text-gray-300 py-4 rounded-2xl font-bold hover:bg-gray-700 hover:text-white transition flex items-center justify-center gap-2"
+                      onClick={() => setShowDiscardConfirm(true)}
+                      disabled={isSaving}
+                      className="w-full bg-gray-800 border border-gray-700 text-gray-300 py-4 rounded-2xl font-bold hover:bg-gray-700 hover:text-white transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <X size={18} /> Discard Plan
                     </button>
@@ -293,6 +305,56 @@ export default function AIRecommendationsPage() {
             </div>
 
           </div>
+        </div>
+      )}
+      {/* 🚀 NEW: Custom Discard Confirmation Modal */}
+      {showDiscardConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center space-y-4 mt-2">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto border-4 border-red-100 shadow-sm">
+                <Trash2 size={28} className="text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Discard AI Plan?</h3>
+              <p className="text-sm text-gray-500 leading-relaxed px-2">
+                Are you sure? This will permanently delete your current AI-generated strategy. You will need to generate a new one.
+              </p>
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+              <button 
+                onClick={() => setShowDiscardConfirm(false)} 
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem("aiDraft"); 
+                  setDraft(null);
+                  setShowDiscardConfirm(false); // Close modal after deleting
+                }} 
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition shadow-sm flex items-center justify-center gap-2"
+              >
+                <Trash2 size={16} /> Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 NEW: Beautiful Toast Notifications */}
+      {toast && (
+        <div className={`fixed bottom-10 right-10 z-[250] bg-white border shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === 'success' ? 'border-green-100' : 'border-red-100'}`}>
+          <div className={`p-2.5 rounded-full border shadow-sm ${toast.type === 'success' ? 'bg-green-50 text-green-500 border-green-100' : 'bg-red-50 text-red-500 border-red-100'}`}>
+            {toast.type === 'success' ? <CheckCircle size={20} /> : <Info size={20} />}
+          </div>
+          <div className="pr-5">
+            <h4 className="text-sm font-bold text-gray-900">{toast.type === 'success' ? 'Success' : 'Error'}</h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} className={`p-1.5 rounded-lg transition ${toast.type === 'success' ? 'text-green-400 hover:bg-green-50 hover:text-green-600' : 'text-red-400 hover:bg-red-50 hover:text-red-600'}`}>
+            <X size={16} />
+          </button>
         </div>
       )}
     </div>
