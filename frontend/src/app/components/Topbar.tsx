@@ -6,9 +6,10 @@ import {
   Search, Plus, Bell, X, Calendar, Tag, Users,
   DollarSign, FileText, User, LogOut, Settings,
   CheckCircle, AlertCircle, MessageSquare, MenuIcon,
-  SlidersHorizontal, Sparkles, Minus, MapPin, Check
+  SlidersHorizontal, Sparkles, Minus, MapPin, Check, ChevronDown, Trash2
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { s } from "framer-motion/client";
 
 interface TopbarProps {
   toggleSidebar: () => void;
@@ -31,6 +32,27 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   const [aiVenueStyle, setAiVenueStyle] = useState<string>("Coworking Space");
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiResponseData, setAiResponseData] = useState<any>(null);
+
+  // 🚀 1. NEW STATE: Hold the logged-in user's details
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // 🚀 2. NEW HANDLERS: Sign out and Delete Account
+  const handleSignOut = () => {
+    localStorage.clear(); // Wipes the token and user data
+    window.location.href = "/signin"; // Redirects to login
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm("🚨 Are you absolutely sure? This will permanently delete your account, events, and all related data. This cannot be undone.")) {
+      try {
+        await fetchAPI('/auth/delete', { method: 'DELETE' });
+        localStorage.clear();
+        window.location.href = "/signin";
+      } catch (error) {
+        alert("Failed to delete account. Please contact support.");
+      }
+    }
+  };
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -71,6 +93,11 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   };
 
   useEffect(() => {
+    const userStr=localStorage.getItem('user');
+    if (userStr) {
+      setCurrentUser(JSON.parse(userStr));
+    }
+
     fetchInvitations();
 
     const handleOpenCreateModal = () => {
@@ -417,17 +444,50 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
             )}
           </div>
 
-          <div className="relative border-l pl-3 md:pl-4 border-gray-200">
-            <button onClick={toggleProfile} className="flex items-center gap-3 hover:opacity-80 transition text-left">
+          <div className="relative border-l pl-4 md:pl-5 border-gray-200">
+            <button onClick={toggleProfile} className="flex items-center gap-3 group transition-all text-left outline-none">
               <div className="text-right hidden md:block">
-                <p className="text-sm font-medium text-gray-900">Organizer</p>
-                <p className="text-xs text-gray-500">EventLK</p>
+                {/* 🚀 Dynamic Name & Role */}
+                <p className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                  {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : "EventLK User"}
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">
+                  {currentUser?.role === "User" ? "EventLK User" : "EventLK Organizer"}
+                </p>
               </div>
-              <div className="w-8 h-8 md:w-9 md:h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white font-medium text-sm shadow-sm">ME</div>
+              
+              <div className="relative flex items-center gap-2">
+                {/* 🚀 Beautiful Gradient Avatar with Online Indicator */}
+                <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white group-hover:ring-indigo-100 transition-all">
+                  {currentUser ? `${currentUser.firstName[0]}${currentUser.lastName[0]}`.toUpperCase() : "ME"}
+                </div>
+                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 hidden sm:block ${isProfileOpen ? 'rotate-180' : ''}`} />
+              </div>
             </button>
+
+            {/* 🚀 Sleek Dropdown Menu */}
             {isProfileOpen && (
-              <div className="absolute right-0 mt-3 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50">
-                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 font-medium"><LogOut size={16} /> Sign out</button>
+              <div className="absolute right-0 mt-3 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                
+                <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                  <p className="text-xs font-medium text-gray-500">Signed in as</p>
+                  <p className="text-sm font-bold text-gray-900 truncate">{currentUser?.email || "user@eventlk.com"}</p>
+                </div>
+
+                <a href="/settings" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2.5 font-medium">
+                  <Settings size={16} className="text-gray-400" /> Account Settings
+                </a>
+
+                <div className="h-px bg-gray-100 my-1"></div>
+
+                <button onClick={handleSignOut} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2.5 font-medium">
+                  <LogOut size={16} className="text-gray-400" /> Sign out
+                </button>
+
+                <button onClick={handleDeleteAccount} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2.5 font-medium group">
+                  <Trash2 size={16} className="text-red-400 group-hover:text-red-600 transition" /> Delete Account
+                </button>
               </div>
             )}
           </div>
