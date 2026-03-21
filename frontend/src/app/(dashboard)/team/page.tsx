@@ -4,7 +4,8 @@ import { fetchAPI } from "../../../utils/api";
 import React, { useState, useEffect } from "react";
 import {
   Mail, X, CalendarDays, User, MoreVertical,
-  Shield, UserMinus, AlertCircle, CheckCircle, Rocket, AlertTriangle
+  Shield, UserMinus, AlertCircle, CheckCircle, Rocket, AlertTriangle,
+  Loader2
 } from "lucide-react";
 
 // --- Types ---
@@ -120,10 +121,10 @@ export default function TeamPage() {
   // --- NEW: Listen for Global WebSocket Refreshes ---
   useEffect(() => {
     const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
-    
+
     window.addEventListener("teamRefresh", handleRefresh);
-    window.addEventListener("eventCreated", handleRefresh); 
-    
+    window.addEventListener("eventCreated", handleRefresh);
+
     return () => {
       window.removeEventListener("teamRefresh", handleRefresh);
       window.removeEventListener("eventCreated", handleRefresh);
@@ -213,7 +214,7 @@ export default function TeamPage() {
       setIsRoleModalOpen(false);
       return;
     }
-    
+
     setIsSubmitting(true);
     setErrorMessage("");
 
@@ -240,15 +241,24 @@ export default function TeamPage() {
 
   return (
     <div className="space-y-6">
-      
-      {/* --- SUCCESS BANNER (Global for actions outside of invite modal) --- */}
       {successMessage && !isInviteModalOpen && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
-          <CheckCircle size={20} className="shrink-0" />
-          <p className="text-sm font-medium">{successMessage}</p>
-          <button onClick={() => setSuccessMessage("")} className="ml-auto text-green-500 hover:text-green-700"><X size={16} /></button>
+        <div className="fixed bottom-10 right-10 z-[100] bg-white border shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-right-10 duration-500 border-l-4 border-l-emerald-500 overflow-hidden">
+          <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+            <CheckCircle size={20} />
+          </div>
+          <div className="pr-8">
+            <h4 className="text-sm font-black text-gray-900">Success</h4>
+            <p className="text-xs font-medium text-gray-500 mt-0.5">{successMessage}</p>
+          </div>
+          <button onClick={() => setSuccessMessage("")} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600">
+            <X size={14} />
+          </button>
+          <div className="absolute bottom-0 left-0 h-1 bg-emerald-500" style={{ width: '100%', animation: 'progress 4s linear forwards' }}></div>
         </div>
       )}
+
+      {/* Add this CSS anywhere in the component return or global CSS */}
+      <style jsx>{` @keyframes progress { from { width: 100%; } to { width: 0%; } } `}</style>
 
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -295,9 +305,25 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* Main Content Area */}
       {isLoadingTeam ? (
-        <div className="py-20 text-center text-indigo-500 font-medium animate-pulse">Loading team data...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-64 space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="w-14 h-14 bg-gray-200 rounded-2xl"></div>
+                <div className="w-20 h-6 bg-gray-100 rounded-full"></div>
+              </div>
+              <div className="space-y-3 pt-4">
+                <div className="h-6 w-3/4 bg-gray-200 rounded-lg"></div>
+                <div className="h-4 w-1/2 bg-gray-100 rounded-lg"></div>
+              </div>
+              <div className="pt-6 border-t border-gray-50 flex gap-3">
+                <div className="w-4 h-4 bg-gray-100 rounded-full"></div>
+                <div className="h-4 w-full bg-gray-50 rounded-lg"></div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
 
@@ -317,15 +343,15 @@ export default function TeamPage() {
                 {/* Dropdown Menu - WIRED TO BEAUTIFUL MODALS */}
                 {openMenuId === member.id && (
                   <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-in fade-in zoom-in-95">
-                    <button 
-                      onClick={() => openRoleModal(member)} 
+                    <button
+                      onClick={() => openRoleModal(member)}
                       className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2"
                     >
                       <Shield size={16} /> Change Role
                     </button>
                     {member.role !== 'President' ? (
-                      <button 
-                        onClick={() => openRemoveModal(member)} 
+                      <button
+                        onClick={() => openRemoveModal(member)}
                         className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50"
                       >
                         <UserMinus size={16} /> Remove Member
@@ -439,25 +465,23 @@ export default function TeamPage() {
 
       {/* --- 2. BEAUTIFUL REMOVE MEMBER MODAL --- */}
       {isRemoveModalOpen && memberToManage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95">
-            <div className="p-6 text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-2">
-                <AlertTriangle size={32} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 border border-white/20">
+            <div className="p-8 text-center">
+              <div className="mx-auto w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mb-6 rotate-3 shadow-inner">
+                <UserMinus size={40} strokeWidth={2.5} />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Remove Member?</h2>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Are you sure you want to remove <strong>{memberToManage.name === "TBA" ? memberToManage.email : memberToManage.name}</strong> from <strong>{selectedEventName}</strong>? They will instantly lose access to the dashboard.
+              <h2 className="text-2xl font-black text-gray-900 mb-2">Remove Member?</h2>
+              <p className="text-gray-500 font-medium leading-relaxed px-2">
+                Access will be instantly revoked for <span className="text-gray-900 font-bold">{memberToManage.name === "TBA" ? memberToManage.email : memberToManage.name}</span>.
               </p>
-              
-              {errorMessage && <p className="text-sm text-red-600 font-medium">{errorMessage}</p>}
             </div>
-            <div className="p-4 border-t border-gray-100 flex items-center gap-3 bg-gray-50 shrink-0">
-              <button onClick={() => setIsRemoveModalOpen(false)} className="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition">
-                Cancel
+            <div className="p-6 pt-0 flex flex-col gap-3 bg-white">
+              <button onClick={confirmRemoveMember} disabled={isSubmitting} className="w-full bg-rose-600 text-white py-4 rounded-2xl text-sm font-black hover:bg-rose-700 shadow-lg shadow-rose-100 transition-all active:scale-95 flex justify-center items-center gap-2">
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : "Remove Permanently"}
               </button>
-              <button onClick={confirmRemoveMember} disabled={isSubmitting} className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-red-700 transition shadow-sm disabled:opacity-70 disabled:cursor-wait">
-                {isSubmitting ? "Removing..." : "Yes, Remove"}
+              <button onClick={() => setIsRemoveModalOpen(false)} className="w-full bg-gray-50 text-gray-500 py-4 rounded-2xl text-sm font-black hover:bg-gray-100 transition-all active:scale-95">
+                Cancel
               </button>
             </div>
           </div>
@@ -505,8 +529,12 @@ export default function TeamPage() {
               </div>
             </div>
             <div className="p-5 border-t border-gray-100 flex items-center gap-3 bg-gray-50 shrink-0">
-              <button onClick={confirmChangeRole} disabled={isSubmitting || newSelectedRole === memberToManage.role} className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                {isSubmitting ? "Saving..." : "Save Changes"}
+              <button
+                onClick={confirmChangeRole}
+                disabled={isSubmitting || newSelectedRole === memberToManage.role}
+                className="w-full bg-indigo-600 text-white px-4 py-3.5 rounded-2xl text-sm font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex justify-center items-center gap-2"
+              >
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : "Save New Permission Level"}
               </button>
             </div>
           </div>

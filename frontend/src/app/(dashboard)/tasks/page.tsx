@@ -12,11 +12,11 @@ interface Task {
 }
 
 export default function TaskListBoard() {
-  const [eventsList, setEventsList] = useState<{id: string, name: string}[]>([]);
+  const [eventsList, setEventsList] = useState<{ id: string, name: string }[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -57,7 +57,7 @@ export default function TaskListBoard() {
     try {
       const response = await fetchAPI(`/tasks/event/${eventId}`, { method: 'GET' });
       if (response.success) { setTasks(response.tasks); setTeamMembers(response.teamMembers); }
-    } catch (error) { } 
+    } catch (error) { }
     finally { setIsLoading(false); }
   };
 
@@ -84,7 +84,7 @@ export default function TaskListBoard() {
     try {
       await fetchAPI(`/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(updates) });
     } catch (error) {
-      fetchTasksAndTeam(selectedEventId); 
+      fetchTasksAndTeam(selectedEventId);
     }
   };
 
@@ -98,14 +98,30 @@ export default function TaskListBoard() {
     setTaskToDelete(null);
   };
 
-  const filteredTasks = tasks.filter(task => 
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredTasks = tasks.filter(task =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (task.assigneeName && task.assigneeName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const priorities: ('High' | 'Medium' | 'Low')[] = ['High', 'Medium', 'Low'];
 
-  if (isLoading && eventsList.length === 0) return <div className="flex justify-center items-center h-full text-indigo-600 animate-pulse">Loading Task Board...</div>;
+  if (isLoading && eventsList.length === 0) return (
+    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-pulse">
+      <div className="flex justify-between items-end">
+        <div className="space-y-3">
+          <div className="h-8 w-48 bg-gray-200 rounded-lg"></div>
+          <div className="h-4 w-64 bg-gray-100 rounded-lg"></div>
+        </div>
+        <div className="flex gap-4">
+          <div className="h-12 w-40 bg-gray-100 rounded-xl"></div>
+          <div className="h-12 w-64 bg-gray-100 rounded-xl"></div>
+        </div>
+      </div>
+      {[1, 2].map(i => (
+        <div key={i} className="h-64 w-full bg-gray-50 rounded-3xl border border-gray-100"></div>
+      ))}
+    </div>
+  );
   if (eventsList.length === 0) return (
     <div className="flex-1 bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center p-10 text-center shadow-sm">
       <ListTodo size={48} className="text-gray-300 mb-4" />
@@ -117,31 +133,40 @@ export default function TaskListBoard() {
   return (
     <div className="h-full flex flex-col max-w-6xl mx-auto pb-10 relative">
 
-      {/* 🚀 NEW: Beautiful Error Toast UI */}
       {errorMessage && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md animate-in slide-in-from-top-4 fade-in">
-          <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3">
-            <div className="p-1.5 bg-orange-100 rounded-full shrink-0"><AlertCircle size={18} className="text-orange-600" /></div>
-            <p className="font-semibold text-sm leading-snug flex-1">{errorMessage}</p>
-            <button onClick={() => setErrorMessage(null)} className="text-orange-400 hover:text-orange-600 transition"><X size={18} /></button>
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[110] w-[90%] max-w-md animate-in slide-in-from-top-8 fade-in duration-300">
+          <div className="bg-white border-l-4 border-l-orange-500 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-4 rounded-2xl flex items-center gap-4 ring-1 ring-black/5">
+            <div className="p-2 bg-orange-50 rounded-xl">
+              <AlertCircle size={22} className="text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-black text-gray-900">Action Required</h4>
+              <p className="text-xs font-bold text-gray-500 mt-0.5">{errorMessage}</p>
+            </div>
+            <button onClick={() => setErrorMessage(null)} className="p-1 hover:bg-gray-100 rounded-lg transition">
+              <X size={18} className="text-gray-400" />
+            </button>
           </div>
         </div>
       )}
 
-      {/* 🚀 NEW: Custom Delete Confirmation Modal */}
       {taskToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle size={32} />
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3">
+                <Trash2 size={40} strokeWidth={2.5} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Task?</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">Are you sure you want to permanently delete this task? If someone is assigned to it, they will be notified.</p>
+              <h3 className="text-2xl font-black text-gray-900 mb-2">Delete Task?</h3>
+              <p className="text-gray-500 font-medium leading-relaxed">This action cannot be undone. The assigned team member will be notified of this removal.</p>
             </div>
-            <div className="p-4 border-t border-gray-100 flex items-center gap-3 bg-gray-50">
-              <button onClick={() => setTaskToDelete(null)} className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-100 transition">Cancel</button>
-              <button onClick={confirmDeleteTask} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-red-700 shadow-sm transition">Yes, Delete</button>
+            <div className="p-6 pt-0 flex flex-col gap-3">
+              <button onClick={confirmDeleteTask} className="w-full bg-rose-600 text-white py-4 rounded-2xl text-sm font-black hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all active:scale-95">
+                Delete Permanently
+              </button>
+              <button onClick={() => setTaskToDelete(null)} className="w-full bg-gray-50 text-gray-600 py-4 rounded-2xl text-sm font-black hover:bg-gray-100 transition-all active:scale-95">
+                Keep Task
+              </button>
             </div>
           </div>
         </div>
@@ -153,7 +178,7 @@ export default function TaskListBoard() {
           <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">Task Board</h2>
           <p className="text-gray-500 text-sm mt-1 font-medium">Coordinate your team's execution roadmap</p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="bg-white border border-gray-200 p-1.5 rounded-xl flex items-center gap-2 shadow-sm transition-all focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
             <div className="bg-indigo-50 p-1.5 rounded-lg text-indigo-600"><CalendarDays size={18} /></div>
@@ -196,21 +221,25 @@ export default function TaskListBoard() {
                     const isDone = task.status === 'Done';
                     return (
                       <div key={task.id} className={`grid grid-cols-1 md:grid-cols-[auto_1fr_220px_160px_50px] gap-6 px-6 py-4 items-center transition-all duration-200 hover:bg-gray-50/80 group ${isDone ? 'opacity-60 bg-gray-50/50' : ''}`}>
-                        
+
                         <button onClick={() => handleUpdateTask(task.id, { status: isDone ? 'To Do' : 'Done' })} className="hidden md:flex items-center justify-center w-8 text-gray-300 hover:text-indigo-600 transition-colors">
                           {isDone ? <CheckCircle2 className="text-green-500 drop-shadow-sm" size={24} /> : <Circle size={24} />}
                         </button>
 
                         <div>
-                          <input 
-                            type="text" defaultValue={task.title} onBlur={(e) => handleUpdateTask(task.id, { title: e.target.value })} placeholder="What needs to be done?"
-                            className={`w-full font-semibold text-sm bg-transparent outline-none focus:border-b-2 focus:border-indigo-500 pb-1 transition-all ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}
+                          <input
+                            type="text"
+                            defaultValue={task.title}
+                            onBlur={(e) => handleUpdateTask(task.id, { title: e.target.value })}
+                            placeholder="Enter task name..."
+                            className={`w-full font-bold text-sm bg-transparent outline-none border-b-2 border-transparent focus:border-indigo-500 focus:bg-indigo-50/30 px-2 py-1 rounded-t-lg transition-all ${isDone ? 'line-through text-gray-400' : 'text-gray-800'
+                              }`}
                           />
                         </div>
 
                         <div className="relative">
                           <UserCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                          <select 
+                          <select
                             value={task.assigneeId || ""} onChange={(e) => handleUpdateTask(task.id, { assigneeId: e.target.value || null })}
                             className={`w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm outline-none font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow appearance-none cursor-pointer ${task.assigneeId ? 'bg-indigo-50/50 text-indigo-800 border-indigo-100' : 'bg-white text-gray-500'}`}
                           >
@@ -220,7 +249,7 @@ export default function TaskListBoard() {
                         </div>
 
                         <div>
-                          <select 
+                          <select
                             value={task.status} onChange={(e) => handleUpdateTask(task.id, { status: e.target.value as Task['status'] })}
                             className={`w-full border rounded-xl px-3 py-2 text-sm outline-none font-bold text-center transition-all appearance-none cursor-pointer shadow-sm
                               ${isDone ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100' : task.status === 'In Progress' ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}`}

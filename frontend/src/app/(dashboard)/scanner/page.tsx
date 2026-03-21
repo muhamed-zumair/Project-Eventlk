@@ -19,10 +19,12 @@ export default function EventScannerPage() {
 
     // What happens when the camera sees a QR code
     const onScanSuccess = async (decodedText: string) => {
-      if (isProcessing) return; // Prevent double-scanning
+      // 🚀 1. If we are already checking a ticket, ignore any other QR codes it sees!
+      if (isProcessing) return; 
       
       setIsProcessing(true);
-      scanner.pause(true); // Freeze the camera frame to show processing
+      
+      // (Removed scanner.pause() here to prevent the UI from collapsing)
 
       try {
         const response = await fetchAPI('/registrations/checkin', {
@@ -39,11 +41,10 @@ export default function EventScannerPage() {
         setScanResult({ success: false, message: error.message || "Network error. Try again." });
       }
 
-      // Display the result for 2.5 seconds before resetting
+      // 🚀 2. Display the result for 2.5 seconds before resetting so they can scan the next person
       setTimeout(() => {
         setScanResult(null);
         setIsProcessing(false);
-        scanner.resume();
       }, 2500);
     };
 
@@ -74,10 +75,10 @@ export default function EventScannerPage() {
         
         <div className="bg-white p-2 rounded-[2rem] shadow-xl relative overflow-hidden ring-1 ring-gray-900/5">
           
-          {/* HTML5 QR Code Container with custom CSS targeting */}
+          {/* 🚀 FIXED: Added min-h-[300px] and flex utilities to prevent collapsing */}
           <div 
             id="reader" 
-            className="w-full rounded-3xl overflow-hidden [&_video]:object-cover [&_video]:rounded-3xl border-none [&_a]:text-indigo-600 [&_a]:font-bold [&_a]:no-underline hover:[&_a]:underline [&_button]:bg-indigo-50 [&_button]:text-indigo-700 [&_button]:px-5 [&_button]:py-2.5 [&_button]:rounded-xl [&_button]:font-bold [&_button]:mt-3 [&_button]:mb-5 [&_button]:transition-colors hover:[&_button]:bg-indigo-100 [&_span]:text-gray-900 [&_span]:font-bold"
+            className="w-full min-h-[300px] flex flex-col items-center justify-center rounded-3xl overflow-hidden [&_video]:object-cover [&_video]:rounded-3xl border-none [&_a]:text-indigo-600 [&_a]:font-bold [&_a]:no-underline hover:[&_a]:underline [&_button]:bg-indigo-50 [&_button]:text-indigo-700 [&_button]:px-5 [&_button]:py-2.5 [&_button]:rounded-xl [&_button]:font-bold [&_button]:mt-3 [&_button]:mb-5 [&_button]:transition-colors hover:[&_button]:bg-indigo-100 [&_span]:text-gray-900 [&_span]:font-bold"
           ></div>
 
           {/* SaaS Viewfinder Overlay (Only visible when scanning) */}
@@ -107,7 +108,7 @@ export default function EventScannerPage() {
 
           {/* Premium Success/Error Floating Toast */}
           {scanResult && (
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-30 rounded-[1.75rem] animate-in fade-in duration-200">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-30 rounded-[1.75rem] animate-in fade-in duration-200">
               <div className={`m-6 p-6 w-full max-w-sm rounded-3xl shadow-2xl border flex flex-col items-center text-center animate-in zoom-in-95 duration-300 ${
                 scanResult.success 
                   ? 'bg-emerald-500 border-emerald-400 text-white' 

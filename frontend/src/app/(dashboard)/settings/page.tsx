@@ -107,8 +107,20 @@ export default function SettingsPage() {
     }
   };
 
-  if (isLoading) return <div className="p-10 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={32} /></div>;
-
+  if (isLoading) return (
+  <div className="max-w-6xl mx-auto p-10 space-y-8 animate-pulse">
+    <div className="space-y-2">
+      <div className="h-8 w-48 bg-gray-200 rounded-lg"></div>
+      <div className="h-4 w-64 bg-gray-100 rounded-lg"></div>
+    </div>
+    <div className="flex flex-col lg:flex-row gap-8">
+      <div className="w-64 space-y-3">
+        {[1, 2, 3].map(i => <div key={i} className="h-12 w-full bg-gray-100 rounded-xl"></div>)}
+      </div>
+      <div className="flex-1 h-96 bg-gray-50 rounded-2xl border border-gray-100"></div>
+    </div>
+  </div>
+);
   return (
     <div className="space-y-6 max-w-6xl mx-auto h-full flex flex-col relative">
       <div>
@@ -120,7 +132,15 @@ export default function SettingsPage() {
         {/* Sidebar */}
         <div className="w-full lg:w-64 space-y-1 shrink-0">
           {[{ id: "profile", label: "Profile", icon: User }, { id: "notifications", label: "Notifications", icon: Bell }, { id: "security", label: "Security", icon: Lock }].map((item) => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? "bg-indigo-50 text-indigo-700 border border-indigo-100" : "text-gray-600 hover:bg-gray-50"}`}>
+            <button 
+  key={item.id} 
+  onClick={() => setActiveTab(item.id)} 
+  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 active:scale-95 ${
+    activeTab === item.id 
+      ? "bg-white text-indigo-600 shadow-sm border border-indigo-100 ring-4 ring-indigo-50/50" 
+      : "text-gray-500 hover:bg-white hover:text-gray-700 hover:shadow-sm"
+  }`}
+>
               <item.icon size={18} /> {item.label}
             </button>
           ))}
@@ -158,9 +178,20 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="pt-4 border-t border-gray-100">
-                  <button type="submit" disabled={isSaving} className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-2">
-                    {isSaving && <Loader2 size={16} className="animate-spin" />} Save Changes
-                  </button>
+                  <button 
+  type="submit" 
+  disabled={isSaving} 
+  className="relative bg-indigo-600 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-indigo-200 disabled:opacity-70 flex items-center gap-2 overflow-hidden"
+>
+  {isSaving ? (
+    <>
+      <Loader2 size={18} className="animate-spin" />
+      <span>Updating...</span>
+    </>
+  ) : (
+    <span>Save Changes</span>
+  )}
+</button>
                 </div>
               </form>
             </div>
@@ -190,9 +221,20 @@ export default function SettingsPage() {
               </div>
 
               <div className="pt-6 border-t border-gray-100">
-                <button onClick={handleSaveNotifications} disabled={isSaving} className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-2">
-                  {isSaving && <Loader2 size={16} className="animate-spin" />} Save Preferences
-                </button>
+                <button 
+  onClick={handleSaveNotifications} 
+  disabled={isSaving} 
+  className="relative bg-indigo-600 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-indigo-200 disabled:opacity-70 flex items-center gap-2 overflow-hidden"
+>
+  {isSaving ? (
+    <>
+      <Loader2 size={18} className="animate-spin" />
+      <span>Updating...</span>
+    </>
+  ) : (
+    <span>Save Preferences</span>
+  )}
+</button>
               </div>
             </div>
           )}
@@ -236,9 +278,20 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="pt-4 border-t border-gray-100">
-                  <button type="submit" disabled={isSaving} className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-2">
-                    {isSaving && <Loader2 size={16} className="animate-spin" />} Update Password
-                  </button>
+                  <button 
+  type="submit" 
+  disabled={isSaving} 
+  className="relative bg-indigo-600 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-indigo-200 disabled:opacity-70 flex items-center gap-2 overflow-hidden"
+>
+  {isSaving ? (
+    <>
+      <Loader2 size={18} className="animate-spin" />
+      <span>Updating...</span>
+    </>
+  ) : (
+    <span>Update Password</span>
+  )}
+</button>
                 </div>
               </form>
             </div>
@@ -248,19 +301,34 @@ export default function SettingsPage() {
 
       {/* TOAST NOTIFICATION */}
       {toast && (
-        <div className={`fixed bottom-10 right-10 z-[100] bg-white border shadow-2xl rounded-xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom-5 duration-300 ${toast.type === 'success' ? 'border-green-100' : 'border-red-100'}`}>
-          <div className={`p-2.5 rounded-full border shadow-sm ${toast.type === 'success' ? 'bg-green-50 text-green-500 border-green-100' : 'bg-red-50 text-red-500 border-red-100'}`}>
+        <div className={`fixed bottom-10 right-10 z-[100] bg-white border shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-right-10 duration-500 border-l-4 ${
+          toast.type === 'success' ? 'border-l-emerald-500' : 'border-l-rose-500'
+        }`}>
+          <div className={`p-2 rounded-xl ${toast.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
             {toast.type === 'success' ? <CheckCircle size={20} /> : <Info size={20} />}
           </div>
-          <div className="pr-4">
-            <h4 className="text-sm font-bold text-gray-900">{toast.type === 'success' ? 'Success' : 'Error'}</h4>
+          <div className="pr-8">
+            <h4 className="text-sm font-black text-gray-900">{toast.type === 'success' ? 'Settings Saved' : 'Update Failed'}</h4>
             <p className="text-xs font-medium text-gray-500 mt-0.5">{toast.message}</p>
           </div>
-          <button onClick={() => setToast(null)} className={`p-1.5 rounded-lg transition ${toast.type === 'success' ? 'text-green-400 hover:bg-green-50' : 'text-red-400 hover:bg-red-50'}`}>
-            <X size={16} />
+          <button onClick={() => setToast(null)} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600">
+            <X size={14} />
           </button>
+          
+          {/* Progress Bar Timer Animation */}
+          <div className={`absolute bottom-0 left-0 h-1 transition-all duration-[4000ms] ease-linear ${
+            toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
+          }`} style={{ width: '100%', animation: 'progress 4s linear forwards' }}></div>
         </div>
       )}
+
+      {/* Adding the custom keyframe for the progress bar */}
+      <style jsx>{`
+        @keyframes progress {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+      `}</style>
     </div>
   );
 }
