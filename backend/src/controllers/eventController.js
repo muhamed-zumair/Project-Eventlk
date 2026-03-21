@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { sendExistingUserInviteEmail, sendNewUserInviteEmail } = require('../utils/emailService');
-const { uploadFileToS3, getPresignedDownloadUrl } = require('../../utils/s3Service');
+const { uploadFileToS3, getPresignedDownloadUrl, deleteFileFromS3 } = require('../../utils/s3Service');
 
 // 1. Upload a Document
 const uploadEventDocument = async (req, res) => {
@@ -45,6 +45,27 @@ const downloadEventDocument = async (req, res) => {
     } catch (error) {
         console.error('Download Error:', error);
         res.status(500).json({ success: false, message: 'Failed to generate download link' });
+    }
+};
+
+const deleteEventDocument = async (req, res) => {
+    try {
+        const { docId } = req.params;
+        
+        // 1. Find the AWS Key in the database
+        const docRes = await pool.query('SELECT aws_key FROM "Event_Documents" WHERE id = $1', [docId]);
+        if (docRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Document not found' });
+
+        // 2. Delete it from the AWS S3 Cloud
+        await deleteFileFromS3(docRes.rows[0].aws_key);
+
+        // 3. Delete the record from PostgreSQL
+        await pool.query('DELETE FROM "Event_Documents" WHERE id = $1', [docId]);
+
+        res.status(200).json({ success: true, message: 'Document deleted successfully' });
+    } catch (error) {
+        console.error('Delete Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete document' });
     }
 };
 
@@ -531,8 +552,14 @@ const changeMemberRole = async (req, res) => {
 };
 
 module.exports = {
+    // Original functions
     createEvent, getEvents, updateEvent, getEventById, getPastEvents, getPostEventReport, 
     deleteEvent, inviteTeamMember, getUserInvitations, respondToInvitation, 
-    dismissNotification, changeMemberRole, removeTeamMember
+    dismissNotification, changeMemberRole, removeTeamMember,
+    
+    // 🚀 NEW: The AWS S3 Document Functions
+    uploadEventDocument,
+    downloadEventDocument,
+    deleteEventDocument
 };
 

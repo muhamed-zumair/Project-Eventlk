@@ -1,4 +1,4 @@
-const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const crypto = require('crypto');
 
@@ -36,4 +36,13 @@ const getPresignedDownloadUrl = async (awsKey) => {
     return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 };
 
-module.exports = { s3Client, uploadFileToS3, getPresignedDownloadUrl };
+const deleteFileFromS3 = async (awsKey) => {
+    const params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: awsKey,
+    };
+    await s3Client.send(new DeleteObjectCommand(params));
+};
+
+// 3. Update the export at the bottom
+module.exports = { s3Client, uploadFileToS3, getPresignedDownloadUrl, deleteFileFromS3 };
