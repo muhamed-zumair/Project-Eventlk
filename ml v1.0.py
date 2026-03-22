@@ -148,7 +148,6 @@ else:
         st.info(f"**LKR {budget:,.2f}**")
 
     # --- Display Budget Breakdown ---
-    # --- NEW IN COMMIT 37: Loop Setup ---
     st.markdown("---")
     st.subheader("📊 Suggested Budget Allocation")
 
@@ -157,6 +156,19 @@ else:
     labels = []
     values = []
 
+    # --- NEW IN COMMIT 38: Processing Logic ---
     for i, val in enumerate(alloc_pred):
-        # Clean the column name from 'alloc_venue' to 'Venue'
         name = alloc_cols[i].replace('alloc_', '').title()
+        
+        # Calculate Amount
+        if val < 100: # It's a percentage
+            amount = (val/100) * budget
+            pct = val
+        else: # It's a raw value (fallback)
+            amount = val
+            pct = (val / budget) * 100
+
+        if amount > 0:
+            alloc_data.append({"Category": name, "Amount (LKR)": f"{amount:,.2f}", "Percentage": f"{pct:.1f}%"})
+            labels.append(name)
+            values.append(amount)
