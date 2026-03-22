@@ -25,7 +25,7 @@ const sendWelcomeEmail = async (userEmail, firstName) => {
             <li>Explore AI-powered venue suggestions</li>
           </ul>
         </div>
-        <a href="http://localhost:3000/dashboard" style="display: inline-block; background-color: #4f46e5; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Go to Dashboard</a>
+        <a href="${process.env.FRONTEND_URL}/dashboard" style="display: inline-block; background-color: #4f46e5; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Go to Dashboard</a>
         <p style="margin-top: 25px; font-size: 12px; color: #9ca3af;">If you didn't sign up for EventLK, please ignore this email.</p>
       </div>
     `,
@@ -63,7 +63,7 @@ const sendExistingUserInviteEmail = async (userEmail, eventTitle, role, inviterN
           Your dashboard has been updated with your new permissions. Jump in to see your tasks, collaborate with the team, and start planning.
         </p>
         <div style="text-align: center;">
-          <a href="http://localhost:3000/dashboard" style="display: inline-block; background-color: #4f46e5; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">Open Your Dashboard</a>
+          <a href="${process.env.FRONTEND_URL}/dashboard" style="display: inline-block; background-color: #4f46e5; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">Open Your Dashboard</a>
         </div>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 40px 0 20px;" />
         <p style="text-align: center; font-size: 13px; color: #9ca3af; margin: 0;">
@@ -105,7 +105,7 @@ const sendNewUserInviteEmail = async (userEmail, eventTitle, role, inviterName =
           To accept this invitation and access your collaborative dashboard, please create a free EventLK account using this email address.
         </p>
         <div style="text-align: center;">
-          <a href="http://localhost:3000/signup?email=${encodeURIComponent(userEmail)}" style="display: inline-block; background-color: #111827; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(17, 24, 39, 0.2);">Create Account to Accept</a>
+          <a href="${process.env.FRONTEND_URL}/signup?email=${encodeURIComponent(userEmail)}" style="display: inline-block; background-color: #111827; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(17, 24, 39, 0.2);">Create Account to Accept</a>
         </div>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 40px 0 20px;" />
         <p style="text-align: center; font-size: 13px; color: #9ca3af; margin: 0;">
@@ -134,7 +134,7 @@ const sendDeclineNotificationEmail = async (organizerEmail, organizerName, event
         <p>Hi ${organizerName},</p>
         <p>We wanted to let you know that <strong>${declinedEmail}</strong> has declined your invitation to join the organizing team for <strong>${eventTitle}</strong>.</p>
         <p>You can head back to your Team Dashboard to invite someone else to fill their role.</p>
-        <a href="http://localhost:3000/team" style="display: inline-block; background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">Go to Team Dashboard</a>
+        <a href="${process.env.FRONTEND_URL}/team" style="display: inline-block; background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">Go to Team Dashboard</a>
       </div>
     `,
   };
