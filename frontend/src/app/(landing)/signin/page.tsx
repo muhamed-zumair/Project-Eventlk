@@ -6,33 +6,32 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation'; // 🚀 Catch the URL params// For redirecting after success
 
-export default function SignInPage() {
+import { Suspense } from 'react'; // 👈 Add this import at the top with your other imports
+
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const inviteEmail = searchParams.get('email') || ''; // 🚀 Get email from URL
+  const inviteEmail = searchParams.get('email') || ''; 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 1. STATE FOR FORM DATA
   const [formData, setFormData] = useState({
-    email: inviteEmail, // 🚀 Pre-fill email if available
+    email: inviteEmail, 
     password: ''
   });
 
-  // 2. HANDLE INPUT CHANGES
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 3. HANDLE FORM SUBMISSION
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/login`, {// Make sure this matches your backend route
+       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -41,14 +40,10 @@ export default function SignInPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // 1. Store the token and user data in LocalStorage
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user)); // MUST be stringified!
-
-        // 2. Redirect straight to the dashboard!
+        localStorage.setItem('user', JSON.stringify(data.user)); 
         router.push('/dashboard');
       } else {
-        // Handle specific errors returned by the backend (like "Invalid password")
         setError(data.message || "Invalid credentials. Please try again.");
       }
     } catch (err) {
@@ -58,22 +53,18 @@ export default function SignInPage() {
     }
   };
 
-
   return (
     <div className="min-h-screen pt-32 pb-12 flex flex-col items-center justify-center p-6 relative overflow-hidden bg-[#030303]">
-      {/* 🚀 Dynamic Glow Backgrounds */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
-      
-      {/* 🚀 Grid Overlay (Optional, for that tech look) */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] pointer-events-none opacity-20" />
       <div className="absolute right-0 top-0 w-[500px] h-[500px] bg-blue-900/20 blur-[150px] pointer-events-none" />
 
       <div className="max-w-md w-full z-10 text-center">
         <div className="mb-8">
           <h2 className="text-purple-500 font-bold text-xl mb-2">EventLK</h2>
-          <h1 className="text-4xl font-bold mb-2 text-white">Welcome Back!</h1> {/* 🚀 Added text-white */}
-          <p className="text-gray-300 text-sm max-w-sm mx-auto"> {/* 🚀 Lightened to gray-300 for better contrast */}
+          <h1 className="text-4xl font-bold mb-2 text-white">Welcome Back!</h1>
+          <p className="text-gray-300 text-sm max-w-sm mx-auto">
             Sign in to continue managing your events and creating unforgettable experiences.
           </p>
         </div>
@@ -84,7 +75,6 @@ export default function SignInPage() {
             Don't have an account? <Link href="/signup" className="text-purple-400 hover:underline">Create one</Link>
           </p>
 
-          {/* Error Message Display */}
           {error && <p className="text-red-500 text-xs mb-4 bg-red-500/10 p-2 rounded">{error}</p>}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
@@ -149,5 +139,14 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 🚀 THIS IS THE WRAPPER THAT FIXES THE VERCEL ERROR
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#030303] flex items-center justify-center text-white">Loading...</div>}>
+      <SignInForm />
+    </Suspense>
   );
 }
