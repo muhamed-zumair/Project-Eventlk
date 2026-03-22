@@ -1,221 +1,336 @@
 "use client";
 
-import React, { useState } from "react";
-import { Plus, CheckCircle2, Circle, Search, Trash2, CalendarDays } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { fetchAPI } from "../../../utils/api";
+import { Plus, CheckCircle2, Circle, Search, Trash2, CalendarDays, ListTodo, Users,UserCircle2, AlertCircle, AlertTriangle, X } from "lucide-react";
+import { useEventContext } from "../../../context/EventContext";
 
+interface TeamMember { id: string; name: string; }
 interface Task {
-  id: string;
-  eventId: string; // NEW: Ties the task to a specific event
-  title: string;
-  priority: 'High' | 'Medium' | 'Low';
-  status: 'Not Started' | 'In Progress' | 'Done';
-  assignee: string; 
+  id: string; eventId: string; title: string;
+  priority: 'High' | 'Medium' | 'Low'; status: 'To Do' | 'In Progress' | 'Done';
+  assigneeId: string | null; assigneeName: string | null;
 }
 
-// Mock Events for the dropdown
-const myEvents = [
-  { id: 'evt_1', name: "Annual Tech Summit 2026" },
-  { id: 'evt_2', name: "Spring Conference" },
-];
-
-const teamMembers = [
-  "Unassigned",
-  "Sarah Mitchell",
-  "David Kim",
-  "Emily Chen",
-  "Alex Johnson",
-  "Michael Brown",
-];
-
-// Notice how each task now has an eventId attached to it!
-const initialTasks: Task[] = [
-  { id: '1', eventId: 'evt_1', title: 'Book catering service', priority: 'High', status: 'In Progress', assignee: 'Emily Chen' },
-  { id: '2', eventId: 'evt_1', title: 'Contact vendor for stage setup', priority: 'High', status: 'Not Started', assignee: 'Michael Brown' },
-  { id: '3', eventId: 'evt_1', title: 'Design event banner', priority: 'Medium', status: 'In Progress', assignee: 'Alex Johnson' },
-  // These tasks belong to the Spring Conference
-  { id: '4', eventId: 'evt_2', title: 'Draft guest speaker invite list', priority: 'High', status: 'Not Started', assignee: 'Sarah Mitchell' },
-  { id: '5', eventId: 'evt_2', title: 'Review hotel block contracts', priority: 'Medium', status: 'Done', assignee: 'David Kim' },
-];
-
 export default function TaskListBoard() {
-  // NEW: State to track which event we are currently looking at
-  const [selectedEventId, setSelectedEventId] = useState<string>(myEvents[0].id);
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const { myRole, selectedEventId, setSelectedEventId } = useEventContext(); 
+  
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-  // Filter tasks to ONLY show the ones for the currently selected event
-  const currentEventTasks = tasks.filter(task => task.eventId === selectedEventId);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleStatusChange = (taskId: string, newStatus: Task['status']) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-  };
+  // Managers can Edit Titles, Assignees, Add, and Delete
+  const canManageTasks = myRole === 'President' || myRole === 'Secretary' || myRole === 'Treasurer' || myRole === 'Team_Lead';
 
-  const handleAssigneeChange = (taskId: string, newAssignee: string) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, assignee: newAssignee } : t));
-  };
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
-  const handleTitleChange = (taskId: string, newTitle: string) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, title: newTitle } : t));
-  };
-
-  // NEW: When adding a task, it automatically attaches to the currently selected event!
-  const handleAddTask = (priority: Task['priority']) => {
-    const newTask: Task = {
-      id: Date.now().toString(), 
-      eventId: selectedEventId, // Automatically locks to the active event
-      title: '', 
-      priority: priority,
-      status: 'Not Started',
-      assignee: 'Unassigned'
+  useEffect(() => {
+    const initializeData = async () => {
+      if (selectedEventId) {
+        fetchTasksAndTeam(selectedEventId);
+      } else {
+        // Fallback for initial load if Topbar hasn't set the ID yet
+        try {
+          const response = await fetchAPI('/events', { method: 'GET' });
+          if (response.success && response.events.length > 0) {
+            setSelectedEventId(response.events[0].id);
+          } else {
+            setIsLoading(false);
+          }
+        } catch (e) { setIsLoading(false); }
+      }
     };
-    setTasks([...tasks, newTask]);
+    initializeData();
+
+    const handleAutoRefresh = () => {
+      if (selectedEventId) fetchTasksAndTeam(selectedEventId);
+    };
+    window.addEventListener('taskBoardRefresh', handleAutoRefresh);
+    return () => window.removeEventListener('taskBoardRefresh', handleAutoRefresh);
+
+  }, [selectedEventId]);
+  const fetchTasksAndTeam = async (eventId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetchAPI(`/tasks/event/${eventId}`, { method: 'GET' });
+      if (response.success) { setTasks(response.tasks); setTeamMembers(response.teamMembers); }
+    } catch (error) { }
+    finally { setIsLoading(false); }
   };
 
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter(t => t.id !== taskId));
+  const handleAddTask = async (priority: Task['priority']) => {
+    // 🚀 TS Fix: Ensure selectedEventId is not null before creating a task
+    if (!selectedEventId) return; 
+    
+    try {
+      const res = await fetchAPI(`/tasks/event/${selectedEventId}`, { method: 'POST', body: JSON.stringify({ title: "", priority, status: "To Do" }) });
+      if (res.success) setTasks([...tasks, { id: res.taskId, eventId: selectedEventId, title: "", priority, status: "To Do", assigneeId: null, assigneeName: null }]);
+    } catch (error) { }
   };
+
+  const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
+    // 🚀 STRICT PERMISSION CHECK: Prevent API calls and show error
+    if (!canManageTasks && Object.keys(updates).some(key => key !== 'status')) {
+      setErrorMessage("Access Denied: Volunteers are only permitted to update task statuses.");
+      setTimeout(() => setErrorMessage(null), 4000);
+      return;
+    }
+
+    const task = tasks.find(t => t.id === taskId);
+
+    if (updates.assigneeId !== undefined && updates.assigneeId !== null && updates.assigneeId !== "") {
+      if (!task?.title || task.title.trim() === '') {
+        setErrorMessage("Please type a task name before assigning it to a team member.");
+        setTimeout(() => setErrorMessage(null), 4000);
+        return; 
+      }
+    }
+
+    setTasks(tasks.map(t => t.id === taskId ? { ...t, ...updates } : t));
+    try {
+      await fetchAPI(`/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(updates) });
+    } catch (error) {
+      // 🚀 TS Fix: Ensure selectedEventId is not null before refetching
+      if (selectedEventId) {
+        fetchTasksAndTeam(selectedEventId);
+      }
+    }
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!taskToDelete) return;
+    try {
+      const res = await fetchAPI(`/tasks/${taskToDelete}`, { method: 'DELETE' });
+      if (res.success) setTasks(tasks.filter(t => t.id !== taskToDelete));
+    } catch (error) { }
+    setTaskToDelete(null);
+  };
+
+  const filteredTasks = tasks.filter(task =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (task.assigneeName && task.assigneeName.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const priorities: ('High' | 'Medium' | 'Low')[] = ['High', 'Medium', 'Low'];
 
-  return (
-    <div className="h-full flex flex-col max-w-5xl mx-auto">
-      
-      {/* Header with Event Selector */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Task List</h2>
-          <p className="text-gray-500 text-sm mt-1">Manage and track tasks for specific events</p>
+  // 🚀 Fixed: Removed eventsList check and added selectedEventId safety
+  if (isLoading && !selectedEventId) return (
+    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-pulse">
+      <div className="flex justify-between items-end">
+        <div className="space-y-3">
+          <div className="h-8 w-48 bg-gray-200 rounded-lg"></div>
+          <div className="h-4 w-64 bg-gray-100 rounded-lg"></div>
+        </div>
+        <div className="flex gap-4">
+          <div className="h-12 w-40 bg-gray-100 rounded-xl"></div>
+          <div className="h-12 w-64 bg-gray-100 rounded-xl"></div>
+        </div>
+      </div>
+      {[1, 2].map(i => (
+        <div key={i} className="h-64 w-full bg-gray-50 rounded-3xl border border-gray-100"></div>
+      ))}
+    </div>
+  );
+  
+  // 🚀 WELCOMING EMPTY STATE: For users with no events yet
+  if (!isLoading && !selectedEventId) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-amber-50 text-amber-600 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner rotate-3 ring-8 ring-amber-50/50">
+          <ListTodo size={48} strokeWidth={1.5} />
         </div>
         
-        <div className="flex items-center gap-4">
-          {/* NEW: The Event Selector Dropdown */}
-          <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
-            <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm">
-              <CalendarDays size={18} />
-            </div>
-            <select 
-              value={selectedEventId}
-              onChange={(e) => setSelectedEventId(e.target.value)}
-              className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer"
-            >
-              {myEvents.map(evt => (
-                <option key={evt.id} value={evt.id}>{evt.name}</option>
-              ))}
-            </select>
-          </div>
+        <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Precision Task Execution</h2>
+        <p className="text-gray-500 text-lg font-medium max-w-2xl leading-relaxed mb-10">
+          Turn your event vision into a concrete roadmap. Once you launch an event, you can break down your plan into prioritized tasks, assign them to team members, and track real-time progress from "To Do" to "Done."
+        </p>
 
-          <div className="relative w-48 hidden md:block">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+          {[
+            { icon: AlertTriangle, title: "Priority Engine", desc: "Filter by High, Medium, or Low impact." },
+            { icon: Users, title: "Team Delegation", desc: "Assign owners and track individual accountability." },
+            { icon: CheckCircle2, title: "Live Progress", desc: "Watch status updates happen in real-time." }
+          ].map((feature, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center group hover:border-amber-200 transition-colors">
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl mb-3 group-hover:scale-110 transition-transform"><feature.icon size={24} /></div>
+              <h4 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h4>
+              <p className="text-xs text-gray-500 font-medium">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <button 
+          onClick={() => window.dispatchEvent(new Event('openCreateModal'))}
+          className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3"
+        >
+          <Plus size={20} strokeWidth={3} /> Build Your Roadmap
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col max-w-6xl mx-auto pb-10 relative">
+
+      {errorMessage && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[110] w-[90%] max-w-md animate-in slide-in-from-top-8 fade-in duration-300">
+          <div className="bg-white border-l-4 border-l-orange-500 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-4 rounded-2xl flex items-center gap-4 ring-1 ring-black/5">
+            <div className="p-2 bg-orange-50 rounded-xl">
+              <AlertCircle size={22} className="text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-black text-gray-900">Action Required</h4>
+              <p className="text-xs font-bold text-gray-500 mt-0.5">{errorMessage}</p>
+            </div>
+            <button onClick={() => setErrorMessage(null)} className="p-1 hover:bg-gray-100 rounded-lg transition">
+              <X size={18} className="text-gray-400" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {taskToDelete && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3">
+                <Trash2 size={40} strokeWidth={2.5} />
+              </div>
+              <h3 className="text-2xl font-black text-gray-900 mb-2">Delete Task?</h3>
+              <p className="text-gray-500 font-medium leading-relaxed">This action cannot be undone. The assigned team member will be notified of this removal.</p>
+            </div>
+            <div className="p-6 pt-0 flex flex-col gap-3">
+              <button onClick={confirmDeleteTask} className="w-full bg-rose-600 text-white py-4 rounded-2xl text-sm font-black hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all active:scale-95">
+                Delete Permanently
+              </button>
+              <button onClick={() => setTaskToDelete(null)} className="w-full bg-gray-50 text-gray-600 py-4 rounded-2xl text-sm font-black hover:bg-gray-100 transition-all active:scale-95">
+                Keep Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 mt-2">
+        <div>
+          <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">Task Board</h2>
+          <p className="text-gray-500 text-sm mt-1 font-medium">Coordinate your team's execution roadmap</p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {/* Local selector removed. Global switching happens in the Topbar! */}
+          
+          <div className="relative w-64 hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
-            />
+            <input type="text" placeholder="Search tasks or assignees..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm transition-all" />
           </div>
         </div>
       </div>
 
-      {/* Task List Container */}
-      <div className="flex-1 overflow-y-auto space-y-8 pb-10">
-        {priorities.map((priority) => {
-          // Filter again by priority using our ALREADY filtered event list
-          const priorityTasks = currentEventTasks.filter(t => t.priority === priority);
-          
-          const headerColors = {
-            High: 'bg-red-50 text-red-700 border-red-100',
-            Medium: 'bg-orange-50 text-orange-700 border-orange-100',
-            Low: 'bg-blue-50 text-blue-700 border-blue-100'
-          }[priority];
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20 text-indigo-600 font-medium animate-pulse">Fetching event tasks...</div>
+      ) : (
+        <div className="flex-1 overflow-y-auto space-y-6">
+          {priorities.map((priority) => {
+            const priorityTasks = filteredTasks.filter(t => t.priority === priority);
+            const headerTheme = { High: 'bg-red-50/80 text-red-700 border-red-100', Medium: 'bg-amber-50/80 text-amber-700 border-amber-100', Low: 'bg-blue-50/80 text-blue-700 border-blue-100' }[priority];
 
-          return (
-            <div key={priority} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              
-              <div className={`px-4 py-3 border-b flex justify-between items-center ${headerColors}`}>
-                <h3 className="font-semibold text-sm uppercase tracking-wider">{priority} Priority</h3>
-                <span className="text-xs font-bold bg-white px-2 py-1 rounded-full opacity-80">
-                  {priorityTasks.length} Tasks
-                </span>
-              </div>
+            return (
+              <div key={priority} className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className={`px-5 py-3.5 border-b flex justify-between items-center ${headerTheme}`}>
+                  <h3 className="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${priority === 'High' ? 'bg-red-500' : priority === 'Medium' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+                    {priority} Priority
+                  </h3>
+                  <span className="text-xs font-bold bg-white/60 px-2.5 py-1 rounded-full shadow-sm">{priorityTasks.length} Tasks</span>
+                </div>
 
-              <div className="hidden md:grid grid-cols-[auto_1fr_200px_160px_40px] gap-4 px-4 py-2 bg-gray-50/50 border-b border-gray-100 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <div className="w-8">Done</div>
-                <div>Task Name</div>
-                <div>Assignee</div>
-                <div>Status</div>
-                <div></div>
-              </div>
+                <div className="hidden md:grid grid-cols-[auto_1fr_220px_160px_50px] gap-6 px-6 py-3 bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  <div className="w-8">Done</div><div>Task Name</div><div>Assignee</div><div>Status</div><div></div>
+                </div>
 
-              <div className="divide-y divide-gray-100">
-                {priorityTasks.map((task) => (
-                  <div key={task.id} className={`grid grid-cols-1 md:grid-cols-[auto_1fr_200px_160px_40px] gap-4 p-4 items-center transition hover:bg-gray-50 ${task.status === 'Done' ? 'opacity-60' : ''}`}>
-                    
-                    <button 
-                      onClick={() => handleStatusChange(task.id, task.status === 'Done' ? 'Not Started' : 'Done')}
-                      className="hidden md:flex items-center justify-center w-8 text-gray-400 hover:text-indigo-600 transition"
-                    >
-                      {task.status === 'Done' ? <CheckCircle2 className="text-green-500" size={22} /> : <Circle size={22} />}
-                    </button>
+                <div className="divide-y divide-gray-100">
+                  {priorityTasks.map((task) => {
+                    const isDone = task.status === 'Done';
+                    return (
+                      <div key={task.id} className={`grid grid-cols-1 md:grid-cols-[auto_1fr_220px_160px_50px] gap-6 px-6 py-4 items-center transition-all duration-200 hover:bg-gray-50/80 group ${isDone ? 'opacity-60 bg-gray-50/50' : ''}`}>
 
-                    <div>
-                      <input 
-                        type="text"
-                        value={task.title}
-                        onChange={(e) => handleTitleChange(task.id, e.target.value)}
-                        placeholder="Type task name here..."
-                        className={`w-full font-medium text-sm bg-transparent outline-none focus:border-b-2 focus:border-indigo-400 pb-1 ${task.status === 'Done' ? 'line-through text-gray-400' : 'text-gray-800'}`}
-                        autoFocus={task.title === ''} 
-                      />
+                        <button onClick={() => handleUpdateTask(task.id, { status: isDone ? 'To Do' : 'Done' })} className="hidden md:flex items-center justify-center w-8 text-gray-300 hover:text-indigo-600 transition-colors">
+                          {isDone ? <CheckCircle2 className="text-green-500 drop-shadow-sm" size={24} /> : <Circle size={24} />}
+                        </button>
+
+                        <div>
+                          <input
+                            type="text"
+                            defaultValue={task.title}
+                            onBlur={(e) => handleUpdateTask(task.id, { title: e.target.value })}
+                            onClick={() => {
+                              if (!canManageTasks) {
+                                setErrorMessage("Access Denied: Volunteers cannot edit task names.");
+                                setTimeout(() => setErrorMessage(null), 4000);
+                              }
+                            }}
+                            placeholder="Enter task name..."
+                            readOnly={!canManageTasks}
+                            className={`w-full font-bold text-sm bg-transparent outline-none border-b-2 border-transparent ${canManageTasks ? 'focus:border-indigo-500 focus:bg-indigo-50/30' : ''} px-2 py-1 rounded-t-lg transition-all ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}
+                          />
+                        </div>
+
+                        {/* 🚀 Wrapper catches clicks on the disabled select to show the error */}
+                        <div className="relative" onClickCapture={(e) => {
+                          if (!canManageTasks) {
+                            e.preventDefault();
+                            setErrorMessage("Access Denied: Volunteers cannot assign or reassign tasks.");
+                            setTimeout(() => setErrorMessage(null), 4000);
+                          }
+                        }}>
+                          <UserCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                          <select
+                            value={task.assigneeId || ""} onChange={(e) => handleUpdateTask(task.id, { assigneeId: e.target.value || null })}
+                            disabled={!canManageTasks}
+                            className={`w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm outline-none font-medium transition-shadow appearance-none ${canManageTasks ? 'focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer' : 'cursor-not-allowed opacity-70'} ${task.assigneeId ? 'bg-indigo-50/50 text-indigo-800 border-indigo-100' : 'bg-white text-gray-500'}`}
+                          >
+                            <option value="">Unassigned</option>
+                            {teamMembers.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}
+                          </select>
+                        </div>
+
+                        <div>
+                          {/* 🚀 PERMISSION FIX: The Status select is completely unlocked so Volunteers can mark things In Progress/Done */}
+                          <select
+                            value={task.status} onChange={(e) => handleUpdateTask(task.id, { status: e.target.value as Task['status'] })}
+                            className={`w-full border rounded-xl px-3 py-2 text-sm outline-none font-bold text-center transition-all appearance-none cursor-pointer shadow-sm
+                              ${isDone ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100' : task.status === 'In Progress' ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}`}
+                          >
+                            <option value="To Do">To Do</option><option value="In Progress">In Progress</option><option value="Done">Done</option>
+                          </select>
+                        </div>
+
+                        {canManageTasks && (
+                          <button onClick={() => setTaskToDelete(task.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all flex justify-center opacity-0 group-hover:opacity-100" title="Delete Task">
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {canManageTasks && (
+                    <div className="p-4 bg-gray-50/30">
+                      <button onClick={() => handleAddTask(priority)} className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition px-4 py-2 rounded-xl hover:bg-indigo-100 w-max">
+                        <Plus size={18} /> Add {priority.toLowerCase()} priority task
+                      </button>
                     </div>
-
-                    <div>
-                      <select 
-                        value={task.assignee}
-                        onChange={(e) => handleAssigneeChange(task.id, e.target.value)}
-                        className="w-full border border-gray-200 rounded-md p-1.5 text-sm outline-none focus:border-indigo-500 text-gray-700 bg-white"
-                      >
-                        {teamMembers.map(member => (
-                          <option key={member} value={member}>{member}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <select 
-                        value={task.status}
-                        onChange={(e) => handleStatusChange(task.id, e.target.value as Task['status'])}
-                        className={`w-full border rounded-md p-1.5 text-sm outline-none font-medium focus:border-indigo-500 bg-white
-                          ${task.status === 'Done' ? 'border-green-200 text-green-700' : 
-                            task.status === 'In Progress' ? 'border-orange-200 text-orange-700' : 
-                            'border-gray-200 text-gray-600'}`}
-                      >
-                        <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Done">Done</option>
-                      </select>
-                    </div>
-
-                    <button 
-                      onClick={() => handleDeleteTask(task.id)}
-                      className="text-gray-300 hover:text-red-500 transition flex justify-center"
-                      title="Delete Task"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
-
-                <div className="p-3 bg-gray-50/30">
-                  <button 
-                    onClick={() => handleAddTask(priority)}
-                    className="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition px-2 py-1 rounded-md hover:bg-indigo-50"
-                  >
-                    <Plus size={16} /> Add {priority.toLowerCase()} priority task
-                  </button>
+                  )}
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

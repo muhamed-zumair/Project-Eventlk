@@ -1,13 +1,7 @@
-import type { Metadata } from 'next';
-import { Montserrat } from 'next/font/google';
-import './globals.css';
+"use client";
 
-const montserrat = Montserrat({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'EventLK - Plan Smarter',
-  description: 'Event management made simple.',
-};
+import "./globals.css";
+import { EventProvider } from "../context/EventContext";
 
 export default function RootLayout({
   children,
@@ -16,8 +10,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${montserrat.className} bg-[#050505] text-white antialiased`}>
-        {children}
+      <body>
+        <EventProvider>
+          {/* 🚀 Cleaned: No Sidebar or Topbar here anymore */}
+          {children}
+        </EventProvider>
       </body>
     </html>
   );

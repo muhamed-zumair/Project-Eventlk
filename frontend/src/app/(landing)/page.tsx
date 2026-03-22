@@ -69,7 +69,7 @@ export default function HomePage() {
      {/* HERO SECTION*/}
       <section 
         onMouseMove={handleMouseMove} 
-        className="relative h-[85vh] min-h-[700px] flex flex-col items-center justify-start pt-24 lg:pt-32 text-center px-6 z-10 group overflow-hidden"
+        className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-40 text-center px-6 z-10 group overflow-hidden"
       >
         
         {/* THE CURSOR GLOW */}
@@ -119,7 +119,7 @@ export default function HomePage() {
               </motion.button>
             </Link>
             
-            <Link href="/contact" className="w-full sm:w-auto">
+            <Link href="#features" className="w-full sm:w-auto">
               <motion.button 
                 whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
                 whileTap={{ scale: 0.95 }}
@@ -195,7 +195,7 @@ export default function HomePage() {
       </div>
 
       {/* FEATURES SECTION */}
-      <section className="py-24 relative z-10 px-6">
+      <section id="features" className="py-24 relative z-10 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
