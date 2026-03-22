@@ -5,19 +5,23 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 # ==========================================
-# 1. SETUP & DATA PREP (Cached)
+# 1. SETUP & MODEL TRAINING (Cached)
 # ==========================================
 st.set_page_config(page_title="EventLK Planner", page_icon="📅", layout="wide")
 
 @st.cache_resource
 def load_and_prep_data():
+<<<<<<< HEAD
     """Loads, cleans, and encodes the dataset in a single cached run."""
+=======
+    """Loads, cleans, encodes, and trains models in a single cached run."""
+>>>>>>> 2cc1cfdbcbd0bbd0f9227f1fe5aa955e85a126fb
     # Load Data
     file_path = "event_dataset_v2_distinct.csv"
     try:
         df = pd.read_csv(file_path)
     except FileNotFoundError:
-        return None, None, None, None, None, None
+        return None, None, None, None, None
 
     # Clean & Prep
     numeric_cols = ['headcount', 'budget']
@@ -51,11 +55,26 @@ def load_and_prep_data():
     X = np.hstack([df[numeric_features].values, X_encoded])
     y_venue = df['venue'].astype(str)
     y_alloc = alloc_df
+<<<<<<< HEAD
+=======
     
-    return X, y_venue, y_alloc, encoder, alloc_df.columns, df
+    # Initialize & Train Models
+    rf_v = RandomForestClassifier(n_estimators=100, max_depth=15, random_state=42)
+    rf_v.fit(X, y_venue)
+>>>>>>> 2cc1cfdbcbd0bbd0f9227f1fe5aa955e85a126fb
+    
+    rf_a = RandomForestRegressor(n_estimators=100, max_depth=15, random_state=42)
+    rf_a.fit(X, y_alloc)
+    
+    return rf_v, rf_a, encoder, alloc_df.columns, df
 
+<<<<<<< HEAD
 # Run the cached backend logic
 X_matrix, y_v, y_a, encoder_obj, alloc_cols, raw_df = load_and_prep_data()
+=======
+# Run the cached backend logic and unpack models
+rf_venue, rf_alloc, encoder, alloc_cols, raw_df = load_and_prep_data()
+>>>>>>> 2cc1cfdbcbd0bbd0f9227f1fe5aa955e85a126fb
 
 # ==========================================
 # 2. SIDEBAR - USER INPUTS
@@ -108,7 +127,38 @@ with st.sidebar:
 st.title("🎉 EventLK: AI Event Planner")
 st.markdown("### Intelligent Venue & Budget Recommendation System")
 
-if X_matrix is not None:
-    st.success(f"✅ Data processing complete! Ready to train on {X_matrix.shape[0]} samples.")
-else:
+if rf_venue is None:
     st.error("❌ Data file not found. Please ensure 'event_dataset_v2_distinct.csv' is in the folder.")
+else:
+    # Logic to map user selections to model categories
+    e_type, e_cat = type_map[event_type_display]
+    v_cat = venue_map[venue_pref_display]
+    
+    # 1. Prepare Input Vector
+    input_nums = np.array([[headcount, budget, bph]])
+    
+    input_cats = pd.DataFrame([[e_type, e_cat, v_cat]], columns=['eventtype', 'eventcategory', 'venuecategory'])
+    input_encoded = encoder.transform(input_cats)
+    
+    final_input = np.hstack([input_nums, input_encoded])
+    
+    # 2. Predict
+    venue_pred = rf_venue.predict(final_input)[0]
+    alloc_pred = rf_alloc.predict(final_input)[0]
+    
+    # --- Display Venue Result ---
+    st.markdown("---")
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.subheader("📍 Recommended Venue")
+        st.success(f"**{venue_pred}**")
+        st.caption(f"Based on {headcount} people and LKR {bph:.0f}/head budget.")
+
+    with col2:
+        st.subheader("💵 Est. Total Cost")
+        st.info(f"**LKR {budget:,.2f}**")
+
+    # --- Display Budget Breakdown ---
+    st.markdown("---")
+    st.subheader("📊 Suggested Budget Allocation")
