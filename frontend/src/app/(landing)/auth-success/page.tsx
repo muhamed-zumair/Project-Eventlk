@@ -11,26 +11,39 @@ function AuthSuccessHandler() {
     const token = searchParams.get('token');
     const userJson = searchParams.get('user');
 
-    if (token && userJson) {
+    // DEBUG: Check what is actually arriving from the backend
+    console.log("Token received:", !!token);
+    console.log("User JSON received:", !!userJson);
+
+    if (token) {
       try {
-        // 1. Save the "Baton" passed from the backend
+        // 1. Save the token immediately
         localStorage.setItem('token', token);
-        localStorage.setItem('user', userJson);
         
-        // 2. Set the flag for your "Impressive" greeting
+        // 2. Save user data if it exists, or set a dummy one to prevent crash
+        if (userJson) {
+          localStorage.setItem('user', userJson);
+        } else {
+          localStorage.setItem('user', JSON.stringify({ name: "User" }));
+        }
+        
         localStorage.setItem('isNewUser', 'true');
 
-        // 3. Clear the URL and go to dashboard
-        router.push('/dashboard');
+        // 3. Use window.location.href for a 'hard' redirect to ensure 
+        // the app re-reads the fresh localStorage token
+        window.location.href = '/dashboard'; 
       } catch (err) {
         console.error("Auth initialization failed:", err);
-        router.push('/signin?error=session_error');
+        window.location.href = '/signin?error=session_error';
       }
+    } else if (!searchParams.toString()) {
+       // Wait for searchParams to load before giving up
+       return;
     } else {
-      // If someone lands here without tokens, send them back
-      router.push('/signin');
+      console.warn("No token found in URL, redirecting to signin");
+      window.location.href = '/signin';
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   return (
     <div className="flex flex-col items-center gap-4">
