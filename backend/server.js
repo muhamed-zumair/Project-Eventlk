@@ -9,7 +9,7 @@ const server = http.createServer(app); // NEW: Wrap Express inside the HTTP serv
 // --- NEW: INITIALIZE THE WEBSOCKET SERVER ---
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:3000', // Your React app's URL
+        origin: '*', // Your React app's URL
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"]
     }
@@ -55,7 +55,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: '*',
     credentials: true
 }));
 
@@ -83,12 +83,9 @@ app.use('/api/communication', communicationRoutes);
 app.use('/api/emails', emailRoutes);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => { // 🚀 Added '0.0.0.0' for Render compatibility
-    console.log(`🚀 EventLK API is live on port ${PORT}`);
-});
 
-// CHANGED: We now listen on the 'server' instead of 'app' so both HTTP and WebSockets work!
-server.listen(PORT, () => {
-    console.log(`🚀 EventLK HTTP API running on port ${PORT}`);
+// 🚀 Only one listener is needed for both HTTP and WebSockets
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 EventLK API is live on port ${PORT}`);
     console.log(`📡 WebSocket Server is armed and ready!`);
 });
