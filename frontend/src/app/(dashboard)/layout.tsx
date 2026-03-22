@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Sidebar from "../components/Sidebar"; // Adjust path if needed
 import Topbar from "../components/Topbar";   // Adjust path if needed
 
@@ -15,6 +16,13 @@ export default function DashboardLayout({
     document.body.style.overflow = isSidebarOpen ? "hidden" : "auto";
     return () => { document.body.style.overflow = "auto"; };
   }, [isSidebarOpen]);
+  const pathname = usePathname(); // 🚀 ADD THIS
+
+  // 🚀 ADD THIS NEW EFFECT: Resets scroll and closes sidebar on page change
+  useEffect(() => {
+    setIsSidebarOpen(false);
+    document.body.style.overflow = "auto";
+  }, [pathname]);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation'; // 🚀 Added usePathname
 import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Twitter, Linkedin, Instagram, Menu, X } from 'lucide-react';
@@ -11,6 +12,13 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname(); // 🚀 Hook into the URL
+
+  // 🚀 NEW EFFECT: Force close menu and unlock scroll on page change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    document.body.style.overflow = 'unset';
+  }, [pathname]);
 
   useEffect(() => {
     if (isMobileMenuOpen) {
