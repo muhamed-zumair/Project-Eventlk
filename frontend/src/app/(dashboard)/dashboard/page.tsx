@@ -212,17 +212,17 @@ export default function DashboardHome() {
         const totalTasks = Number(fullEvent.total_tasks) || 0;
         const completedTasks = Number(fullEvent.completed_tasks) || 0;
 
+        const hasTeam = fullEvent.team && fullEvent.team.length > 0;
+
         const fullEventData = {
           id: fullEvent.id, title: fullEvent.title, date: cleanDate,
           startTime: fullEvent.start_time ? String(fullEvent.start_time).substring(0, 5) : "",
           endTime: fullEvent.end_time ? String(fullEvent.end_time).substring(0, 5) : "",
           venue: fullEvent.venue || "", venueAddress: fullEvent.venue_address || "",
           expectedAttendees: fullEvent.expected_headcount, budget: Number(fullEvent.total_budget),
-          organizerName: (fullEvent.team && fullEvent.team.length > 0) 
-  ? `${fullEvent.team[0].first_name} ${fullEvent.team[0].last_name}` 
-  : "Organizer",
-          
-          organizerRole: fullEvent.my_role, organizerEmail: fullEvent.team[0]?.email || "example@example.com",
+          organizerName: hasTeam ? `${fullEvent.team[0].first_name} ${fullEvent.team[0].last_name}` : "Organizer",
+          organizerRole: fullEvent.my_role || "Admin", 
+          organizerEmail: hasTeam ? fullEvent.team[0].email : "contact@eventlk.com",
           isAiAssisted: fullEvent.is_ai_assisted, theme: fullEvent.theme_colors, plan: fullEvent.ai_recommended_plan,
           totalSpent: Number(fullEvent.total_spent) || 0,
           progressPercentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
