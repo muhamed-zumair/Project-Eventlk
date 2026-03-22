@@ -42,7 +42,8 @@ router.get('/google/callback',
             email: req.user.email
         }));
 
-        res.redirect(`http://localhost:3000/auth-success?token=${token}&user=${userData}`);
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+res.redirect(`${frontendUrl}/auth-success?token=${token}`);
     }
 );
 
