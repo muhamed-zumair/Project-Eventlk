@@ -22,7 +22,7 @@ export default function TaskListBoard() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Managers can Edit Titles, Assignees, Add, and Delete
-  const canManageTasks = myRole === 'President' || myRole === 'Secretary' || myRole === 'Team_Lead';
+  const canManageTasks = myRole === 'President' || myRole === 'Secretary' || myRole === 'Treasurer' || myRole === 'Team_Lead';
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
@@ -72,6 +72,13 @@ export default function TaskListBoard() {
   };
 
   const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
+    // 🚀 STRICT PERMISSION CHECK: Prevent API calls and show error
+    if (!canManageTasks && Object.keys(updates).some(key => key !== 'status')) {
+      setErrorMessage("Access Denied: Volunteers are only permitted to update task statuses.");
+      setTimeout(() => setErrorMessage(null), 4000);
+      return;
+    }
+
     const task = tasks.find(t => t.id === taskId);
 
     if (updates.assigneeId !== undefined && updates.assigneeId !== null && updates.assigneeId !== "") {
@@ -260,13 +267,26 @@ export default function TaskListBoard() {
                             type="text"
                             defaultValue={task.title}
                             onBlur={(e) => handleUpdateTask(task.id, { title: e.target.value })}
+                            onClick={() => {
+                              if (!canManageTasks) {
+                                setErrorMessage("Access Denied: Volunteers cannot edit task names.");
+                                setTimeout(() => setErrorMessage(null), 4000);
+                              }
+                            }}
                             placeholder="Enter task name..."
                             readOnly={!canManageTasks}
                             className={`w-full font-bold text-sm bg-transparent outline-none border-b-2 border-transparent ${canManageTasks ? 'focus:border-indigo-500 focus:bg-indigo-50/30' : ''} px-2 py-1 rounded-t-lg transition-all ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}
                           />
                         </div>
 
-                        <div className="relative">
+                        {/* 🚀 Wrapper catches clicks on the disabled select to show the error */}
+                        <div className="relative" onClickCapture={(e) => {
+                          if (!canManageTasks) {
+                            e.preventDefault();
+                            setErrorMessage("Access Denied: Volunteers cannot assign or reassign tasks.");
+                            setTimeout(() => setErrorMessage(null), 4000);
+                          }
+                        }}>
                           <UserCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                           <select
                             value={task.assigneeId || ""} onChange={(e) => handleUpdateTask(task.id, { assigneeId: e.target.value || null })}
