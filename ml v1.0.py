@@ -148,5 +148,15 @@ else:
         st.info(f"**LKR {budget:,.2f}**")
 
     # --- Display Budget Breakdown ---
+    # --- NEW IN COMMIT 37: Loop Setup ---
     st.markdown("---")
     st.subheader("📊 Suggested Budget Allocation")
+
+    # Process Allocation Data
+    alloc_data = []
+    labels = []
+    values = []
+
+    for i, val in enumerate(alloc_pred):
+        # Clean the column name from 'alloc_venue' to 'Venue'
+        name = alloc_cols[i].replace('alloc_', '').title()
