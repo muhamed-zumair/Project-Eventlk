@@ -36,7 +36,7 @@ export default function SignUpPage() {
     setError("");
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -64,8 +64,10 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center p-6 relative">
-      <div className="absolute left-0 bottom-0 w-[500px] h-[500px] bg-purple-900/20 blur-[150px] pointer-events-none" />
+    <div className="min-h-screen bg-[#030303] pt-32 pb-12 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* 🚀 Dynamic Glow Backgrounds */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
 
@@ -73,8 +75,8 @@ export default function SignUpPage() {
         <div className="hidden lg:block space-y-8">
           <div>
             <h2 className="text-purple-500 font-bold text-xl mb-2">EventLK</h2>
-            <h1 className="text-5xl font-bold leading-tight mb-4">Start Planning<br />Amazing Events</h1>
-            <p className="text-gray-400 text-lg">Join thousands of planners who trust EventLK.</p>
+            <h1 className="text-5xl font-bold leading-tight mb-4 text-white">Start Planning<br />Amazing Events</h1>
+            <p className="text-gray-300 text-lg">Join thousands of planners who trust EventLK.</p>
           </div>
           <div className="space-y-4">
             {["AI-powered event planning", "Real-time team collaboration", "Budget tracking in LKR", "QR code attendance system"].map((item, i) => (
@@ -89,8 +91,8 @@ export default function SignUpPage() {
         {/* Right Side: Form */}
         <div className="bg-[#0F0F12] border border-white/10 p-8 rounded-2xl shadow-2xl">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold">Create Your Account</h2>
-            <p className="text-sm text-gray-400 mt-1">
+            <h2 className="text-2xl font-bold text-white">Create Your Account</h2> {/* 🚀 Added text-white */}
+            <p className="text-sm text-gray-300 mt-1"> {/* 🚀 Changed to gray-300 */}
               Already have an account? <Link href="/signin" className="text-purple-400 hover:underline">Sign in</Link>
             </p>
           </div>
@@ -101,10 +103,11 @@ export default function SignUpPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs text-gray-400">First Name *</label>
+                <label className="text-xs text-gray-300 font-medium block">First Name *</label>
                 <input
                   type="text"
                   name="firstName" // Important! Matches state
+                  value={formData.firstName}
                   required
                   onChange={handleChange}
                   placeholder="John"
@@ -112,10 +115,11 @@ export default function SignUpPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs text-gray-400">Last Name *</label>
+                <label className="text-xs text-gray-300 font-medium block">Last Name *</label>
                 <input
                   type="text"
                   name="lastName"
+                  value={formData.lastName}
                   required
                   onChange={handleChange}
                   placeholder="Doe"
@@ -125,7 +129,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">Email Address *</label>
+              <label className="text-xs text-gray-300 font-medium block">Email Address *</label>
               <input
                 type="email"
                 name="email"
@@ -138,7 +142,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">Password *</label>
+              <label className="text-xs text-gray-300 font-medium block">Password *</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -171,7 +175,7 @@ export default function SignUpPage() {
             <div className="grid grid-cols-1 gap-4">
               <button
                 type="button"
-                onClick={() => window.location.href = 'http://localhost:5000/api/auth/google'}
+                onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/google`}
                 className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-lg text-sm transition-colors text-white"
               >
                 Google

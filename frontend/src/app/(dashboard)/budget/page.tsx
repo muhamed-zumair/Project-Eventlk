@@ -49,11 +49,11 @@ const StatusBadge = ({ spent, total }: { spent: number, total: number }) => {
 };
 
 export default function BudgetPage() {
-  const { myRole, isLoadingContext } = useEventContext(); // 🚀 Ask the Brain for the role!
+ const { myRole, isLoadingContext, selectedEventId } = useEventContext(); // 🚀 Use the global ID// 🚀 Ask the Brain for the role!
   
   // --- LIVE DATA STATES ---
   const [eventsList, setEventsList] = useState<EventData[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
+
   const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
   const [expenses, setExpenses] = useState<ExpenseTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,23 +83,39 @@ export default function BudgetPage() {
   // 🚀 Now reacts directly to the Global Topbar Selector!
   useEffect(() => {
     const syncAndFetch = async () => {
+      // 1. If we have a global selection, fetch its financials immediately
       if (selectedEventId) {
         await fetchBudgetOverview(selectedEventId);
-      } else {
-        // If no event is selected globally, try to fetch the list once to help the context
-        try {
-          const response = await fetchAPI('/events', { method: 'GET' });
-          if (response.success && response.events) {
-            const activeEvents = response.events.map((evt: any) => ({
-              id: evt.id, title: evt.title, budget: Number(evt.total_budget), isAiAssisted: evt.is_ai_assisted
-            }));
-            setEventsList(activeEvents);
+      } 
+      
+      // 2. Always fetch the events list once to handle empty states/metadata
+      try {
+        const response = await fetchAPI('/events', { method: 'GET' });
+        if (response.success && response.events) {
+          const activeEvents = response.events.map((evt: any) => ({
+            id: evt.id, 
+            title: evt.title, 
+            budget: Number(evt.total_budget), 
+            isAiAssisted: evt.is_ai_assisted
+          }));
+          setEventsList(activeEvents);
+          
+          // 🚀 FIX: If we just loaded the list and a global ID exists, 
+          // make sure we fetch the budget for it specifically.
+          if (selectedEventId) {
+            await fetchBudgetOverview(selectedEventId);
           }
-        } catch (e) { console.error(e); }
+        }
+      } catch (e) { 
+        console.error("Sync Error:", e); 
+      } finally {
+        // Only stop the "Big Loading" once we've checked the events list
+        setIsLoading(false);
       }
     };
+
     syncAndFetch();
-  }, [selectedEventId]);
+  }, [selectedEventId]); // 🚀 Now listens to the Topbar!
 
   const fetchBudgetOverview = async (eventId: string) => {
     setIsLoading(true);
@@ -130,6 +146,7 @@ export default function BudgetPage() {
         description: expenseDescription || 'Uncategorized Expense'
       };
 
+      if (!selectedEventId) return; // 🚀 Guard: Stop if ID is null
       const response = await fetchAPI(`/budgets/${selectedEventId}/expense`, {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -161,6 +178,7 @@ export default function BudgetPage() {
         amount: parsedAmount
       };
 
+      if (!selectedEventId) return; // 🚀 Guard: Stop if ID is null
       const response = await fetchAPI(`/budgets/${selectedEventId}/category`, {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -209,8 +227,15 @@ export default function BudgetPage() {
   const isOverAllocated = totalAllocatedToCategories > masterBudget;
   const overAllocatedAmount = totalAllocatedToCategories - masterBudget;
 
-  // 🚀 THE SECURITY GATE
-  if (isLoadingContext || (isLoading && eventsList.length === 0)) {
+  // 🚀 THE UPDATED SECURITY GATE
+  // If we are still figuring out the user's identity, show the loader.
+  if (isLoadingContext) {
+    return <div className="flex justify-center items-center h-[80vh]"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
+  }
+
+  // If the user HAS events but they are still being fetched, show the loader.
+  // BUT, if they have ZERO events, skip this and go straight to the "Welcoming Empty State".
+  if (isLoading && eventsList.length > 0) {
     return <div className="flex justify-center items-center h-[80vh]"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
   }
 

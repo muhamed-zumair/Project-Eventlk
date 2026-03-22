@@ -32,7 +32,7 @@ export default function SignInPage() {
     setError("");
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', { // Make sure this matches your backend route
+       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/login`, {// Make sure this matches your backend route
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -60,15 +60,22 @@ export default function SignInPage() {
 
 
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center p-6 relative">
-      {/* Background Decor */}
+    <div className="min-h-screen pt-32 pb-12 flex flex-col items-center justify-center p-6 relative overflow-hidden bg-[#030303]">
+      {/* 🚀 Dynamic Glow Backgrounds */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
+      
+      {/* 🚀 Grid Overlay (Optional, for that tech look) */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] pointer-events-none opacity-20" />
       <div className="absolute right-0 top-0 w-[500px] h-[500px] bg-blue-900/20 blur-[150px] pointer-events-none" />
 
       <div className="max-w-md w-full z-10 text-center">
         <div className="mb-8">
           <h2 className="text-purple-500 font-bold text-xl mb-2">EventLK</h2>
-          <h1 className="text-4xl font-bold mb-2">Welcome Back!</h1>
-          <p className="text-gray-400 text-sm">Sign in to continue managing your events and creating unforgettable experiences.</p>
+          <h1 className="text-4xl font-bold mb-2 text-white">Welcome Back!</h1> {/* 🚀 Added text-white */}
+          <p className="text-gray-300 text-sm max-w-sm mx-auto"> {/* 🚀 Lightened to gray-300 for better contrast */}
+            Sign in to continue managing your events and creating unforgettable experiences.
+          </p>
         </div>
 
         <div className="bg-[#0F0F12] border border-white/10 p-8 rounded-2xl shadow-2xl text-left">
@@ -82,22 +89,22 @@ export default function SignInPage() {
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">Email Address</label>
+              <label className="text-xs text-gray-400 block font-medium">Email Address</label>
               <input
                 type="email"
                 name="email"
-                value={formData.email} // 🚀 Bind the value
+                value={formData.email} 
                 required
                 onChange={handleChange}
                 placeholder="your.email@example.com"
-                className="..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:border-purple-500 focus:outline-none transition-colors"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-xs text-gray-400">Password</label>
               <div className="relative">
-                <input type={showPassword ? "text" : "password"} name="password" required onChange={handleChange} placeholder="Enter your password" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors" />
+                <input type={showPassword ? "text" : "password"} name="password" required onChange={handleChange} placeholder="Enter your password" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:border-purple-500 focus:outline-none transition-colors" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -128,7 +135,7 @@ export default function SignInPage() {
             <div className="grid grid-cols-1 gap-4">
               <button
                 type="button"
-                onClick={() => window.location.href = 'http://localhost:5000/api/auth/google'}
+                onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/google`}
                 className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-lg text-sm transition-colors text-white"
               >
                 Google
