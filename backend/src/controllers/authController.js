@@ -251,18 +251,36 @@ const updatePassword = async (req, res) => {
     }
 };
 // 5. Delete Account
+// 5. Delete Account
 const deleteAccount = async (req, res) => {
     try {
         const userId = req.user.userId || req.user.id;
-        // This will cascade and delete all their events, tasks, etc., if foreign keys are set up correctly!
+
+        // 🚀 THE ULTIMATE CLEANUP SCRIPT (Adjusted for your actual tables)
+
+        // 1. Communications & Tasks (We removed the Messages tables since they don't exist yet)
+        await pool.query('DELETE FROM "Tasks" WHERE created_by = $1', [userId]);
+        await pool.query('UPDATE "Tasks" SET assignee_id = NULL WHERE assignee_id = $1', [userId]);
+
+        // 2. Budgets & Vendors (Commented out unless you know these tables exist)
+        // await pool.query('DELETE FROM "Budget_Categories" WHERE created_by = $1', [userId]);
+        // await pool.query('DELETE FROM "Vendors" WHERE added_by = $1', [userId]);
+
+        // 3. Team Memberships
+        await pool.query('DELETE FROM "TeamMembers" WHERE user_id = $1', [userId]);
+
+        // 4. Events 
+        await pool.query('DELETE FROM "Events" WHERE created_by = $1', [userId]);
+
+        // 5. FINALLY: Delete the User
         await pool.query('DELETE FROM "Users" WHERE id = $1', [userId]);
+        
         res.status(200).json({ success: true, message: "Account deleted successfully." });
     } catch (error) {
         console.error("Delete Account Error:", error);
         res.status(500).json({ success: false, message: "Failed to delete account." });
     }
 };
-
 module.exports = {
     registerUser,
     loginUser,
