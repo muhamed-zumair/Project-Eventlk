@@ -82,10 +82,20 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/emails', emailRoutes);
 
+// 🚀 Get the Port from Render or fallback to 5000
 const PORT = process.env.PORT || 5000;
 
-// 🚀 Only one listener is needed for both HTTP and WebSockets
+// 🚀 Explicitly listen on '0.0.0.0' for Render
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 EventLK API is live on port ${PORT}`);
-    console.log(`📡 WebSocket Server is armed and ready!`);
+    console.log(`=================================`);
+    console.log(`🚀 EVENTLK IS LIVE!`);
+    console.log(`📍 Port: ${PORT}`);
+    console.log(`🌐 Host: 0.0.0.0`);
+    console.log(`📡 WebSockets: Active`);
+    console.log(`=================================`);
+});
+
+// 🚀 Error handling for the server itself
+server.on('error', (err) => {
+    console.error('❌ SERVER ERROR:', err);
 });
