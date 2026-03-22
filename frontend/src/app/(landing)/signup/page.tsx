@@ -1,10 +1,10 @@
 'use client';
 
 import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation'; // For redirecting after successimport { useRouter, useSearchParams } from 'next/navigation'; // 🚀 Added useSearchParams
-export default function SignUpPage() {
+function SignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); // 🚀 Hook into the URL
   const [showPassword, setShowPassword] = useState(false);
@@ -185,5 +185,16 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#030303] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-purple-500"></div>
+      </div>
+    }>
+      <SignUpContent />
+    </Suspense>
   );
 }
