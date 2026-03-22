@@ -66,7 +66,7 @@ export default function DashboardHome() {
 
         // 2. Use native fetch to bypass the forced JSON headers in fetchAPI
         // NOTE: Make sure to change 'http://localhost:5000/api' to match your actual backend URL!
-        const res = await fetch(`http://localhost:5000/api/events/${eventDetails.id}/documents`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/events/${eventDetails.id}/documents`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`

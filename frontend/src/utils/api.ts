@@ -1,4 +1,6 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL 
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api` 
+  : "http://localhost:5000/api";
 
 export const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
     // 1. Create a safe variable for the token

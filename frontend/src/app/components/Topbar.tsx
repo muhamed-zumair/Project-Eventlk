@@ -154,7 +154,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     let socket: any;
 
     if (userId) {
-      socket = io('http://localhost:5000');
+      socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
 
       socket.on('connect', () => {
         socket.emit('register', userId);

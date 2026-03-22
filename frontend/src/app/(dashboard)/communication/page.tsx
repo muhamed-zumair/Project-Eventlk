@@ -107,7 +107,7 @@ export default function CommunicationPage() {
       const user = JSON.parse(userStr);
       setCurrentUser(user);
 
-      socket = io('http://localhost:5000');
+      socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
       socket.emit('register', user.id);
 
       socket.on('NEW_INTERNAL_MESSAGE', (msg: any) => {
@@ -245,7 +245,7 @@ export default function CommunicationPage() {
     try {
       const token = localStorage.getItem('token');
       // We use native fetch here to allow the browser to set the 'multipart/form-data' boundary
-      const res = await fetch(`http://localhost:5000/api/communication/${selectedEventId}/messages`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/communication/${selectedEventId}/messages`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -750,7 +750,7 @@ export default function CommunicationPage() {
                     });
 
                     // 🚀 3. Send using native fetch instead of fetchAPI so the browser handles the file data
-                    const res = await fetch(`http://localhost:5000/api/emails/${selectedEventId}/send`, {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/emails/${selectedEventId}/send`, {
                       method: 'POST',
                       headers: { 
                         'Authorization': `Bearer ${localStorage.getItem('token')}` 
