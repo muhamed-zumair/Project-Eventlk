@@ -218,8 +218,10 @@ export default function DashboardHome() {
           endTime: fullEvent.end_time ? String(fullEvent.end_time).substring(0, 5) : "",
           venue: fullEvent.venue || "", venueAddress: fullEvent.venue_address || "",
           expectedAttendees: fullEvent.expected_headcount, budget: Number(fullEvent.total_budget),
-          description: fullEvent.description,
-          organizerName: fullEvent.team[0]?.first_name ? fullEvent.team[0].first_name + " " + fullEvent.team[0].last_name : "Sahan Perera",
+          organizerName: (fullEvent.team && fullEvent.team.length > 0) 
+  ? `${fullEvent.team[0].first_name} ${fullEvent.team[0].last_name}` 
+  : "Organizer",
+          
           organizerRole: fullEvent.my_role, organizerEmail: fullEvent.team[0]?.email || "example@example.com",
           isAiAssisted: fullEvent.is_ai_assisted, theme: fullEvent.theme_colors, plan: fullEvent.ai_recommended_plan,
           totalSpent: Number(fullEvent.total_spent) || 0,
@@ -342,19 +344,25 @@ export default function DashboardHome() {
       const storedUser = localStorage.getItem('user');
       const isNewUser = localStorage.getItem('isNewUser');
       if (storedUser && storedUser !== "undefined") {
-        try {
-          const userObj = JSON.parse(storedUser);
-          const name = userObj.firstName || "User";
-          if (isNewUser === 'true') {
-            setGreetingPrefix("Welcome to EventLK,"); setUserName(name);
-            setTimeout(() => localStorage.removeItem('isNewUser'), 1000);
-          } else {
-            setGreetingPrefix("Welcome back,"); setUserName(name);
-          }
-        } catch (error) {
-          setGreetingPrefix("Welcome back,"); setUserName("User");
+      try {
+        const userObj = JSON.parse(storedUser);
+        // Google uses 'first_name', manual login uses 'firstName'
+        const name = userObj.firstName || userObj.first_name || "User"; 
+        
+        if (isNewUser === 'true') {
+          setGreetingPrefix("Welcome to EventLK,"); 
+          setUserName(name);
+          setTimeout(() => localStorage.removeItem('isNewUser'), 2000);
+        } else {
+          setGreetingPrefix("Welcome back,"); 
+          setUserName(name);
         }
+      } catch (error) {
+        console.error("Dashboard greeting error:", error);
+        setGreetingPrefix("Welcome back,"); 
+        setUserName("User");
       }
+    }
     }
   }, []);
 
