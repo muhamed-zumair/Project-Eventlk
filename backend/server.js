@@ -82,7 +82,10 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/emails', emailRoutes);
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, '0.0.0.0', () => { // 🚀 Added '0.0.0.0' for Render compatibility
+    console.log(`🚀 EventLK API is live on port ${PORT}`);
+});
 
 // CHANGED: We now listen on the 'server' instead of 'app' so both HTTP and WebSockets work!
 server.listen(PORT, () => {
