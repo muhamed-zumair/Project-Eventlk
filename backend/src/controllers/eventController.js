@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { sendExistingUserInviteEmail, sendNewUserInviteEmail } = require('../utils/emailService');
-const { uploadFileToS3, getPresignedDownloadUrl, deleteFileFromS3 } = require('../utils/s3Service');
+const { uploadFileToS3, getPresignedDownloadUrl, deleteFileFromS3 } = require('../utils/s3service');
 // 1. Upload a Document
 const uploadEventDocument = async (req, res) => {
     try {

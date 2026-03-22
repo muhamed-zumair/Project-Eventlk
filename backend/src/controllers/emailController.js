@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-const { uploadAttachmentToS3, getPresignedDownloadUrl } = require('../utils/s3Service');
+const { uploadAttachmentToS3, getPresignedDownloadUrl } = require('../utils/s3service');
 const { sendBulkEmail } = require('../utils/emailService');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 

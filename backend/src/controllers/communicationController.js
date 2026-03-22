@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-const { uploadAttachmentToS3, getPresignedDownloadUrl } = require('../utils/s3Service');
+const { uploadAttachmentToS3, getPresignedDownloadUrl } = require('../utils/s3service');
 
 // @desc    Get all team members for an event (for the left sidebar)
 // @route   GET /api/communication/:eventId/team
