@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🎉 EventLK</h1>
-  <p><strong>The Next-Generation, AI-Powered Event Management Platform for Sri Lankan University Clubs</strong></p>
+  <p><strong>The Next-Generation, AI-Powered Event Management Platform  for Sri Lankan University Clubs</strong></p>
 
   <p>
     <img src="https://img.shields.io/badge/Status-In%20Development-blue" alt="Status" />
