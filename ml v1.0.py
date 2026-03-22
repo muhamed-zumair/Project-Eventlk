@@ -150,34 +150,19 @@ else:
     # --- Display Budget Breakdown ---
     st.markdown("---")
     st.subheader("📊 Suggested Budget Allocation")
-
-    # Process Allocation Data
-    alloc_data = []
-    labels = []
-    values = []
-
-    for i, val in enumerate(alloc_pred):
-        name = alloc_cols[i].replace('alloc_', '').title()
-        
-        # Calculate Amount
-        if val < 100: # It's a percentage
-            amount = (val/100) * budget
-            pct = val
-        else: # It's a raw value (fallback)
-            amount = val
-            pct = (val / budget) * 100
-
-        if amount > 0:
-            alloc_data.append({"Category": name, "Amount (LKR)": f"{amount:,.2f}", "Percentage": f"{pct:.1f}%"})
-            labels.append(name)
-            values.append(amount)
-
-    # --- NEW IN COMMIT 39: 2-Column Layout for Data ---
-    b_col1, b_col2 = st.columns([1, 1])
-
-    with b_col1:
-        st.table(pd.DataFrame(alloc_data))
-
-    with b_col2:
-        st.write("*(Visualization rendering in next commit)*")
-
+    
+    # Create a 3-column grid for the budget breakdown metrics
+    metric_cols = st.columns(3)
+    
+    # Loop through the prediction array and map it to the respective categories
+    for i, (col_name, proportion) in enumerate(zip(alloc_cols, alloc_pred)):
+        if proportion > 0.01: # Filter out negligible allocations
+            # Clean up the category name for the UI
+            clean_category_name = col_name.replace('alloc_', '').replace('_', ' ').title()
+            
+            # Calculate the absolute currency amount
+            allocated_amount = budget * proportion
+            
+            # Distribute the metrics evenly across the 3 columns
+            with metric_cols[i % 3]:
+                st.metric(label=clean_category_name, value=f"LKR {allocated_amount:,.2f}")
