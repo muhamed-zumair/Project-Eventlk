@@ -79,7 +79,7 @@ export default function RegistrationsPage() {
     setSelectedIds([]); // Clear selections on event change
 
     // 🚀 WEBSOCKET CONNECTION FOR LIVE REGISTRATIONS
-    const socket = io('http://localhost:5000');
+    const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
 
     socket.on('NEW_REGISTRATION', (data: any) => {
       if (data.eventId === selectedEventId) getAttendees();
@@ -94,7 +94,7 @@ export default function RegistrationsPage() {
   }, [selectedEventId]);
 
   // Dynamic Webhook URL
-  const webhookUrl = `http://localhost:5000/api/v1/webhooks/reg_${selectedEventId}`;
+  const webhookUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/webhooks/reg_${selectedEventId}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(webhookUrl);
