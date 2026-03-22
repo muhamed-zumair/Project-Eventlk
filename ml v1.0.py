@@ -156,7 +156,6 @@ else:
     labels = []
     values = []
 
-    # --- NEW IN COMMIT 38: Processing Logic ---
     for i, val in enumerate(alloc_pred):
         name = alloc_cols[i].replace('alloc_', '').title()
         
@@ -172,3 +171,13 @@ else:
             alloc_data.append({"Category": name, "Amount (LKR)": f"{amount:,.2f}", "Percentage": f"{pct:.1f}%"})
             labels.append(name)
             values.append(amount)
+
+    # --- NEW IN COMMIT 39: 2-Column Layout for Data ---
+    b_col1, b_col2 = st.columns([1, 1])
+
+    with b_col1:
+        st.table(pd.DataFrame(alloc_data))
+
+    with b_col2:
+        st.write("*(Visualization rendering in next commit)*")
+
