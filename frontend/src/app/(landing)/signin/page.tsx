@@ -4,17 +4,19 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // For redirecting after success
+import { useRouter, useSearchParams } from 'next/navigation'; // 🚀 Catch the URL params// For redirecting after success
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteEmail = searchParams.get('email') || ''; // 🚀 Get email from URL
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // 1. STATE FOR FORM DATA
   const [formData, setFormData] = useState({
-    email: '',
+    email: inviteEmail, // 🚀 Pre-fill email if available
     password: ''
   });
 
@@ -81,7 +83,15 @@ export default function SignInPage() {
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-xs text-gray-400">Email Address</label>
-              <input type="email" name="email" required onChange={handleChange} placeholder="your.email@example.com" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email} // 🚀 Bind the value
+                required
+                onChange={handleChange}
+                placeholder="your.email@example.com"
+                className="..."
+              />
             </div>
 
             <div className="space-y-2">

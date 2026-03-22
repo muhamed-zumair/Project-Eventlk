@@ -3,21 +3,26 @@
 import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // For redirecting after success
-
+import { useRouter, useSearchParams } from 'next/navigation'; // For redirecting after successimport { useRouter, useSearchParams } from 'next/navigation'; // 🚀 Added useSearchParams
 export default function SignUpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams(); // 🚀 Hook into the URL
   const [showPassword, setShowPassword] = useState(false);
+
+  // 🚀 0. Capture email from the invite link
+  const inviteEmail = searchParams.get('email') || '';
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 1. STATE FOR FORM DATA (Removed organization)
+  // 1. STATE FOR FORM DATA (Initialized with invite email)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: inviteEmail, // 🚀 Pre-fills if they came from an email
     password: ''
   });
+
 
   // 2. HANDLE INPUT CHANGES
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -47,7 +52,7 @@ export default function SignUpPage() {
         localStorage.setItem('isNewUser', 'true');
 
         // 2. Redirect straight to the dashboard!
-        router.push('/dashboard'); 
+        router.push('/dashboard');
       } else {
         setError(data.message || "Something went wrong");
       }
@@ -97,50 +102,51 @@ export default function SignUpPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs text-gray-400">First Name *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="firstName" // Important! Matches state
                   required
                   onChange={handleChange}
-                  placeholder="John" 
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white" 
+                  placeholder="John"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs text-gray-400">Last Name *</label>
-                <input 
-                  type="text" 
-                  name="lastName" 
+                <input
+                  type="text"
+                  name="lastName"
                   required
                   onChange={handleChange}
-                  placeholder="Doe" 
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white" 
+                  placeholder="Doe"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-xs text-gray-400">Email Address *</label>
-              <input 
-                type="email" 
-                name="email" 
+              <input
+                type="email"
+                name="email"
                 required
+                value={formData.email} // 🚀 Binds the pre-filled email to the UI
                 onChange={handleChange}
-                placeholder="your.email@example.com" 
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white" 
+                placeholder="your.email@example.com"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-xs text-gray-400">Password *</label>
               <div className="relative">
-                <input 
-                  type={showPassword ? "text" : "password"} 
+                <input
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   required
                   onChange={handleChange}
-                  placeholder="Create a strong password" 
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white" 
+                  placeholder="Create a strong password"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none transition-colors text-white"
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -148,7 +154,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 rounded-lg hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] transition-all mt-4 disabled:opacity-50"
@@ -163,7 +169,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => window.location.href = 'http://localhost:5000/api/auth/google'}
                 className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-lg text-sm transition-colors text-white"
