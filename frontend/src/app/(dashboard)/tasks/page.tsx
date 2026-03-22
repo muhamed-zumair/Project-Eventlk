@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { fetchAPI } from "../../../utils/api";
-import { Plus, CheckCircle2, Circle, Search, Trash2, CalendarDays, ListTodo, UserCircle2, AlertCircle, AlertTriangle, X } from "lucide-react";
+import { Plus, CheckCircle2, Circle, Search, Trash2, CalendarDays, ListTodo, Users,UserCircle2, AlertCircle, AlertTriangle, X } from "lucide-react";
+import { useEventContext } from "../../../context/EventContext";
 
 interface TeamMember { id: string; name: string; }
 interface Task {
@@ -12,26 +13,38 @@ interface Task {
 }
 
 export default function TaskListBoard() {
-  const [eventsList, setEventsList] = useState<{ id: string, name: string }[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const { myRole, selectedEventId, setSelectedEventId } = useEventContext(); 
+  
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🚀 NEW: Premium UI States
+  // Managers can Edit Titles, Assignees, Add, and Delete
+  const canManageTasks = myRole === 'President' || myRole === 'Secretary' || myRole === 'Team_Lead';
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchActiveEvents();
-  }, []);
+    const initializeData = async () => {
+      if (selectedEventId) {
+        fetchTasksAndTeam(selectedEventId);
+      } else {
+        // Fallback for initial load if Topbar hasn't set the ID yet
+        try {
+          const response = await fetchAPI('/events', { method: 'GET' });
+          if (response.success && response.events.length > 0) {
+            setSelectedEventId(response.events[0].id);
+          } else {
+            setIsLoading(false);
+          }
+        } catch (e) { setIsLoading(false); }
+      }
+    };
+    initializeData();
 
-  useEffect(() => {
-    if (selectedEventId) fetchTasksAndTeam(selectedEventId);
-
-    // 🚀 NEW: Silently Auto-Refreshes when WebSockets are triggered by Topbar!
     const handleAutoRefresh = () => {
       if (selectedEventId) fetchTasksAndTeam(selectedEventId);
     };
@@ -39,19 +52,6 @@ export default function TaskListBoard() {
     return () => window.removeEventListener('taskBoardRefresh', handleAutoRefresh);
 
   }, [selectedEventId]);
-
-  const fetchActiveEvents = async () => {
-    try {
-      const response = await fetchAPI('/events', { method: 'GET' });
-      if (response.success && response.events) {
-        const activeEvents = response.events.map((evt: any) => ({ id: evt.id, name: evt.title }));
-        setEventsList(activeEvents);
-        if (activeEvents.length > 0) setSelectedEventId(activeEvents[0].id);
-        else setIsLoading(false);
-      }
-    } catch (error) { setIsLoading(false); }
-  };
-
   const fetchTasksAndTeam = async (eventId: string) => {
     setIsLoading(true);
     try {
@@ -62,6 +62,9 @@ export default function TaskListBoard() {
   };
 
   const handleAddTask = async (priority: Task['priority']) => {
+    // 🚀 TS Fix: Ensure selectedEventId is not null before creating a task
+    if (!selectedEventId) return; 
+    
     try {
       const res = await fetchAPI(`/tasks/event/${selectedEventId}`, { method: 'POST', body: JSON.stringify({ title: "", priority, status: "To Do" }) });
       if (res.success) setTasks([...tasks, { id: res.taskId, eventId: selectedEventId, title: "", priority, status: "To Do", assigneeId: null, assigneeName: null }]);
@@ -71,12 +74,11 @@ export default function TaskListBoard() {
   const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
     const task = tasks.find(t => t.id === taskId);
 
-    // 🚀 NEW: Prevent assignment if title is empty
     if (updates.assigneeId !== undefined && updates.assigneeId !== null && updates.assigneeId !== "") {
       if (!task?.title || task.title.trim() === '') {
         setErrorMessage("Please type a task name before assigning it to a team member.");
         setTimeout(() => setErrorMessage(null), 4000);
-        return; // Abort the assignment!
+        return; 
       }
     }
 
@@ -84,11 +86,13 @@ export default function TaskListBoard() {
     try {
       await fetchAPI(`/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(updates) });
     } catch (error) {
-      fetchTasksAndTeam(selectedEventId);
+      // 🚀 TS Fix: Ensure selectedEventId is not null before refetching
+      if (selectedEventId) {
+        fetchTasksAndTeam(selectedEventId);
+      }
     }
   };
 
-  // 🚀 NEW: Replaced window.confirm with Custom Modal Logic
   const confirmDeleteTask = async () => {
     if (!taskToDelete) return;
     try {
@@ -105,7 +109,8 @@ export default function TaskListBoard() {
 
   const priorities: ('High' | 'Medium' | 'Low')[] = ['High', 'Medium', 'Low'];
 
-  if (isLoading && eventsList.length === 0) return (
+  // 🚀 Fixed: Removed eventsList check and added selectedEventId safety
+  if (isLoading && !selectedEventId) return (
     <div className="max-w-6xl mx-auto p-6 space-y-8 animate-pulse">
       <div className="flex justify-between items-end">
         <div className="space-y-3">
@@ -122,13 +127,43 @@ export default function TaskListBoard() {
       ))}
     </div>
   );
-  if (eventsList.length === 0) return (
-    <div className="flex-1 bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center p-10 text-center shadow-sm">
-      <ListTodo size={48} className="text-gray-300 mb-4" />
-      <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Events</h3>
-      <p className="text-gray-500 max-w-sm">You need an active event to assign tasks. Create one in your dashboard!</p>
-    </div>
-  );
+  
+  // 🚀 WELCOMING EMPTY STATE: For users with no events yet
+  if (!isLoading && !selectedEventId) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-amber-50 text-amber-600 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner rotate-3 ring-8 ring-amber-50/50">
+          <ListTodo size={48} strokeWidth={1.5} />
+        </div>
+        
+        <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Precision Task Execution</h2>
+        <p className="text-gray-500 text-lg font-medium max-w-2xl leading-relaxed mb-10">
+          Turn your event vision into a concrete roadmap. Once you launch an event, you can break down your plan into prioritized tasks, assign them to team members, and track real-time progress from "To Do" to "Done."
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+          {[
+            { icon: AlertTriangle, title: "Priority Engine", desc: "Filter by High, Medium, or Low impact." },
+            { icon: Users, title: "Team Delegation", desc: "Assign owners and track individual accountability." },
+            { icon: CheckCircle2, title: "Live Progress", desc: "Watch status updates happen in real-time." }
+          ].map((feature, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center group hover:border-amber-200 transition-colors">
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl mb-3 group-hover:scale-110 transition-transform"><feature.icon size={24} /></div>
+              <h4 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h4>
+              <p className="text-xs text-gray-500 font-medium">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <button 
+          onClick={() => window.dispatchEvent(new Event('openCreateModal'))}
+          className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3"
+        >
+          <Plus size={20} strokeWidth={3} /> Build Your Roadmap
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col max-w-6xl mx-auto pb-10 relative">
@@ -172,7 +207,6 @@ export default function TaskListBoard() {
         </div>
       )}
 
-      {/* Premium Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 mt-2">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">Task Board</h2>
@@ -180,13 +214,8 @@ export default function TaskListBoard() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="bg-white border border-gray-200 p-1.5 rounded-xl flex items-center gap-2 shadow-sm transition-all focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
-            <div className="bg-indigo-50 p-1.5 rounded-lg text-indigo-600"><CalendarDays size={18} /></div>
-            <select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="bg-transparent text-sm font-bold text-gray-800 outline-none pr-4 cursor-pointer max-w-[200px] truncate">
-              {eventsList.map(evt => <option key={evt.id} value={evt.id}>{evt.name}</option>)}
-            </select>
-          </div>
-
+          {/* Local selector removed. Global switching happens in the Topbar! */}
+          
           <div className="relative w-64 hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input type="text" placeholder="Search tasks or assignees..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm transition-all" />
@@ -232,8 +261,8 @@ export default function TaskListBoard() {
                             defaultValue={task.title}
                             onBlur={(e) => handleUpdateTask(task.id, { title: e.target.value })}
                             placeholder="Enter task name..."
-                            className={`w-full font-bold text-sm bg-transparent outline-none border-b-2 border-transparent focus:border-indigo-500 focus:bg-indigo-50/30 px-2 py-1 rounded-t-lg transition-all ${isDone ? 'line-through text-gray-400' : 'text-gray-800'
-                              }`}
+                            readOnly={!canManageTasks}
+                            className={`w-full font-bold text-sm bg-transparent outline-none border-b-2 border-transparent ${canManageTasks ? 'focus:border-indigo-500 focus:bg-indigo-50/30' : ''} px-2 py-1 rounded-t-lg transition-all ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}
                           />
                         </div>
 
@@ -241,7 +270,8 @@ export default function TaskListBoard() {
                           <UserCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                           <select
                             value={task.assigneeId || ""} onChange={(e) => handleUpdateTask(task.id, { assigneeId: e.target.value || null })}
-                            className={`w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm outline-none font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow appearance-none cursor-pointer ${task.assigneeId ? 'bg-indigo-50/50 text-indigo-800 border-indigo-100' : 'bg-white text-gray-500'}`}
+                            disabled={!canManageTasks}
+                            className={`w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm outline-none font-medium transition-shadow appearance-none ${canManageTasks ? 'focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer' : 'cursor-not-allowed opacity-70'} ${task.assigneeId ? 'bg-indigo-50/50 text-indigo-800 border-indigo-100' : 'bg-white text-gray-500'}`}
                           >
                             <option value="">Unassigned</option>
                             {teamMembers.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}
@@ -249,6 +279,7 @@ export default function TaskListBoard() {
                         </div>
 
                         <div>
+                          {/* 🚀 PERMISSION FIX: The Status select is completely unlocked so Volunteers can mark things In Progress/Done */}
                           <select
                             value={task.status} onChange={(e) => handleUpdateTask(task.id, { status: e.target.value as Task['status'] })}
                             className={`w-full border rounded-xl px-3 py-2 text-sm outline-none font-bold text-center transition-all appearance-none cursor-pointer shadow-sm
@@ -258,18 +289,22 @@ export default function TaskListBoard() {
                           </select>
                         </div>
 
-                        <button onClick={() => setTaskToDelete(task.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all flex justify-center opacity-0 group-hover:opacity-100" title="Delete Task">
-                          <Trash2 size={18} />
-                        </button>
+                        {canManageTasks && (
+                          <button onClick={() => setTaskToDelete(task.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all flex justify-center opacity-0 group-hover:opacity-100" title="Delete Task">
+                            <Trash2 size={18} />
+                          </button>
+                        )}
                       </div>
                     );
                   })}
 
-                  <div className="p-4 bg-gray-50/30">
-                    <button onClick={() => handleAddTask(priority)} className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition px-4 py-2 rounded-xl hover:bg-indigo-100 w-max">
-                      <Plus size={18} /> Add {priority.toLowerCase()} priority task
-                    </button>
-                  </div>
+                  {canManageTasks && (
+                    <div className="p-4 bg-gray-50/30">
+                      <button onClick={() => handleAddTask(priority)} className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition px-4 py-2 rounded-xl hover:bg-indigo-100 w-max">
+                        <Plus size={18} /> Add {priority.toLowerCase()} priority task
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );

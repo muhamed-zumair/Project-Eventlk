@@ -5,8 +5,9 @@ import React, { useState, useEffect } from "react";
 import {
   Mail, X, CalendarDays, User, MoreVertical,
   Shield, UserMinus, AlertCircle, CheckCircle, Rocket, AlertTriangle,
-  Loader2
+  Loader2, Users,UserPlus
 } from "lucide-react";
+import { useEventContext } from "../../../context/EventContext"; // 🚀 1. Import the Brain
 
 // --- Types ---
 interface EventItem {
@@ -42,10 +43,12 @@ const getColorClass = (email: string) => {
 };
 
 export default function TeamPage() {
+  // 🚀 1. Hook into the Global Selector Brain
+  const { myRole, selectedEventId, setSelectedEventId } = useEventContext(); 
+
   // --- States ---
   const [activeEvents, setActiveEvents] = useState<EventItem[]>([]);
   const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
 
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
@@ -80,11 +83,13 @@ export default function TeamPage() {
         if (activeRes.success) setActiveEvents(activeRes.events || []);
         if (pastRes.success) setPastEvents(pastRes.events || []);
 
-        // Default to the first active event if available
-        if (activeRes.events && activeRes.events.length > 0) {
-          setSelectedEventId(activeRes.events[0].id);
-        } else if (pastRes.events && pastRes.events.length > 0) {
-          setSelectedEventId(pastRes.events[0].id);
+        // 🚀 Only set the global ID if the Topbar hasn't initialized one yet
+        if (!selectedEventId) {
+          if (activeRes.events && activeRes.events.length > 0) {
+            setSelectedEventId(activeRes.events[0].id);
+          } else if (pastRes.events && pastRes.events.length > 0) {
+            setSelectedEventId(pastRes.events[0].id);
+          }
         }
       } catch (error) {
         console.error("Failed to load events for team page", error);
@@ -118,6 +123,7 @@ export default function TeamPage() {
     };
     loadTeam();
   }, [selectedEventId, refreshTrigger]);
+  
   // --- NEW: Listen for Global WebSocket Refreshes ---
   useEffect(() => {
     const handleRefresh = () => setRefreshTrigger(prev => prev + 1);
@@ -268,29 +274,10 @@ export default function TeamPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
-            <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm">
-              <CalendarDays size={18} />
-            </div>
-            <select
-              value={selectedEventId}
-              onChange={(e) => setSelectedEventId(e.target.value)}
-              className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer"
-            >
-              {activeEvents.length > 0 && (
-                <optgroup label="Active Events">
-                  {activeEvents.map(evt => <option key={evt.id} value={evt.id}>{evt.title}</option>)}
-                </optgroup>
-              )}
-              {pastEvents.length > 0 && (
-                <optgroup label="Past Events">
-                  {pastEvents.map(evt => <option key={evt.id} value={evt.id}>{evt.title}</option>)}
-                </optgroup>
-              )}
-            </select>
-          </div>
+          {/* Local selector removed. Global switching happens in the Topbar! */}
 
-          {!isSelectedEventPast && (
+          {/* 🚀 ROLE CHECK: Hide Invite from Volunteers */}
+          {!isSelectedEventPast && myRole !== 'Volunteer' && (
             <button
               onClick={() => {
                 setErrorMessage("");
@@ -331,37 +318,39 @@ export default function TeamPage() {
           {members.map((member) => (
             <div key={member.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 relative group">
 
-              {/* 3-Dot Management Menu */}
-              <div className="absolute top-4 right-4">
-                <button
-                  onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
-                  className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
-                >
-                  <MoreVertical size={20} />
-                </button>
+              {/* 🚀 ROLE CHECK: Only allow certain roles to manage team members */}
+              {myRole !== 'Volunteer' && myRole !== 'Team_Lead' && (
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
+                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
+                  >
+                    <MoreVertical size={20} />
+                  </button>
 
-                {/* Dropdown Menu - WIRED TO BEAUTIFUL MODALS */}
-                {openMenuId === member.id && (
-                  <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-in fade-in zoom-in-95">
-                    <button
-                      onClick={() => openRoleModal(member)}
-                      className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2"
-                    >
-                      <Shield size={16} /> Change Role
-                    </button>
-                    {member.role !== 'President' ? (
+                  {/* Dropdown Menu - WIRED TO BEAUTIFUL MODALS */}
+                  {openMenuId === member.id && (
+                    <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-in fade-in zoom-in-95">
                       <button
-                        onClick={() => openRemoveModal(member)}
-                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50"
+                        onClick={() => openRoleModal(member)}
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-2"
                       >
-                        <UserMinus size={16} /> Remove Member
+                        <Shield size={16} /> Change Role
                       </button>
-                    ) : (
-                      <div className="px-4 py-2 text-xs text-gray-400 border-t border-gray-50 bg-gray-50 italic">Creator cannot be removed</div>
-                    )}
-                  </div>
-                )}
-              </div>
+                      {member.role !== 'President' ? (
+                        <button
+                          onClick={() => openRemoveModal(member)}
+                          className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 border-t border-gray-50"
+                        >
+                          <UserMinus size={16} /> Remove Member
+                        </button>
+                      ) : (
+                        <div className="px-4 py-2 text-xs text-gray-400 border-t border-gray-50 bg-gray-50 italic">Creator cannot be removed</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Card Header: Avatar & Badge */}
               <div className="flex justify-between items-start mb-5">
@@ -390,19 +379,38 @@ export default function TeamPage() {
             </div>
           ))}
 
-          {members.length === 1 && (
-            <div className="col-span-full py-20 px-4 text-center bg-indigo-50/40 rounded-3xl border border-dashed border-indigo-200 flex flex-col items-center">
-              <div className="bg-indigo-100 p-4 rounded-full mb-5 text-indigo-500">
-                <Rocket size={40} />
+          {/* 🚀 WELCOMING EMPTY STATE: For users with no team yet */}
+          {members.length <= 1 && (
+            <div className="col-span-full max-w-4xl mx-auto py-16 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+              <div className="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner rotate-3 ring-8 ring-indigo-50/50">
+                <Users size={48} strokeWidth={1.5} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">You're flying solo!</h3>
-              <p className="text-gray-500 max-w-sm mx-auto mb-6">Building an amazing event takes a village. Invite members to your committee to share the workload.</p>
-              {!isSelectedEventPast && (
-                <button
+              
+              <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Committee Command Center</h2>
+              <p className="text-gray-500 text-lg font-medium max-w-2xl leading-relaxed mb-10">
+                Great events aren't built alone. Invite your committee members to share the workload, assign specialized roles, and maintain a secure, real-time synchronization across your entire organization.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+                {[
+                  { icon: Shield, title: "Role Security", desc: "Granular permissions for every committee member." },
+                  { icon: Mail, title: "Smart Invites", desc: "Automated onboarding via university emails." },
+                  { icon: Rocket, title: "Live Sync", desc: "Real-time updates across all staff devices." }
+                ].map((feature, i) => (
+                  <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center group hover:border-indigo-200 transition-colors">
+                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl mb-3 group-hover:scale-110 transition-transform"><feature.icon size={24} /></div>
+                    <h4 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h4>
+                    <p className="text-xs text-gray-500 font-medium">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {!isSelectedEventPast && myRole !== 'Volunteer' && (
+                <button 
                   onClick={() => setIsInviteModalOpen(true)}
-                  className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-sm"
+                  className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3"
                 >
-                  Build Your Dream Team
+                  <UserPlus size={20} strokeWidth={3} /> Build Your Dream Team
                 </button>
               )}
             </div>

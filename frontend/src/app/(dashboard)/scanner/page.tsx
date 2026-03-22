@@ -3,13 +3,18 @@
 import React, { useEffect, useState } from "react";
 import { fetchAPI } from "../../../utils/api";
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { CheckCircle, ScanLine, XCircle, Loader2, ShieldCheck, AlertOctagon } from "lucide-react";
+import { CheckCircle, ScanLine, XCircle, Loader2, ShieldCheck, AlertOctagon, ShieldAlert , Users,Plus} from "lucide-react";
+import { useEventContext } from "../../../context/EventContext"; // 🚀 1. Import the Brain
 
 export default function EventScannerPage() {
+  const { myRole, isLoadingContext } = useEventContext(); // 🚀 2. Ask the Brain for the context
   const [scanResult, setScanResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
+    // 🚀 Prevent scanner from booting up if they don't have access to the page yet
+    if (isLoadingContext || !myRole) return; 
+
     // Initialize the scanner engine
     const scanner = new Html5QrcodeScanner(
       "reader",
@@ -23,8 +28,6 @@ export default function EventScannerPage() {
       if (isProcessing) return; 
       
       setIsProcessing(true);
-      
-      // (Removed scanner.pause() here to prevent the UI from collapsing)
 
       try {
         const response = await fetchAPI('/registrations/checkin', {
@@ -53,7 +56,57 @@ export default function EventScannerPage() {
     return () => {
       scanner.clear().catch(console.error);
     };
-  }, [isProcessing]);
+  }, [isProcessing, isLoadingContext, myRole]); // Added Context dependencies
+
+  // 🚀 THE SECURITY GATE: Wait for context to load
+  if (isLoadingContext) {
+    return <div className="flex justify-center items-center h-[80vh]"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
+  }
+
+  // 🚀 WELCOMING EMPTY STATE: For users with no events yet
+  if (!myRole) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner rotate-3 ring-8 ring-indigo-50/50">
+          <ScanLine size={48} strokeWidth={1.5} />
+        </div>
+        
+        <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Real-Time Check-In Engine</h2>
+        <p className="text-gray-500 text-lg font-medium max-w-2xl leading-relaxed mb-10">
+          Turn any smartphone into a professional gate-management tool. Once your event is live, your team can use this scanner to verify QR tickets, track attendance spikes, and prevent duplicate entries in real-time.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+          {[
+            { icon: ShieldCheck, title: "Instant Verification", desc: "Validate tokens against the cloud database." },
+            { icon: CheckCircle, title: "Offline Resilience", desc: "Cached data ensures entry even with spotty WiFi." },
+            { icon: Users, title: "Multi-Gate Sync", desc: "Sync check-ins across 50+ staff devices." }
+          ].map((feature, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center group hover:border-indigo-200 transition-colors">
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl mb-3 group-hover:scale-110 transition-transform"><feature.icon size={24} /></div>
+              <h4 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h4>
+              <p className="text-xs text-gray-500 font-medium">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button 
+            onClick={() => window.dispatchEvent(new Event('openCreateModal'))}
+            className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3"
+          >
+            <Plus size={20} strokeWidth={3} /> Start Your Event
+          </button>
+          <button 
+            onClick={() => window.location.href = '/dashboard'}
+            className="bg-white border border-gray-200 text-gray-700 px-10 py-4 rounded-2xl font-bold hover:bg-gray-50 transition active:scale-95"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto h-full flex flex-col items-center pt-6 px-4 pb-20">

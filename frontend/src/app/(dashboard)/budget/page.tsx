@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { fetchAPI } from "../../../utils/api";
-import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle, Receipt, User, Clock, AlertTriangle, Sparkles, Loader2, CheckCircle, Info } from "lucide-react";
+import { useEventContext } from "../../../context/EventContext"; // 🚀 1. Import the Brain
+import { Banknote, TrendingUp, AlertCircle, ChevronDown, X, CalendarDays, Plus, PlusCircle, Receipt, User, Clock, AlertTriangle, Sparkles, Loader2, CheckCircle, Info, ShieldAlert, ShieldCheck } from "lucide-react"; // 🚀 2. Added ShieldAlert
 
 // --- Types ---
 interface BudgetCategory {
@@ -48,6 +49,8 @@ const StatusBadge = ({ spent, total }: { spent: number, total: number }) => {
 };
 
 export default function BudgetPage() {
+  const { myRole, isLoadingContext } = useEventContext(); // 🚀 Ask the Brain for the role!
+  
   // --- LIVE DATA STATES ---
   const [eventsList, setEventsList] = useState<EventData[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>("");
@@ -77,40 +80,26 @@ export default function BudgetPage() {
   const [newCategoryAmount, setNewCategoryAmount] = useState("");
 
   // --- API FETCHING LOGIC ---
+  // 🚀 Now reacts directly to the Global Topbar Selector!
   useEffect(() => {
-    fetchMyEvents();
-  }, []);
-
-  useEffect(() => {
-    if (selectedEventId) {
-      fetchBudgetOverview(selectedEventId);
-    }
-  }, [selectedEventId]);
-
-  const fetchMyEvents = async () => {
-    try {
-      const response = await fetchAPI('/events', { method: 'GET' });
-      if (response.success && response.events) {
-        // We only want to show events that are currently "In Progress"
-        const activeEvents = response.events.map((evt: any) => ({
-          id: evt.id,
-          title: evt.title,
-          budget: Number(evt.total_budget),
-          isAiAssisted: evt.is_ai_assisted
-        }));
-        
-        setEventsList(activeEvents);
-        if (activeEvents.length > 0) {
-          setSelectedEventId(activeEvents[0].id);
-        } else {
-          setIsLoading(false); // No events found
-        }
+    const syncAndFetch = async () => {
+      if (selectedEventId) {
+        await fetchBudgetOverview(selectedEventId);
+      } else {
+        // If no event is selected globally, try to fetch the list once to help the context
+        try {
+          const response = await fetchAPI('/events', { method: 'GET' });
+          if (response.success && response.events) {
+            const activeEvents = response.events.map((evt: any) => ({
+              id: evt.id, title: evt.title, budget: Number(evt.total_budget), isAiAssisted: evt.is_ai_assisted
+            }));
+            setEventsList(activeEvents);
+          }
+        } catch (e) { console.error(e); }
       }
-    } catch (error) {
-      console.error("Error fetching events:", error);
-      setIsLoading(false);
-    }
-  };
+    };
+    syncAndFetch();
+  }, [selectedEventId]);
 
   const fetchBudgetOverview = async (eventId: string) => {
     setIsLoading(true);
@@ -220,16 +209,62 @@ export default function BudgetPage() {
   const isOverAllocated = totalAllocatedToCategories > masterBudget;
   const overAllocatedAmount = totalAllocatedToCategories - masterBudget;
 
-  if (isLoading && eventsList.length === 0) {
-    return <div className="flex justify-center items-center h-full text-indigo-600 animate-pulse">Loading budget tracker...</div>;
+  // 🚀 THE SECURITY GATE
+  if (isLoadingContext || (isLoading && eventsList.length === 0)) {
+    return <div className="flex justify-center items-center h-[80vh]"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
   }
 
+  // Block anyone who isn't a President or Treasurer (but ignore if myRole is null, meaning they have no events yet)
+  if (myRole && myRole !== 'President' && myRole !== 'Treasurer') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mb-6 shadow-inner ring-4 ring-rose-50 rotate-3">
+          <ShieldAlert size={48} strokeWidth={2.5} />
+        </div>
+        <h2 className="text-3xl font-black text-gray-900 mb-3 tracking-tight">Access Denied</h2>
+        <p className="text-gray-500 font-medium text-center max-w-md leading-relaxed">
+          Your current role (<span className="text-gray-900 font-bold">{myRole.replace('_', ' ')}</span>) does not have permission to view or manage financials for this event. 
+        </p>
+        <button onClick={() => window.location.href = '/dashboard'} className="mt-8 bg-slate-900 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-slate-800 transition shadow-xl active:scale-95">
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  // 🚀 WELCOMING EMPTY STATE: For users with no events yet
   if (eventsList.length === 0) {
     return (
-      <div className="flex-1 bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center p-10 text-center shadow-sm">
-        <Banknote size={48} className="text-gray-300 mb-4" />
-        <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Events</h3>
-        <p className="text-gray-500 max-w-sm">You need an active event to track budgets. Go to the dashboard to create one!</p>
+      <div className="max-w-4xl mx-auto py-20 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner rotate-3 ring-8 ring-indigo-50/50">
+          <Banknote size={48} strokeWidth={1.5} />
+        </div>
+        
+        <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Financial Command Center</h2>
+        <p className="text-gray-500 text-lg font-medium max-w-2xl leading-relaxed mb-10">
+          Take total control of your event's economy. Once you create an event or join a team, you'll be able to allocate LKR to categories, track live spending, and generate AI-powered financial strategies.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+          {[
+            { icon: TrendingUp, title: "Live Tracking", desc: "Monitor every cent in real-time." },
+            { icon: Sparkles, title: "AI Allocation", desc: "Smart budget splits for your scale." },
+            { icon: ShieldCheck, title: "Safe Spending", desc: "Role-based approval for expenses." }
+          ].map((feature, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center">
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl mb-3"><feature.icon size={24} /></div>
+              <h4 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h4>
+              <p className="text-xs text-gray-500 font-medium">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <button 
+          onClick={() => window.dispatchEvent(new Event('openCreateModal'))}
+          className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3"
+        >
+          <Plus size={20} strokeWidth={3} /> Start Planning Now
+        </button>
       </div>
     );
   }
@@ -237,29 +272,14 @@ export default function BudgetPage() {
   return (
     <div className="space-y-6 relative h-full flex flex-col max-w-5xl mx-auto pb-20">
       
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      {/* Page Header - 🚀 Cleaned: Global Selector in Topbar handles event switching */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-gray-100 pb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Budget Tracker</h2>
-          <p className="text-gray-500 text-sm mt-1">Monitor event spending and allocations</p>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">Budget Tracker</h2>
+          <p className="text-gray-500 text-sm mt-1 font-medium">Monitor event spending, allocations, and live financial health</p>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
-            <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm">
-              <CalendarDays size={18} />
-            </div>
-            <select 
-              value={selectedEventId}
-              onChange={(e) => setSelectedEventId(e.target.value)}
-              className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer max-w-[250px] truncate"
-            >
-              {eventsList.map(evt => (
-                <option key={evt.id} value={evt.id}>{evt.title}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+        {/* Local selector removed. Switch events in the Topbar! */}
       </div>
 
       {isLoading ? (

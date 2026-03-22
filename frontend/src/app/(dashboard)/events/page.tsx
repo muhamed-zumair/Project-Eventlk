@@ -1,9 +1,11 @@
 "use client";
 import { fetchAPI } from '../../../utils/api';
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, FileText, CheckCircle, ArrowRight, X, DollarSign, DownloadCloud, Loader2, BarChart3, Presentation, Handshake } from "lucide-react";
+import { Calendar, MapPin, Users, FileText, CheckCircle, ArrowRight, X, DollarSign, DownloadCloud, Loader2, BarChart3, Presentation, Handshake, ShieldAlert } from "lucide-react";
+import { useEventContext } from "../../../context/EventContext"; // 🚀 Import the Brain
 
 export default function MyEvents() {
+  const { myRole, isLoadingContext } = useEventContext(); // 🚀 Ask the Brain for the role!
   const [pastEvents, setPastEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<any>(null);
@@ -54,6 +56,29 @@ export default function MyEvents() {
     }
   };
 
+  // 🚀 THE SECURITY GATE
+  if (isLoadingContext) {
+    return <div className="flex justify-center items-center h-[80vh]"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
+  }
+
+  // Lock out Volunteers entirely
+  if (myRole === 'Volunteer') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mb-6 shadow-sm rotate-3">
+          <ShieldAlert size={48} strokeWidth={2.5} />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+        <p className="text-gray-500 font-medium text-center max-w-md">
+          Volunteers do not have permission to view post-event reports and analytics.
+        </p>
+        <button onClick={() => window.location.href = '/dashboard'} className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm">
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* HEADER */}
@@ -74,10 +99,36 @@ export default function MyEvents() {
           <span className="font-semibold animate-pulse">Retrieving archives...</span>
         </div>
       ) : pastEvents.length === 0 ? (
-        <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
-          <div className="w-20 h-20 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-4"><CheckCircle size={40} /></div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">No completed events yet</h3>
-          <p className="text-gray-500 max-w-sm mx-auto">Once an event finishes, its historical data, budget reports, and documents will appear here.</p>
+        <div className="max-w-4xl mx-auto py-16 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+          <div className="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner rotate-3 ring-8 ring-emerald-50/50">
+            <BarChart3 size={48} strokeWidth={1.5} />
+          </div>
+          
+          <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Post-Event Intelligence</h2>
+          <p className="text-gray-500 text-lg font-medium max-w-2xl leading-relaxed mb-10">
+            Every event you complete becomes a valuable asset for the future. Once your first event finishes, you'll unlock automated reports, financial audits, and attendance analytics to refine your planning strategy.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+            {[
+              { icon: FileText, title: "Secure Archive", desc: "Permanent cloud storage for all event documents." },
+              { icon: Presentation, title: "Deep Analytics", desc: "Visualize guest turnout and engagement rates." },
+              { icon: Handshake, title: "Financial Audit", desc: "Full utilization reports for every LKR spent." }
+            ].map((feature, i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center group hover:border-emerald-200 transition-colors">
+                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl mb-3 group-hover:scale-110 transition-transform"><feature.icon size={24} /></div>
+                <h4 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h4>
+                <p className="text-xs text-gray-500 font-medium">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <button 
+            onClick={() => window.location.href = '/dashboard'}
+            className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black hover:bg-slate-800 transition shadow-xl active:scale-95 flex items-center gap-3"
+          >
+            Go to My Dashboard
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

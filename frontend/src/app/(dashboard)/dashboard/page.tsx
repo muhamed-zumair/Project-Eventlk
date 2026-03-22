@@ -1,4 +1,5 @@
 "use client";
+import { useEventContext } from "../../../context/EventContext";
 import { fetchAPI } from '../../../utils/api';
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardHome() {
+  const { myRole } = useEventContext();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
@@ -365,13 +367,53 @@ export default function DashboardHome() {
       </h2>
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64 text-indigo-600"><span className="animate-pulse font-medium">Loading your events...</span></div>
+        <div className="flex justify-center items-center h-64 text-indigo-600">
+          <Loader2 className="animate-spin mr-2" />
+          <span className="animate-pulse font-medium">Synchronizing your dashboard...</span>
+        </div>
       ) : eventsList.length === 0 ? (
-        <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-16 flex flex-col items-center justify-center text-center shadow-sm min-h-[500px]">
-          <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-6"><Sparkles size={40} /></div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">All caught up!</h3>
-          <p className="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">You have no events currently in progress. Create one to get started!</p>
-          <button onClick={() => window.dispatchEvent(new Event('openCreateModal'))} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm flex items-center gap-2"><Plus size={20} /> Create New Event</button>
+        <div className="max-w-6xl mx-auto py-12 animate-in fade-in zoom-in-95 duration-700">
+          {/* Hero Welcome Section */}
+          <div className="bg-white border border-gray-100 rounded-[2.5rem] p-12 text-center shadow-sm relative overflow-hidden mb-8">
+             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+             
+             <div className="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner rotate-3 ring-8 ring-indigo-50/50">
+               <Sparkles size={48} strokeWidth={1.5} />
+             </div>
+             
+             <h3 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Your Event Excellence Starts Here</h3>
+             <p className="text-gray-500 text-lg font-medium max-w-2xl mx-auto leading-relaxed mb-10">
+               Welcome to EventLK. Whether you're planning a local meetup or a global summit, our AI-powered tools and real-time coordination engine are ready to bring your vision to life.
+             </p>
+             
+             <button 
+               onClick={() => window.dispatchEvent(new Event('openCreateModal'))} 
+               className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3 mx-auto"
+             >
+               <Plus size={24} strokeWidth={3} /> Create Your First Event
+             </button>
+          </div>
+
+          {/* Feature Showcase Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm group hover:border-indigo-200 transition-colors">
+              <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Palette size={24} /></div>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">AI-Driven Strategy</h4>
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">Generate complete venue matches, budget allocations, and execution roadmaps in seconds.</p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm group hover:border-indigo-200 transition-colors">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Users size={24} /></div>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Real-time Coordination</h4>
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">Manage your team with role-based permissions, instant messaging, and live task tracking.</p>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm group hover:border-indigo-200 transition-colors">
+              <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><ListChecks size={24} /></div>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Live Execution</h4>
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">Track guest check-ins with our live scanner and monitor budget spending as it happens.</p>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-8">
@@ -449,8 +491,13 @@ export default function DashboardHome() {
                   {/* 🚀 NEW: Completion Button */}
                   
 
-                  <button onClick={() => fetchFullEventDetails(event.id, 'edit')} disabled={isFetchingDetails} className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center disabled:opacity-50" title="Edit Event"><Pencil size={20} /></button>
-                  <button onClick={() => handleDeleteEventClick(event.id, event.title)} className="bg-red-500/20 border border-red-400/30 text-red-100 p-2.5 rounded-lg hover:bg-red-500/40 hover:text-white transition-colors flex items-center justify-center ml-auto" title="Delete Event"><Trash2 size={20} /></button>
+                  {/* 🚀 ROLE CHECK: Hide Edit & Delete from Volunteers */}
+                  {myRole !== 'Volunteer' && (
+                    <>
+                      <button onClick={() => fetchFullEventDetails(event.id, 'edit')} disabled={isFetchingDetails} className="bg-indigo-500/20 border border-indigo-400/30 text-white p-2.5 rounded-lg hover:bg-indigo-500/40 transition-colors flex items-center justify-center disabled:opacity-50" title="Edit Event"><Pencil size={20} /></button>
+                      <button onClick={() => handleDeleteEventClick(event.id, event.title)} className="bg-red-500/20 border border-red-400/30 text-red-100 p-2.5 rounded-lg hover:bg-red-500/40 hover:text-white transition-colors flex items-center justify-center ml-auto" title="Delete Event"><Trash2 size={20} /></button>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -673,10 +720,13 @@ export default function DashboardHome() {
               </section>
             </div>
 
-            <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
-              <button onClick={() => { setIsDetailsModalOpen(false); setIsEditModalOpen(true); }} className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm flex items-center gap-2"><Pencil size={16} /> Edit Details</button>
-              <button onClick={handlePrint} className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm ml-auto">Print Overview</button>
-            </div>
+            {/* 🚀 ROLE CHECK: Hide the entire footer from Volunteers so they can't Edit or Print */}
+            {myRole !== 'Volunteer' && (
+              <div className="p-4 border-t border-gray-200 flex items-center gap-3 shrink-0 bg-white">
+                <button onClick={() => { setIsDetailsModalOpen(false); setIsEditModalOpen(true); }} className="bg-[#4f46e5] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition text-sm flex items-center gap-2"><Pencil size={16} /> Edit Details</button>
+                <button onClick={handlePrint} className="bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition text-sm ml-auto">Print Overview</button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -4,12 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, MapPin, PieChart, Palette, 
   ListChecks, BrainCircuit, Zap, DollarSign, Check, X,
-  TrendingUp, Rocket, ArrowRight, Loader2, CheckCircle, Info, Trash2
+  TrendingUp, Rocket, ArrowRight, Loader2, CheckCircle, Info, Trash2,
+  ShieldAlert // 🚀 1. Add this!
 } from "lucide-react";
 import { PieChart as ReChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { fetchAPI } from "../../../utils/api";
+import { useEventContext } from "../../../context/EventContext"; // 🚀 2. Add the Brain!
 
 export default function AIRecommendationsPage() {
+  const { myRole, isLoadingContext, selectedEventId } = useEventContext(); // 🚀 Hook into the brain!
+  const [isCheckingDraft, setIsCheckingDraft] = useState(true); // 🚀 Stop flickering
+
   const [draft, setDraft] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -28,6 +33,7 @@ export default function AIRecommendationsPage() {
     if (savedDraft) {
       setDraft(JSON.parse(savedDraft));
     }
+    setIsCheckingDraft(false);
   }, []);
 
   const handleConfirmEvent = async () => {
@@ -65,6 +71,32 @@ export default function AIRecommendationsPage() {
       setIsSaving(false);
     }
   };
+
+  // 🚀 THE SECURITY GATE
+  if (isLoadingContext || isCheckingDraft) {
+    return <div className="flex justify-center items-center h-[80vh]"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
+  }
+
+  // 🚀 UPDATED SECURITY GATE
+  // If there IS a draft (the user just generated one), let them see it to confirm.
+  // If there is NO draft, but they are in an event context where they aren't the President, block them.
+  // If there is NO draft and NO event context (new user), let them see the "How it Works" page!
+  if (!draft && selectedEventId && myRole !== 'President') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mb-6 shadow-inner ring-4 ring-rose-50 rotate-3">
+          <ShieldAlert size={48} strokeWidth={2.5} />
+        </div>
+        <h2 className="text-3xl font-black text-gray-900 mb-3 tracking-tight">AI Studio Restricted</h2>
+        <p className="text-gray-500 font-medium text-center max-w-md leading-relaxed">
+          Only the <span className="text-gray-900 font-bold">President</span> can access event-specific AI strategies. 
+        </p>
+        <button onClick={() => window.location.href = '/dashboard'} className="mt-8 bg-slate-900 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-slate-800 transition shadow-xl active:scale-95">
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#a855f7', '#f59e0b', '#06b6d4'];
 

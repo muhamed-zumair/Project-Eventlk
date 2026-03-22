@@ -1,12 +1,13 @@
 "use client";
 import { fetchAPI } from "../../utils/api";
 import React, { useState, useEffect } from "react";
+import { useEventContext } from "../../context/EventContext"; // 🚀 1. Import the Brain
 import { io } from "socket.io-client";
 import {
   Search, Plus, Bell, X, Calendar, Tag, Users,
   DollarSign, FileText, User, LogOut, Settings,
   CheckCircle, AlertCircle, MessageSquare, MenuIcon,
-  SlidersHorizontal, Sparkles, Minus, MapPin, Check, ChevronDown, Trash2, Loader2
+  SlidersHorizontal, Sparkles, Minus, MapPin, Check, ChevronDown, Trash2, Loader2, ShieldCheck
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { s } from "framer-motion/client";
@@ -18,6 +19,10 @@ interface TopbarProps {
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#a855f7', '#f59e0b', '#06b6d4'];
 
 export default function Topbar({ toggleSidebar }: TopbarProps) {
+  // 🚀 2. Hook into the Global Event Context
+  const { selectedEventId, setSelectedEventId, myRole } = useEventContext();
+  
+  const [eventsList, setEventsList] = useState<any[]>([]); // To hold all available events
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -106,6 +111,21 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
   };
 
   useEffect(() => {
+    // 🚀 3. Fetch all events for the Global Topbar Selector
+    const fetchAllEvents = async () => {
+      try {
+        const response = await fetchAPI('/events', { method: 'GET' });
+        if (response.success && response.events) {
+          setEventsList(response.events);
+          // Set initial global event if none is selected
+          if (!selectedEventId && response.events.length > 0) {
+            setSelectedEventId(response.events[0].id);
+          }
+        }
+      } catch (error) { console.error("Selector fetch failed:", error); }
+    };
+    fetchAllEvents();
+
     const userStr=localStorage.getItem('user');
     if (userStr) {
       setCurrentUser(JSON.parse(userStr));
@@ -348,9 +368,29 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
           <button className="md:hidden p-1" onClick={toggleSidebar}>
             <MenuIcon className="text-gray-600" size={22} />
           </button>
-          <div className="relative hidden sm:block w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input type="text" placeholder="Search events, tasks, or team members..." className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-gray-900 placeholder-gray-500 bg-gray-50" />
+          {/* 🚀 4. NEW: Global Event Selector & Role Badge */}
+          <div className="flex items-center gap-3">
+            <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-xl flex items-center gap-2 shadow-inner group">
+              <div className="bg-indigo-500/10 p-1.5 rounded-lg text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                <Calendar size={18} />
+              </div>
+              <select 
+                value={selectedEventId || ""} 
+                onChange={(e) => setSelectedEventId(e.target.value)} 
+                className="bg-transparent text-sm font-bold text-slate-200 outline-none pr-4 cursor-pointer max-w-[180px] truncate appearance-none"
+              >
+                {eventsList.map(evt => <option key={evt.id} value={evt.id} className="bg-slate-900 text-white">{evt.title}</option>)}
+              </select>
+              <ChevronDown size={14} className="text-slate-500 mr-1" />
+            </div>
+
+            {/* Role Badge: Instantly shows user power level for this event */}
+            {myRole && (
+              <div className="hidden lg:flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-full animate-in fade-in slide-in-from-left-2">
+                <ShieldCheck size={14} className="text-indigo-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">{myRole.replace('_', ' ')}</span>
+              </div>
+            )}
           </div>
         </div>
 

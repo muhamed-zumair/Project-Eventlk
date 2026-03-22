@@ -6,8 +6,9 @@ import { io } from "socket.io-client";
 import {
   QrCode, Mail, Users, Search, CheckCircle,
   Clock, CheckSquare, Square, Link as LinkIcon, Copy, CalendarDays,
-  Loader2, X, Info // 🚀 ADDED NEW ICONS HERE
+  Loader2, X, Info, ShieldAlert ,Plus// 🚀 ADDED NEW ICONS HERE
 } from "lucide-react";
+import { useEventContext } from "../../../context/EventContext"; // 🚀 Import the Brain
 
 interface Attendee {
   id: string;
@@ -18,8 +19,10 @@ interface Attendee {
 }
 
 export default function RegistrationsPage() {
+  // 🚀 1. Hook into the Global Selector Brain
+  const { myRole, isLoadingContext, selectedEventId, setSelectedEventId } = useEventContext(); 
+  
   const [eventsList, setEventsList] = useState<{ id: string, name: string }[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [attendees, setAttendees] = useState<Attendee[]>([]);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -35,22 +38,26 @@ export default function RegistrationsPage() {
     setTimeout(() => setToast(null), 5000);
   };
 
-  // 1. Fetch "In Progress" Events
+  // 1. Sync with the Global Topbar Selector
   useEffect(() => {
-    const fetchActiveEvents = async () => {
+    const syncWithGlobal = async () => {
       try {
         const response = await fetchAPI('/events', { method: 'GET' });
         if (response.success && response.events) {
           const activeEvents = response.events.map((evt: any) => ({ id: evt.id, name: evt.title }));
           setEventsList(activeEvents);
-          if (activeEvents.length > 0) setSelectedEventId(activeEvents[0].id);
+          
+          // Only set the global ID if the Topbar hasn't initialized one yet
+          if (!selectedEventId && activeEvents.length > 0) {
+            setSelectedEventId(activeEvents[0].id);
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch events:", error);
+        console.error("Failed to sync global state:", error);
       }
     };
-    fetchActiveEvents();
-  }, []);
+    syncWithGlobal();
+  }, [selectedEventId]);
 
   // 2. Fetch Attendees & Connect WebSocket whenever selected event changes
   useEffect(() => {
@@ -131,33 +138,76 @@ export default function RegistrationsPage() {
   const pendingCount = attendees.filter(a => a.status === "Pending QR").length;
   const sentCount = attendees.filter(a => a.status === "Sent" || a.status === "Checked In").length;
 
+  // 🚀 THE SECURITY GATE
+  if (isLoadingContext) {
+    return <div className="flex justify-center items-center h-[80vh]"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
+  }
+
+  // Lock out Volunteers entirely
+  if (myRole === 'Volunteer') {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mb-6 shadow-sm rotate-3">
+          <ShieldAlert size={48} strokeWidth={2.5} />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+        <p className="text-gray-500 font-medium text-center max-w-md">
+          Volunteers do not have permission to view or manage event registrations.
+        </p>
+        <button onClick={() => window.location.href = '/dashboard'} className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm">
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  // 🚀 WELCOMING EMPTY STATE: For users with no events yet
   if (eventsList.length === 0) {
     return (
-      <div className="flex-1 bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center p-10 text-center shadow-sm min-h-[60vh]">
-        <Users size={48} className="text-gray-300 mb-4" />
-        <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Events</h3>
-        <p className="text-gray-500 max-w-sm">Create an active event to start collecting registrations.</p>
+      <div className="max-w-4xl mx-auto py-20 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner rotate-3 ring-8 ring-blue-50/50">
+          <QrCode size={48} strokeWidth={1.5} />
+        </div>
+        
+        <h2 className="text-4xl font-black text-gray-900 tracking-tight mb-4">Automated Attendee Management</h2>
+        <p className="text-gray-500 text-lg font-medium max-w-2xl leading-relaxed mb-10">
+          Streamline your guest list from signup to check-in. Once you start an event, you'll be able to sync external forms via webhooks, dispatch branded QR tickets, and track live arrivals.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12 text-left">
+          {[
+            { icon: LinkIcon, title: "Universal Sync", desc: "Connect Google Forms or Typeform instantly." },
+            { icon: Mail, title: "Smart Dispatch", desc: "Bulk issue tickets and calendar invites." },
+            { icon: CheckCircle, title: "Live Gate", desc: "Real-time arrival tracking and analytics." }
+          ].map((feature, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center group hover:border-blue-200 transition-colors">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl mb-3 group-hover:scale-110 transition-transform"><feature.icon size={24} /></div>
+              <h4 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h4>
+              <p className="text-xs text-gray-500 font-medium">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <button 
+          onClick={() => window.dispatchEvent(new Event('openCreateModal'))}
+          className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95 flex items-center gap-3"
+        >
+          <Plus size={20} strokeWidth={3} /> Launch Your First Event
+        </button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header - 🚀 Cleaned: Event switching now happens in the Topbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Registrations & Tickets</h2>
-          <p className="text-gray-500 text-sm mt-1">Manage confirmed attendees and issue calendar invites</p>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">Registrations & Tickets</h2>
+          <p className="text-gray-500 text-sm mt-1 font-medium">Manage confirmed attendees and issue calendar invites</p>
         </div>
-
-        <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
-          <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm"><CalendarDays size={18} /></div>
-          <select
-            value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)}
-            className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer max-w-[200px] truncate"
-          >
-            {eventsList.map(evt => <option key={evt.id} value={evt.id}>{evt.name}</option>)}
-          </select>
-        </div>
+        
+        {/* Local selector removed. Switch events in the Topbar! */}
       </div>
 
       <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex flex-col lg:flex-row gap-6 justify-between items-start lg:items-center">

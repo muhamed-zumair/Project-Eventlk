@@ -8,6 +8,7 @@ import {
   Search, Paperclip, CalendarDays, Loader2, Upload,
   Link as LinkIcon, X, FileText, History, Info, Clock, User, Lock, Image as ImageIcon, CheckCircle
 } from "lucide-react";
+import { useEventContext } from "context/EventContext";
 
 // --- Mock Data for External History (Until we wire it up) ---
 const initialSentHistory = [
@@ -22,9 +23,10 @@ const initialSentHistory = [
 ];
 
 export default function CommunicationPage() {
-  // --- Global State ---
+  // 🚀 1. Hook into the Global Selector Brain
+  const { selectedEventId, setSelectedEventId } = useEventContext(); 
+  
   const [eventsList, setEventsList] = useState<any[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"internal" | "external">("internal");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -84,17 +86,18 @@ export default function CommunicationPage() {
     if ("Notification" in window && Notification.permission !== "granted") {
       Notification.requestPermission();
     }
-    const fetchActiveEvents = async () => {
+    const syncGlobalState = async () => {
       try {
         const response = await fetchAPI('/events', { method: 'GET' });
         if (response.success && response.events) {
           const active = response.events.filter((e: any) => e.status === 'In Progress');
           setEventsList(active);
-          if (active.length > 0) setSelectedEventId(active[0].id);
+          // Only set the global ID if the Topbar hasn't set one yet
+          if (!selectedEventId && active.length > 0) setSelectedEventId(active[0].id);
         }
       } catch (error) { console.error("Failed to fetch events:", error); }
     };
-    fetchActiveEvents();
+    syncGlobalState();
 
     // 2. Setup User & WebSockets SECOND
     const userStr = localStorage.getItem('user');
@@ -327,18 +330,14 @@ export default function CommunicationPage() {
   // ==========================================
   return (
     <div className="space-y-6 h-full flex flex-col max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header - 🚀 Cleaned: Event switching now happens in the Topbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Communications Center</h2>
-          <p className="text-gray-500 text-sm mt-1">Manage team messaging and external attendee emails</p>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">Communications Center</h2>
+          <p className="text-gray-500 text-sm mt-1 font-medium">Coordinate with your team and reach out to your audience</p>
         </div>
-        <div className="bg-indigo-50 border border-indigo-100 p-1.5 rounded-lg flex items-center gap-2">
-          <div className="bg-white p-1.5 rounded-md text-indigo-600 shadow-sm"><CalendarDays size={18} /></div>
-          <select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="bg-transparent text-sm font-bold text-indigo-900 outline-none pr-4 cursor-pointer max-w-[200px] truncate">
-            {eventsList.map(evt => <option key={evt.id} value={evt.id}>{evt.title}</option>)}
-          </select>
-        </div>
+        
+        {/* Local selector removed. Use the Global Selector in the Topbar! */}
       </div>
 
       {/* Tabs */}
@@ -350,14 +349,39 @@ export default function CommunicationPage() {
       {/* TAB: Internal Messaging */}
       {activeTab === "internal" && (
         actualTeam.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-[600px] bg-white border border-gray-100 rounded-xl shadow-sm p-8 text-center animate-in fade-in duration-500">
-            <div className="bg-indigo-50 p-5 rounded-full mb-5 border border-indigo-100">
-              <Users size={48} className="text-indigo-400" />
+          <div className="max-w-4xl mx-auto py-16 px-6 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-500">
+            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mb-6 shadow-inner rotate-3 ring-4 ring-indigo-50">
+              <MessageSquare size={40} strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">It's quiet in here...</h3>
-            <p className="text-gray-500 max-w-md text-sm leading-relaxed">
-              You don't have any other team members assigned to this event yet. Organize your team to start a private chat, share documents, and collaborate!
+            
+            <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3">Unified Team Messaging</h3>
+            <p className="text-gray-500 text-lg font-medium max-w-xl leading-relaxed mb-10">
+              Coordinate your event execution with zero friction. Once you've invited your team, you'll unlock a secure space to share documents, images, and updates in real-time.
             </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-10 text-left">
+              <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-start gap-4">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Lock size={18} /></div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-sm">Role-Based Privacy</h4>
+                  <p className="text-xs text-gray-500">Target messages only to specific roles like Volunteers or Treasurers.</p>
+                </div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-start gap-4">
+                <div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><Upload size={18} /></div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-sm">Rich Media Sharing</h4>
+                  <p className="text-xs text-gray-500">Share high-res images, PDF schedules, and video briefings effortlessly.</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => window.location.href = '/team'}
+              className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg active:scale-95 flex items-center gap-2"
+            >
+              <Users size={18} /> Invite Your Team to Start
+            </button>
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-6 h-[600px]">

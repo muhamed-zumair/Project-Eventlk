@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Bell, Lock, CheckCircle, Info, X, Loader2, Eye, EyeOff } from "lucide-react";
+import { User, Bell, Lock, CheckCircle, Info, X, Loader2, Eye, EyeOff , Sparkles} from "lucide-react";
 import { fetchAPI } from "../../../utils/api";
 
 export default function SettingsPage() {
@@ -192,6 +192,16 @@ export default function SettingsPage() {
     <span>Save Changes</span>
   )}
 </button>
+                </div>
+                {/* 🚀 New User Encouragement */}
+                <div className="mt-8 p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex items-start gap-3">
+                  <Sparkles size={18} className="text-indigo-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-indigo-900">Ready to level up?</p>
+                    <p className="text-xs text-indigo-700/70 mt-0.5 font-medium">
+                      Create your first event to be promoted to an <strong className="text-indigo-900">EventLK Organizer</strong>.
+                    </p>
+                  </div>
                 </div>
               </form>
             </div>
