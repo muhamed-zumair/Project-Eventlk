@@ -425,7 +425,9 @@ export default function DashboardHome() {
         </div>
       ) : (
         <div className="space-y-8">
-          {eventsList.map((event) => {
+          {eventsList && eventsList.length > 0 && eventsList.map((event) => {
+  // Safety check: if an event object is somehow broken, skip it
+  if (!event || !event.id) return null;
             const budgetPercent = event.budget > 0 ? Math.min((event.totalSpent / event.budget) * 100, 100) : 0;
             return (
               <div key={event.id} className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
