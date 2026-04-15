@@ -26,7 +26,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 // 2. The callback route (Fixed to use Supabase columns!)
 router.get('/google/callback', 
-    passport.authenticate('google', { failureRedirect: 'http://localhost:3000/signin' }),
+    passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || "https://eventlk.com" }/signin?error=google-login-failed` }),
     (req, res) => {
         const token = jwt.sign(
             { userId: req.user.id, role: req.user.global_role },
@@ -42,8 +42,8 @@ router.get('/google/callback',
             email: req.user.email
         }));
 
-        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-res.redirect(`${frontendUrl}/auth-success?token=${token}`);
+        const frontendUrl = process.env.FRONTEND_URL || "https://eventlk.com";
+        res.redirect(`${frontendUrl}/auth-success?token=${token} &user=${userData}`);
     }
 );
 
