@@ -358,7 +358,6 @@ export default function DashboardHome() {
           setGreetingPrefix("Welcome back,"); 
           setUserName(name);
         }
-        
         }
       } catch (error) {
         console.error("Dashboard greeting error:", error);
