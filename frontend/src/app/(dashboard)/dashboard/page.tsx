@@ -343,9 +343,10 @@ export default function DashboardHome() {
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
       const isNewUser = localStorage.getItem('isNewUser');
-      if (storedUser && storedUser !== "undefined") {
+      if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
       try {
         const userObj = JSON.parse(storedUser);
+        if (userObj){
         // Google uses 'first_name', manual login uses 'firstName'
         const name = userObj.firstName || userObj.first_name || "User"; 
         
@@ -357,11 +358,15 @@ export default function DashboardHome() {
           setGreetingPrefix("Welcome back,"); 
           setUserName(name);
         }
+        }
       } catch (error) {
         console.error("Dashboard greeting error:", error);
         setGreetingPrefix("Welcome back,"); 
         setUserName("User");
       }
+    } else {
+      setGreetingPrefix("Welcome back,");
+      setUserName("User");
     }
     }
   }, []);
