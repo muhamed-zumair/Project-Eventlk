@@ -284,7 +284,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     const payload = {
       headcount: aiHeadcount,
       budget: aiBudget,
-      event_type_display: aiCategory,
+      event_type_display: aiCategoryMapping[aiCategory] || aiCategory,
       venue_pref_display: aiVenueStyle
     };
 
