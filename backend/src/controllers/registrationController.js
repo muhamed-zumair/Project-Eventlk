@@ -81,7 +81,7 @@ const issueTickets = async (req, res) => {
         const month = eventDate.getMonth() + 1;
         const day = eventDate.getDate();
         
-        // Default to 9:00 AM if no time is provided
+        
         const startHour = event.start_time ? parseInt(event.start_time.split(':')[0]) : 9;
         const startMin = event.start_time ? parseInt(event.start_time.split(':')[1]) : 0;
         const endHour = event.end_time ? parseInt(event.end_time.split(':')[0]) : startHour + 2;

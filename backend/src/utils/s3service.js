@@ -10,7 +10,7 @@ const s3Client = new S3Client({
     }
 });
 
-// Upload Function (You already have this)
+// Upload Function (Generates a unique filename and uploads to S3)
 const uploadFileToS3 = async (file, folderName = 'documents') => {
     const randomHex = crypto.randomBytes(4).toString('hex');
     const uniqueFileName = `${folderName}/${Date.now()}-${randomHex}-${file.originalname.replace(/\s+/g, '_')}`;

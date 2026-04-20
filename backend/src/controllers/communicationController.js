@@ -3,8 +3,7 @@ const { uploadAttachmentToS3, getPresignedDownloadUrl } = require('../utils/s3se
 
 // @desc    Get all team members for an event (for the left sidebar)
 // @route   GET /api/communication/:eventId/team
-// @desc    Get all team members for an event (for the left sidebar)
-// @route   GET /api/communication/:eventId/team
+
 const getEventTeam = async (req, res) => {
     try {
         const { eventId } = req.params;
@@ -12,7 +11,7 @@ const getEventTeam = async (req, res) => {
         const loggedInUserId = req.user?.userId || req.user?.id;
 
         console.log(`Logged-in User ID: ${loggedInUserId}`);
-        // ... rest of the code ...
+       
 
         // We temporarily removed the '!= loggedInUserId' rule so we can see EVERYONE
         const result = await pool.query(`
@@ -104,7 +103,7 @@ const getMessages = async (req, res) => {
 const sendMessage = async (req, res) => {
     console.log("📩 Message Request Received!");
     
-    // 🚀 1. CHECK OUT A DEDICATED CLIENT FROM THE POOL
+    //borrows a dedicated connection from the database to handle a multi-step transaction
     const client = await pool.connect(); 
 
     try {
@@ -157,10 +156,10 @@ const sendMessage = async (req, res) => {
             `, [newMessageId, rId])
         ));
 
-        // 🚀 3. COMMIT ON THIS SPECIFIC CONNECTION
+        // 🚀 3. COMMIT ON THIS SPECIFIC CONNECTION to lock the changes in the database
         await client.query('COMMIT'); 
 
-        // 4. Construct response for WebSockets
+    
         // 4. Construct response for WebSockets
         const senderRes = await client.query(`SELECT CONCAT(first_name, ' ', last_name) as name FROM "Users" WHERE id = $1`, [finalSenderId]);
         

@@ -4,7 +4,7 @@ const { sendBulkEmail } = require('../utils/emailService');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key_for_now');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // @desc    Generate AI Email Draft
 // @route   POST /api/emails/generate

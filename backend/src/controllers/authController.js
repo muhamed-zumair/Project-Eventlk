@@ -263,8 +263,8 @@ const deleteAccount = async (req, res) => {
         await pool.query('UPDATE "Tasks" SET assignee_id = NULL WHERE assignee_id = $1', [userId]);
 
         // 2. Budgets & Vendors (Commented out unless you know these tables exist)
-        // await pool.query('DELETE FROM "Budget_Categories" WHERE created_by = $1', [userId]);
-        // await pool.query('DELETE FROM "Vendors" WHERE added_by = $1', [userId]);
+         await pool.query('DELETE FROM "Budget_Categories" WHERE created_by = $1', [userId]);
+         await pool.query('DELETE FROM "Vendors" WHERE added_by = $1', [userId]);
 
         // 3. Team Memberships
         await pool.query('DELETE FROM "TeamMembers" WHERE user_id = $1', [userId]);
